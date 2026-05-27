@@ -152,11 +152,12 @@
 
       let query = supabaseClient.from('orders').select('*, order_items(*)')
       
-      if (input.startsWith('CAFE-')) {
-        query = query.eq('order_number', input)
-      } else {
-        query = query.eq('id', input)
-      }
+   // ✅ NEW — handles both BC- and CAFE- formats
+if (input.includes('-')) {
+  query = query.eq('order_number', input)
+} else {
+  query = query.eq('id', input)
+}
 
       const { data } = await query.single()
 

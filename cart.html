@@ -64,7 +64,7 @@
       <div class="bg-white p-5 rounded-xl border border-cream-200 mb-6">
         <div class="flex justify-between text-lg font-bold mb-1">
           <span>Total</span>
-          <span id="cart-total">$0.00</span>
+          <span id="cart-total">Nu. 0.00</span>
         </div>
         <p class="text-cream-500 text-xs">Tax included. Pay on pickup.</p>
       </div>
@@ -76,17 +76,17 @@
         
         <div>
           <label class="block text-sm font-medium text-espresso-700 mb-1">Full Name *</label>
-          <input type="text" id="customer-name" required class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none" placeholder="John Doe">
+          <input type="text" id="customer-name" required class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none" placeholder="Tashi Dorji">
         </div>
 
         <div>
           <label class="block text-sm font-medium text-espresso-700 mb-1">Phone Number *</label>
-          <input type="tel" id="customer-phone" required class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none" placeholder="555-123-4567">
+          <input type="tel" id="customer-phone" required class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none" placeholder="77 12 34 56">
         </div>
 
         <div>
           <label class="block text-sm font-medium text-espresso-700 mb-1">Email (optional)</label>
-          <input type="email" id="customer-email" class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none" placeholder="john@example.com">
+          <input type="email" id="customer-email" class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none" placeholder="tashi@example.com">
         </div>
 
         <!-- Birthday Section (hidden by default, shown for new customers) -->
@@ -147,7 +147,7 @@
       checkoutSection.classList.remove('hidden')
 
       const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
-      document.getElementById('cart-total').textContent = '$' + total.toFixed(2)
+      document.getElementById('cart-total').textContent = 'Nu. ' + total.toFixed(2)
 
       container.innerHTML = cart.map((item, index) => `
         <div class="flex gap-3 bg-white p-4 rounded-xl border border-cream-100">
@@ -158,9 +158,9 @@
           <div class="flex-1 min-w-0">
             <div class="flex justify-between items-start mb-1">
               <h3 class="font-bold text-espresso-900 truncate">${item.name}</h3>
-              <span class="font-bold text-orange-600">$${(item.price * item.quantity).toFixed(2)}</span>
+              <span class="font-bold text-orange-600">Nu. ${(item.price * item.quantity).toFixed(2)}</span>
             </div>
-            <p class="text-cream-500 text-xs mb-2">$${item.price} each</p>
+            <p class="text-cream-500 text-xs mb-2">Nu. ${item.price} each</p>
             <div class="flex items-center gap-2">
               <button onclick="updateQty(${index}, -1)" class="w-8 h-8 border border-cream-200 rounded-lg hover:bg-cream-50 flex items-center justify-center font-bold text-cream-600">-</button>
               <span class="w-8 text-center font-medium">${item.quantity}</span>
@@ -258,8 +258,8 @@
           customerId = newCustomer.id
         }
 
-        // 2. Create order
-        const { data: order } = await supabaseClient.from('orders').insert({
+        // 2. Create order — WITH ERROR HANDLING
+        const { data: order, error: orderError } = await supabaseClient.from('orders').insert({
           outlet_id: outletId,
           customer_id: customerId,
           customer_name: name,
@@ -269,6 +269,17 @@
           status: 'pending',
           special_instructions: notes || null
         }).select().single()
+
+        console.log('Order insert response:', { order, orderError })
+
+        if (orderError) {
+          console.error('Order insert ERROR:', orderError)
+          throw new Error(`Order failed: ${orderError.message}`)
+        }
+
+        if (!order) {
+          throw new Error('Order insert returned no data. Check RLS policies or database constraints.')
+        }
 
         // 3. Create order items
         const orderItems = cart.map(i => ({
