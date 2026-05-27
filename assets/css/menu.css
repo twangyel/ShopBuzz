@@ -1,12 +1,14 @@
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  background-color: #FDFCF8;
+  background-color: #FAF7F0;
+  color: #2A1B14;
 }
 
 .font-display {
   font-family: 'Playfair Display', Georgia, serif;
 }
 
+/* Loader */
 #loader {
   position: fixed;
   inset: 0;
@@ -25,21 +27,66 @@ body {
   pointer-events: none;
 }
 
+.loader-logo {
+  width: 80px;
+  height: 80px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+}
+
+.loader-bar {
+  width: 120px;
+  height: 3px;
+  background: #EDE5D3;
+  border-radius: 3px;
+  margin-top: 24px;
+  overflow: hidden;
+}
+
+.loader-bar::after {
+  content: '';
+  display: block;
+  width: 40%;
+  height: 100%;
+  background: #C4A77D;
+  border-radius: 3px;
+  animation: loadSlide 1s ease-in-out infinite;
+}
+
+@keyframes loadSlide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+
+.loader-text {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #8B7348;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
 /* Toast */
 #toast {
   position: fixed;
-  bottom: 20px;
+  bottom: 28px;
   left: 50%;
-  transform: translateX(-50%) translateY(100px);
-  background: #1A130C;
+  transform: translateX(-50%) translateY(120px);
+  background: #2A1B14;
   color: #FAF7F0;
-  padding: 12px 24px;
-  border-radius: 12px;
+  padding: 14px 28px;
+  border-radius: 16px;
   font-size: 14px;
   font-weight: 500;
   opacity: 0;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 100;
+  border: 1px solid rgba(196, 167, 125, 0.2);
+  box-shadow: 0 20px 40px -10px rgba(42, 27, 20, 0.3);
 }
 
 #toast.show {
@@ -55,18 +102,81 @@ body {
   overflow: hidden;
 }
 
-/* Smooth active state for buttons */
+/* Active press state */
 button:active {
-  transform: scale(0.98);
+  transform: scale(0.96);
 }
 
-/* Select styling */
+/* Select dropdown arrow */
 select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B6B4A' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B7348' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 4px center;
-  padding-right: 18px;
+  background-position: right 8px center;
+  padding-right: 22px;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+}
+
+/* Search input focus ring color */
+input:focus {
+  --tw-ring-color: rgba(196, 167, 125, 0.4);
+}
+
+/* Custom scrollbar — matches index.css exactly */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FAF7F0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C4A77D;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B08968;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Card hover lift */
+.group:hover {
+  transform: translateY(-2px);
+}
+
+/* Image loading placeholder shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+img {
+  background: linear-gradient(90deg, #EDE5D3 25%, #F7F1E8 50%, #EDE5D3 75%);
+  background-size: 200% 100%;
+}
+
+/* Fade in animation */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.8s ease-out forwards;
+}
+
+/* Image hover zoom */
+.img-zoom {
+  transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.img-zoom:hover {
+  transform: scale(1.05);
 }

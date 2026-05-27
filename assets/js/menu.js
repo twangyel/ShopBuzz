@@ -6,9 +6,12 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 const outletId = localStorage.getItem('selected_outlet')
 if (!outletId) { window.location.href = 'order.html' }
 
+// ===== GLOBAL DATA =====
+let menuData = { categories: [], items: [] }
+
 // ===== LOADING =====
 window.addEventListener('load', () => {
-  setTimeout(() => document.getElementById('loader').classList.add('hidden'), 600)
+  setTimeout(() => document.getElementById('loader').classList.add('hidden'), 800)
 })
 
 // ===== CART FUNCTIONS =====
@@ -36,31 +39,72 @@ function updateBadge() {
   }
 }
 
-// ===== ADD TO CART =====
-window.addToCart = function(btn) {
-  const item = {
-    id: btn.dataset.id,
-    name: btn.dataset.name,
-    price: parseFloat(btn.dataset.price),
-    image_url: btn.dataset.image || ''
+function getQty(id) {
+  const cart = getCart()
+  const item = cart.find(i => i.id === id)
+  return item ? item.quantity : 0
+}
+
+// ===== QUANTITY CONTROLS =====
+function renderQtyControls(id, qty) {
+  if (qty === 0) {
+    return `
+      <button type="button" onclick="changeQty('${id}', 1)"
+        class="bg-cream-900 text-cream-50 px-5 py-2 rounded-xl text-xs font-bold hover:bg-cream-800 active:scale-95 transition shrink-0 whitespace-nowrap shadow-md shadow-cream-900/10">
+        Add
+      </button>
+    `
+  }
+  return `
+    <div class="flex items-center gap-1 bg-cream-100 rounded-xl p-1 shrink-0 border border-cream-200">
+      <button type="button" onclick="changeQty('${id}', -1)"
+        class="w-8 h-8 flex items-center justify-center bg-white rounded-lg shadow-sm text-cream-900 font-bold hover:bg-cream-50 active:scale-95 transition text-sm">−</button>
+      <span class="w-6 text-center text-sm font-bold text-cream-900" id="qty-${id}">${qty}</span>
+      <button type="button" onclick="changeQty('${id}', 1)"
+        class="w-8 h-8 flex items-center justify-center bg-white rounded-lg shadow-sm text-cream-900 font-bold hover:bg-cream-50 active:scale-95 transition text-sm">+</button>
+    </div>
+  `
+}
+
+window.changeQty = function(id, delta) {
+  let cart = getCart()
+  const existingIdx = cart.findIndex(i => i.id === id)
+  const existing = existingIdx >= 0 ? cart[existingIdx] : null
+
+  if (delta > 0 && !existing) {
+    const item = menuData.items.find(i => i.id === id)
+    if (!item) return
+    cart.push({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      image_url: item.image_url || '',
+      quantity: 1
+    })
+    showToast(`${item.name} added`)
+  } else if (existing) {
+    existing.quantity += delta
+    if (existing.quantity <= 0) {
+      cart.splice(existingIdx, 1)
+      showToast('Removed from cart')
+    } else {
+      showToast(delta > 0 ? 'Quantity increased' : 'Quantity decreased')
+    }
   }
 
-  let cart = getCart()
-  const existing = cart.find(i => i.id === item.id)
-  if (existing) {
-    existing.quantity += 1
-  } else {
-    cart.push({ ...item, quantity: 1 })
-  }
   saveCart(cart)
-  showToast(`${item.name} added`)
+
+  const controls = document.querySelector(`.qty-controls[data-item-id="${id}"]`)
+  if (controls) {
+    controls.innerHTML = renderQtyControls(id, getQty(id))
+  }
 }
 
 function showToast(msg) {
   const toast = document.getElementById('toast')
   toast.textContent = msg
   toast.classList.add('show')
-  setTimeout(() => toast.classList.remove('show'), 2000)
+  setTimeout(() => toast.classList.remove('show'), 2200)
 }
 
 // ===== OUTLET SWITCHER =====
@@ -91,9 +135,7 @@ async function loadOutlets() {
 
     const cart = getCart()
     if (cart.length > 0) {
-      const confirmed = confirm(
-        'Switching outlets will clear your current cart. Continue?'
-      )
+      const confirmed = confirm('Switching outlets will clear your current cart. Continue?')
       if (!confirmed) {
         select.value = outletId
         return
@@ -106,7 +148,7 @@ async function loadOutlets() {
   })
 }
 
-// ===== LOAD MENU =====
+// ===== LOAD & RENDER MENU =====
 async function loadMenu() {
   const { data: categories } = await supabaseClient
     .from('categories').select('*').order('sort_order')
@@ -120,43 +162,82 @@ async function loadMenu() {
 
   if (!items || items.length === 0) {
     document.getElementById('menu-container').innerHTML =
-      '<div class="text-center py-20"><p class="text-cream-500 text-lg">No items available at this outlet.</p><p class="text-sm text-cream-400 mt-2">Add items in Supabase database.</p></div>'
+      `<div class="text-center py-24">
+        <div class="w-16 h-16 rounded-2xl bg-cream-100 border border-cream-200 flex items-center justify-center mx-auto mb-4 text-2xl">🍽️</div>
+        <p class="text-cream-700 text-lg font-medium">No items available at this outlet.</p>
+        <p class="text-sm text-cream-500 mt-2">Add items in the Supabase database.</p>
+      </div>`
     return
   }
 
+  menuData.categories = categories || []
+  menuData.items = items
+
+  renderMenu(items)
+
+  const searchInput = document.getElementById('search-input')
+  searchInput.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase().trim()
+    if (!term) {
+      renderMenu(menuData.items)
+      return
+    }
+    const filtered = menuData.items.filter(i =>
+      (i.name && i.name.toLowerCase().includes(term)) ||
+      (i.description && i.description.toLowerCase().includes(term))
+    )
+    renderMenu(filtered)
+  })
+}
+
+function renderMenu(items) {
+  const container = document.getElementById('menu-container')
+  const noResults = document.getElementById('no-results')
+
+  if (items.length === 0) {
+    container.innerHTML = ''
+    noResults.classList.remove('hidden')
+    return
+  }
+  noResults.classList.add('hidden')
+
+  const cats = menuData.categories
   let html = ''
-  categories.forEach(cat => {
+
+  cats.forEach(cat => {
     const catItems = items.filter(i => i.category_id === cat.id)
     if (catItems.length === 0) return
 
     html += `
-      <section class="mb-8">
-        <h2 class="font-display text-lg font-bold text-espresso-900 mb-3 pb-2 border-b border-cream-200">${cat.name}</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <section class="mb-10 animate-fade-up">
+        <div class="flex items-center gap-3 mb-5 pb-3 border-b border-cream-200">
+          <div class="w-8 h-8 rounded-lg bg-cream-100 flex items-center justify-center">
+            <span class="text-cream-500 text-sm">✦</span>
+          </div>
+          <h2 class="font-display text-xl font-bold text-cream-900 tracking-wide">${cat.name}</h2>
+          <div class="flex-1 h-px bg-cream-200 ml-2"></div>
+          <span class="text-xs text-cream-500 font-medium">${catItems.length} items</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           ${catItems.map(item => `
-            <div class="bg-white rounded-xl shadow-sm border border-cream-100 overflow-hidden flex flex-row sm:flex-col">
+            <div class="bg-white rounded-2xl border border-cream-100 overflow-hidden flex items-center gap-3 p-3 hover:border-cream-300 transition-all duration-300 hover:shadow-lg hover:shadow-cream-900/5 hover:-translate-y-0.5 group" data-item-id="${item.id}">
               ${item.image_url ?
-                `<div class="w-24 h-24 sm:w-full sm:h-36 shrink-0 bg-gray-100"><img src="${item.image_url}" alt="${item.name}" class="w-full h-full object-cover" loading="lazy"></div>` :
-                `<div class="w-24 h-24 sm:w-full sm:h-36 shrink-0 bg-cream-100 flex items-center justify-center text-cream-400 text-2xl">🍽️</div>`
+                `<div class="w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-xl bg-cream-50 overflow-hidden relative">
+                  <img src="${item.image_url}" alt="${item.name}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy">
+                  <div class="absolute inset-0 ring-1 ring-inset ring-cream-200/50 rounded-xl"></div>
+                </div>` :
+                `<div class="w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-xl bg-cream-100 flex items-center justify-center text-cream-400 text-2xl border border-cream-200">☕</div>`
               }
-              <div class="p-3 flex-1 flex flex-col min-w-0">
-                <div class="flex justify-between items-start gap-2 mb-0.5">
-                  <h3 class="font-semibold text-espresso-900 text-sm truncate">${item.name}</h3>
-                  <span class="font-bold text-orange-600 text-sm shrink-0">Nu ${item.price}</span>
+              <div class="flex-1 min-w-0 py-1">
+                <div class="flex justify-between items-start gap-2 mb-1">
+                  <h3 class="font-semibold text-cream-900 text-sm leading-tight truncate group-hover:text-cream-700 transition">${item.name}</h3>
+                  <span class="font-bold text-cream-600 text-sm shrink-0">Nu ${item.price}</span>
                 </div>
-                <p class="text-cream-600 text-xs mb-2 line-clamp-2 flex-1">${item.description || ''}</p>
-                <button type="button"
-                  data-id="${item.id}"
-                  data-name="${item.name.replace(/"/g, '&quot;')}"
-                  data-price="${item.price}"
-                  data-image="${item.image_url || ''}"
-                  onclick="addToCart(this)"
-                  class="w-full bg-espresso-900 text-white py-2 rounded-lg hover:bg-espresso-800 active:scale-[0.98] transition text-xs font-semibold cursor-pointer flex items-center justify-center gap-1.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                  </svg>
-                  Add
-                </button>
+                <p class="text-cream-500 text-xs line-clamp-2 leading-relaxed mb-3">${item.description || ''}</p>
+                <div class="qty-controls shrink-0" data-item-id="${item.id}">
+                  ${renderQtyControls(item.id, getQty(item.id))}
+                </div>
               </div>
             </div>
           `).join('')}
@@ -165,7 +246,7 @@ async function loadMenu() {
     `
   })
 
-  document.getElementById('menu-container').innerHTML = html
+  container.innerHTML = html
 }
 
 updateBadge()
