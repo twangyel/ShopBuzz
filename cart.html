@@ -19,13 +19,41 @@
     }
     #loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
     
-    /* Birthday section animation */
-    #birthday-section {
+    #birthday-section, #address-section {
       max-height: 0; overflow: hidden; opacity: 0;
       transition: max-height 0.5s ease, opacity 0.4s ease;
     }
-    #birthday-section.show {
+    #birthday-section.show, #address-section.show {
       max-height: 300px; opacity: 1;
+    }
+
+    .radio-card:has(input:checked) {
+      border-color: #ea580c;
+      background-color: #fff7ed;
+    }
+
+    /* Payment Modal */
+    #payment-modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    #payment-modal.active {
+      opacity: 1; visibility: visible;
+    }
+    #payment-modal .modal-content {
+      background: white; border-radius: 1rem; width: 100%; max-width: 420px;
+      max-height: 90vh; overflow-y: auto; margin: 1rem;
+      transform: scale(0.95); transition: transform 0.3s ease;
+    }
+    #payment-modal.active .modal-content {
+      transform: scale(1);
+    }
+    .qr-placeholder {
+      width: 100%; aspect-ratio: 1; background: #f5f5f4;
+      border: 2px dashed #d6d3d1; border-radius: 0.75rem;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #78716c; font-size: 0.75rem; text-align: center; padding: 0.5rem;
     }
   </style>
 </head>
@@ -89,13 +117,55 @@
           <input type="email" id="customer-email" class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none" placeholder="tashi@example.com">
         </div>
 
-        <!-- Birthday Section (hidden by default, shown for new customers) -->
+        <!-- Birthday Section -->
         <div id="birthday-section">
           <div class="bg-cream-100 p-4 rounded-lg border border-cream-200">
             <p class="text-sm text-espresso-700 mb-3">🎂 <strong>First time ordering?</strong> Add your birthday and get a free treat on your special day!</p>
             <label class="block text-sm font-medium text-espresso-700 mb-1">Birthday</label>
             <input type="date" id="customer-birthday" class="w-full border border-cream-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cream-500 outline-none">
           </div>
+        </div>
+
+        <!-- Delivery Type -->
+        <div class="pt-2">
+          <label class="block text-sm font-medium text-espresso-700 mb-2">Order Type *</label>
+          <div class="flex gap-3">
+            <label class="radio-card flex-1 border border-cream-300 rounded-lg px-4 py-3 cursor-pointer hover:bg-cream-50 transition">
+              <input type="radio" name="delivery-type" value="walk-in" checked class="sr-only">
+              <div class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded-full border-2 border-cream-400 flex items-center justify-center">
+                  <span class="w-2 h-2 rounded-full bg-orange-600 opacity-0 check-dot"></span>
+                </span>
+                <span class="text-sm font-medium">Walk In</span>
+              </div>
+            </label>
+            <label class="radio-card flex-1 border border-cream-300 rounded-lg px-4 py-3 cursor-pointer hover:bg-cream-50 transition">
+              <input type="radio" name="delivery-type" value="delivery" class="sr-only">
+              <div class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded-full border-2 border-cream-400 flex items-center justify-center">
+                  <span class="w-2 h-2 rounded-full bg-orange-600 opacity-0 check-dot"></span>
+                </span>
+                <span class="text-sm font-medium">Delivery</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div id="address-section">
+          <label class="block text-sm font-medium text-espresso-700 mb-1">Delivery Address *</label>
+          <textarea id="delivery-address" rows="2" class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none" placeholder="Changzamtog, Thimphu"></textarea>
+        </div>
+
+        <!-- Payment Method -->
+        <div>
+          <label class="block text-sm font-medium text-espresso-700 mb-1">Payment Method *</label>
+          <select id="payment-method" required class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none bg-white">
+            <option value="" disabled selected>Select payment method</option>
+            <option value="half-payment">Half Payment</option>
+            <option value="full-payment">Full Payment</option>
+            <option value="cash-on-delivery">Cash on Delivery</option>
+          </select>
         </div>
 
         <div>
@@ -113,6 +183,108 @@
 
   </main>
 
+  <!-- Payment Confirmation Modal -->
+  <div id="payment-modal">
+    <div class="modal-content shadow-2xl">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold text-espresso-900">Payment Confirmation</h2>
+          <button onclick="closePaymentModal()" class="text-cream-500 hover:text-espresso-900 text-2xl leading-none">&times;</button>
+        </div>
+
+        <!-- Breakdown -->
+        <div class="bg-cream-50 rounded-lg p-4 mb-5 space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-espresso-600">Subtotal</span>
+            <span class="font-medium" id="modal-subtotal">Nu. 0.00</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-espresso-600">Service Charge (5%)</span>
+            <span class="font-medium" id="modal-service">Nu. 0.00</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-espresso-600">GST (0%)</span>
+            <span class="font-medium" id="modal-gst">Nu. 0.00</span>
+          </div>
+          <div class="flex justify-between text-green-700" id="modal-discount-row">
+            <span>Discount</span>
+            <span class="font-medium" id="modal-discount">-Nu. 0.00</span>
+          </div>
+          <div class="border-t border-cream-200 pt-2 flex justify-between font-bold text-base">
+            <span>Grand Total</span>
+            <span id="modal-total">Nu. 0.00</span>
+          </div>
+          <div id="modal-half-row" class="hidden border-t border-dashed border-orange-300 pt-2 mt-2">
+            <div class="flex justify-between text-orange-700 font-bold">
+              <span>Pay Now (50%)</span>
+              <span id="modal-pay-now">Nu. 0.00</span>
+            </div>
+            <div class="flex justify-between text-cream-500 text-xs mt-1">
+              <span>Balance due on pickup/delivery</span>
+              <span id="modal-balance">Nu. 0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bank Details -->
+        <div class="bg-stone-50 rounded-lg p-4 mb-5 border border-stone-200">
+          <h3 class="font-bold text-espresso-900 text-sm mb-2">Bank Transfer Details</h3>
+          <div class="space-y-1 text-sm text-espresso-700">
+            <p><span class="text-cream-500">Account Name:</span> Your Cafe Pvt. Ltd.</p>
+            <p><span class="text-cream-500">Account No:</span> 2000 1234 5678</p>
+            <p><span class="text-cream-500">Bank:</span> Bank of Bhutan</p>
+            <p><span class="text-cream-500">Branch:</span> Thimphu Main</p>
+          </div>
+        </div>
+
+        <!-- QR Codes -->
+        <div class="mb-5">
+          <h3 class="font-bold text-espresso-900 text-sm mb-3">Scan to Pay</h3>
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <div class="qr-placeholder">
+                <span class="text-2xl mb-1">📱</span>
+                <span class="font-medium">MPay</span>
+                <span class="text-xs text-cream-500 mt-1">Replace with QR</span>
+              </div>
+            </div>
+            <div>
+              <div class="qr-placeholder">
+                <span class="text-2xl mb-1">📱</span>
+                <span class="font-medium">MyPay</span>
+                <span class="text-xs text-cream-500 mt-1">Replace with QR</span>
+              </div>
+            </div>
+            <div>
+              <div class="qr-placeholder">
+                <span class="text-2xl mb-1">🏦</span>
+                <span class="font-medium">BoB</span>
+                <span class="text-xs text-cream-500 mt-1">Replace with QR</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-cream-500 text-center mt-2">Upload your payment screenshot on the next step</p>
+        </div>
+
+        <!-- Confirmation Checkbox -->
+        <label class="flex items-start gap-3 mb-5 cursor-pointer">
+          <input type="checkbox" id="payment-confirm-check" class="mt-1 w-4 h-4 text-orange-600 rounded border-cream-300 focus:ring-orange-500">
+          <span class="text-sm text-espresso-700">I confirm that I have completed the payment via bank transfer or scanned the QR code above.</span>
+        </label>
+
+        <!-- Actions -->
+        <div class="flex gap-3">
+          <button onclick="closePaymentModal()" class="flex-1 py-3 rounded-xl border border-cream-300 font-medium text-espresso-700 hover:bg-cream-50 transition">
+            Cancel
+          </button>
+          <button onclick="confirmPaymentAndSubmit()" class="flex-1 py-3 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700 transition shadow-lg">
+            Confirm & Place Order
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = 'https://mzkbjfcdagomqirfsjld.supabase.co'
@@ -122,7 +294,6 @@
     const outletId = localStorage.getItem('selected_outlet')
     if (!outletId) { window.location.href = 'order.html' }
 
-    // Loading
     window.addEventListener('load', () => {
       setTimeout(() => document.getElementById('loader').classList.add('hidden'), 400)
     })
@@ -193,61 +364,152 @@
       renderCart()
     }
 
-    // Check if customer exists by phone
     async function checkCustomer(phone) {
-      const { data } = await supabaseClient
-        .from('customers')
-        .select('*')
-        .eq('phone', phone)
-        .single()
+      const { data } = await supabaseClient.from('customers').select('*').eq('phone', phone).single()
       return data
     }
 
-    // Show/hide birthday based on phone input
     let customerChecked = false
     document.getElementById('customer-phone').addEventListener('blur', async function() {
       const phone = this.value.trim()
       if (!phone || customerChecked) return
-      
       const existing = await checkCustomer(phone)
-      const birthdaySection = document.getElementById('birthday-section')
-      
-      if (!existing) {
-        // New customer - show birthday field
-        birthdaySection.classList.add('show')
-      } else {
-        // Returning customer - hide birthday, maybe show welcome
-        birthdaySection.classList.remove('show')
-      }
+      document.getElementById('birthday-section').classList.toggle('show', !existing)
       customerChecked = true
     })
 
-    // Place Order
+    // Delivery type toggle
+    const deliveryRadios = document.querySelectorAll('input[name="delivery-type"]')
+    const addressSection = document.getElementById('address-section')
+    const addressInput = document.getElementById('delivery-address')
+
+    deliveryRadios.forEach(radio => {
+      radio.addEventListener('change', function() {
+        document.querySelectorAll('.check-dot').forEach(dot => dot.style.opacity = '0')
+        this.closest('.radio-card').querySelector('.check-dot').style.opacity = '1'
+        if (this.value === 'delivery') {
+          addressSection.classList.add('show')
+          addressInput.required = true
+        } else {
+          addressSection.classList.remove('show')
+          addressInput.required = false
+          addressInput.value = ''
+        }
+      })
+    })
+    document.querySelector('input[name="delivery-type"]:checked').closest('.radio-card').querySelector('.check-dot').style.opacity = '1'
+
+    // Payment method toggle
+    const paymentMethodSelect = document.getElementById('payment-method')
+    const placeOrderBtn = document.getElementById('place-order-btn')
+
+    paymentMethodSelect.addEventListener('change', function() {
+      const method = this.value
+      if (method === 'half-payment' || method === 'full-payment') {
+        placeOrderBtn.textContent = 'Payment Confirmation'
+      } else {
+        placeOrderBtn.textContent = 'Place Order'
+      }
+    })
+
+    // Modal logic
+    const paymentModal = document.getElementById('payment-modal')
+    let pendingOrderData = null
+
+    function openPaymentModal() {
+      const cart = getCart()
+      const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
+      const serviceCharge = subtotal * 0.05
+      const gst = 0
+      const discount = 0
+      const grandTotal = subtotal + serviceCharge + gst - discount
+      const method = paymentMethodSelect.value
+
+      document.getElementById('modal-subtotal').textContent = 'Nu. ' + subtotal.toFixed(2)
+      document.getElementById('modal-service').textContent = 'Nu. ' + serviceCharge.toFixed(2)
+      document.getElementById('modal-gst').textContent = 'Nu. ' + gst.toFixed(2)
+      document.getElementById('modal-discount').textContent = '-Nu. ' + discount.toFixed(2)
+      document.getElementById('modal-total').textContent = 'Nu. ' + grandTotal.toFixed(2)
+
+      const halfRow = document.getElementById('modal-half-row')
+      if (method === 'half-payment') {
+        halfRow.classList.remove('hidden')
+        document.getElementById('modal-pay-now').textContent = 'Nu. ' + (grandTotal / 2).toFixed(2)
+        document.getElementById('modal-balance').textContent = 'Nu. ' + (grandTotal / 2).toFixed(2)
+      } else {
+        halfRow.classList.add('hidden')
+      }
+
+      paymentModal.classList.add('active')
+    }
+
+    function closePaymentModal() {
+      paymentModal.classList.remove('active')
+      document.getElementById('payment-confirm-check').checked = false
+    }
+
+    async function confirmPaymentAndSubmit() {
+      if (!document.getElementById('payment-confirm-check').checked) {
+        alert('Please confirm that you have completed the payment.')
+        return
+      }
+      closePaymentModal()
+      await submitOrder()
+    }
+
+    // Form submission handler
     document.getElementById('checkout-form').addEventListener('submit', async function(e) {
       e.preventDefault()
-      
       const cart = getCart()
       if (cart.length === 0) return alert('Cart is empty!')
 
+      const method = paymentMethodSelect.value
+      if (!method) {
+        alert('Please select a payment method.')
+        return
+      }
+
+      if (method === 'half-payment' || method === 'full-payment') {
+        openPaymentModal()
+      } else {
+        await submitOrder()
+      }
+    })
+
+    // Actual order submission
+    async function submitOrder() {
       const btn = document.getElementById('place-order-btn')
+      const originalText = btn.textContent
       btn.disabled = true
       btn.textContent = 'Placing Order...'
 
+      const cart = getCart()
       const name = document.getElementById('customer-name').value.trim()
       const phone = document.getElementById('customer-phone').value.trim()
       const email = document.getElementById('customer-email').value.trim()
       const birthday = document.getElementById('customer-birthday').value
       const notes = document.getElementById('special-notes').value.trim()
-      const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
+      const deliveryType = document.querySelector('input[name="delivery-type"]:checked').value
+      const address = document.getElementById('delivery-address').value.trim()
+      const paymentMethod = document.getElementById('payment-method').value
+
+      const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
+      const serviceCharge = subtotal * 0.05
+      const total = subtotal + serviceCharge
+
+      if (deliveryType === 'delivery' && !address) {
+        alert('Please enter a delivery address.')
+        btn.disabled = false
+        btn.textContent = originalText
+        return
+      }
 
       try {
-        // 1. Get or create customer
         let customerId = null
         const existingCustomer = await checkCustomer(phone)
 
         if (existingCustomer) {
           customerId = existingCustomer.id
-          // Update order count
           await supabaseClient.from('customers').update({ 
             total_orders: existingCustomer.total_orders + 1 
           }).eq('id', customerId)
@@ -258,7 +520,6 @@
           customerId = newCustomer.id
         }
 
-        // 2. Create order — WITH ERROR HANDLING
         const { data: order, error: orderError } = await supabaseClient.from('orders').insert({
           outlet_id: outletId,
           customer_id: customerId,
@@ -267,21 +528,14 @@
           customer_email: email || null,
           total_amount: total,
           status: 'pending',
-          special_instructions: notes || null
+          special_instructions: notes || null,
+          delivery_type: deliveryType,
+          address: address || null
         }).select().single()
 
-        console.log('Order insert response:', { order, orderError })
+        if (orderError) throw new Error(`Order failed: ${orderError.message}`)
+        if (!order) throw new Error('Order insert returned no data.')
 
-        if (orderError) {
-          console.error('Order insert ERROR:', orderError)
-          throw new Error(`Order failed: ${orderError.message}`)
-        }
-
-        if (!order) {
-          throw new Error('Order insert returned no data. Check RLS policies or database constraints.')
-        }
-
-        // 3. Create order items
         const orderItems = cart.map(i => ({
           order_id: order.id,
           menu_item_id: i.id,
@@ -291,15 +545,13 @@
         }))
         await supabaseClient.from('order_items').insert(orderItems)
 
-        // 4. Create payment record
         await supabaseClient.from('payments').insert({
           order_id: order.id,
-          amount: total,
-          method: 'cash',
+          amount: paymentMethod === 'half-payment' ? total / 2 : total,
+          method: paymentMethod,
           status: 'pending'
         })
 
-        // 5. Clear cart and redirect
         localStorage.removeItem('cart')
         window.location.href = `confirmation.html?order=${order.order_number || order.id}`
 
@@ -307,13 +559,12 @@
         console.error(err)
         alert('Something went wrong. Please try again.')
         btn.disabled = false
-        btn.textContent = 'Place Order'
+        btn.textContent = originalText
       }
-    })
+    }
 
     renderCart()
 
-    // PWA
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js')
     }
