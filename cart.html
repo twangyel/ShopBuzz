@@ -32,7 +32,6 @@
       background-color: #fff7ed;
     }
 
-    /* Payment Modal */
     #payment-modal {
       position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50;
       display: flex; align-items: center; justify-content: center;
@@ -226,44 +225,70 @@
           </div>
         </div>
 
-        <!-- Bank Details -->
-        <div class="bg-stone-50 rounded-lg p-4 mb-5 border border-stone-200">
-          <h3 class="font-bold text-espresso-900 text-sm mb-2">Bank Transfer Details</h3>
-          <div class="space-y-1 text-sm text-espresso-700">
-            <p><span class="text-cream-500">Account Name:</span> Your Cafe Pvt. Ltd.</p>
-            <p><span class="text-cream-500">Account No:</span> 2000 1234 5678</p>
-            <p><span class="text-cream-500">Bank:</span> Bank of Bhutan</p>
-            <p><span class="text-cream-500">Branch:</span> Thimphu Main</p>
-          </div>
-        </div>
-
-        <!-- QR Codes -->
+        <!-- QR Codes with Bank Details -->
         <div class="mb-5">
           <h3 class="font-bold text-espresso-900 text-sm mb-3">Scan to Pay</h3>
           <div class="grid grid-cols-3 gap-3">
-            <div>
-              <div class="qr-placeholder">
+            <!-- MPay -->
+            <div class="text-center">
+              <div class="qr-placeholder mb-2">
                 <span class="text-2xl mb-1">📱</span>
                 <span class="font-medium">MPay</span>
                 <span class="text-xs text-cream-500 mt-1">Replace with QR</span>
               </div>
+              <div class="text-xs text-left space-y-0.5">
+                <p><span class="text-cream-500">Account:</span> Your Cafe</p>
+                <p><span class="text-cream-500">Bank:</span> MPay</p>
+              </div>
             </div>
-            <div>
-              <div class="qr-placeholder">
+            <!-- MyPay -->
+            <div class="text-center">
+              <div class="qr-placeholder mb-2">
                 <span class="text-2xl mb-1">📱</span>
                 <span class="font-medium">MyPay</span>
                 <span class="text-xs text-cream-500 mt-1">Replace with QR</span>
               </div>
+              <div class="text-xs text-left space-y-0.5">
+                <p><span class="text-cream-500">Account:</span> Your Cafe</p>
+                <p><span class="text-cream-500">Bank:</span> MyPay</p>
+              </div>
             </div>
-            <div>
-              <div class="qr-placeholder">
+            <!-- BoB -->
+            <div class="text-center">
+              <div class="qr-placeholder mb-2">
                 <span class="text-2xl mb-1">🏦</span>
                 <span class="font-medium">BoB</span>
                 <span class="text-xs text-cream-500 mt-1">Replace with QR</span>
               </div>
+              <div class="text-xs text-left space-y-0.5">
+                <p><span class="text-cream-500">Account:</span> 200012345678</p>
+                <p><span class="text-cream-500">Bank:</span> Bank of Bhutan</p>
+              </div>
             </div>
           </div>
-          <p class="text-xs text-cream-500 text-center mt-2">Upload your payment screenshot on the next step</p>
+        </div>
+
+        <!-- Screenshot Upload -->
+        <div class="mb-5">
+          <label class="block text-sm font-medium text-espresso-700 mb-2">Payment Screenshot *</label>
+          
+          <!-- Preview with Remove Button -->
+          <div id="screenshot-preview-container" class="hidden mb-3 relative text-center">
+            <img id="screenshot-img" class="max-h-40 mx-auto rounded-lg border border-cream-200">
+            <button type="button" onclick="removeScreenshot()" class="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs shadow-md border-2 border-white transition">
+              ✕
+            </button>
+          </div>
+
+          <!-- Upload Area -->
+          <div id="screenshot-upload-area" class="border-2 border-dashed border-cream-300 rounded-lg p-4 text-center hover:bg-cream-50 transition cursor-pointer" onclick="document.getElementById('payment-screenshot').click()">
+            <input type="file" id="payment-screenshot" accept="image/*" class="hidden" onchange="handleScreenshotPreview(this)">
+            <div id="screenshot-placeholder">
+              <span class="text-2xl">📷</span>
+              <p class="text-sm text-cream-500 mt-1">Tap to upload payment screenshot</p>
+              <p class="text-xs text-cream-400">JPG, PNG up to 5MB</p>
+            </div>
+          </div>
         </div>
 
         <!-- Confirmation Checkbox -->
@@ -412,40 +437,74 @@
       }
     })
 
+    // Screenshot preview
+    function handleScreenshotPreview(input) {
+      const file = input.files[0]
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          alert('File size must be less than 5MB')
+          input.value = ''
+          return
+        }
+        const reader = new FileReader()
+        reader.onload = function(e) {
+          document.getElementById('screenshot-img').src = e.target.result
+          document.getElementById('screenshot-preview-container').classList.remove('hidden')
+          document.getElementById('screenshot-upload-area').classList.add('hidden')
+        }
+        reader.readAsDataURL(file)
+      }
+    }
+
+    // Remove screenshot
+    function removeScreenshot() {
+      const input = document.getElementById('payment-screenshot')
+      input.value = ''
+      document.getElementById('screenshot-preview-container').classList.add('hidden')
+      document.getElementById('screenshot-upload-area').classList.remove('hidden')
+      paymentScreenshotUrl = null
+    }
+
     // Modal logic
     const paymentModal = document.getElementById('payment-modal')
-    let pendingOrderData = null
+    let paymentScreenshotUrl = null
 
-    function openPaymentModal() {
-      const cart = getCart()
-      const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
-      const serviceCharge = subtotal * 0.05
-      const gst = 0
-      const discount = 0
-      const grandTotal = subtotal + serviceCharge + gst - discount
-      const method = paymentMethodSelect.value
+ function openPaymentModal() {
+  const cart = getCart()
+  const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
+  const serviceCharge = subtotal * 0.05
+  const gst = 0
+  const discount = 0
+  const grandTotal = subtotal + serviceCharge + gst - discount
+  const method = paymentMethodSelect.value
 
-      document.getElementById('modal-subtotal').textContent = 'Nu. ' + subtotal.toFixed(2)
-      document.getElementById('modal-service').textContent = 'Nu. ' + serviceCharge.toFixed(2)
-      document.getElementById('modal-gst').textContent = 'Nu. ' + gst.toFixed(2)
-      document.getElementById('modal-discount').textContent = '-Nu. ' + discount.toFixed(2)
-      document.getElementById('modal-total').textContent = 'Nu. ' + grandTotal.toFixed(2)
+  document.getElementById('modal-subtotal').textContent = 'Nu. ' + subtotal.toFixed(2)
+  document.getElementById('modal-service').textContent = 'Nu. ' + serviceCharge.toFixed(2)
+  document.getElementById('modal-gst').textContent = 'Nu. ' + gst.toFixed(2)
+  document.getElementById('modal-discount').textContent = '-Nu. ' + discount.toFixed(2)
+  document.getElementById('modal-total').textContent = 'Nu. ' + grandTotal.toFixed(2)
 
-      const halfRow = document.getElementById('modal-half-row')
-      if (method === 'half-payment') {
-        halfRow.classList.remove('hidden')
-        document.getElementById('modal-pay-now').textContent = 'Nu. ' + (grandTotal / 2).toFixed(2)
-        document.getElementById('modal-balance').textContent = 'Nu. ' + (grandTotal / 2).toFixed(2)
-      } else {
-        halfRow.classList.add('hidden')
-      }
+  const halfRow = document.getElementById('modal-half-row')
+  if (method === 'half-payment') {
+    halfRow.classList.remove('hidden')
+    document.getElementById('modal-pay-now').textContent = 'Nu. ' + (grandTotal / 2).toFixed(2)
+    document.getElementById('modal-balance').textContent = 'Nu. ' + (grandTotal / 2).toFixed(2)
+  } else {
+    halfRow.classList.add('hidden')
+  }
 
-      paymentModal.classList.add('active')
-    }
+  // Reset modal state
+  document.getElementById('payment-confirm-check').checked = false
+  document.getElementById('payment-screenshot').value = ''
+  document.getElementById('screenshot-preview-container').classList.add('hidden')
+  document.getElementById('screenshot-upload-area').classList.remove('hidden')
+  paymentScreenshotUrl = null
+
+  paymentModal.classList.add('active')
+}
 
     function closePaymentModal() {
       paymentModal.classList.remove('active')
-      document.getElementById('payment-confirm-check').checked = false
     }
 
     async function confirmPaymentAndSubmit() {
@@ -453,8 +512,49 @@
         alert('Please confirm that you have completed the payment.')
         return
       }
-      closePaymentModal()
-      await submitOrder()
+
+      const screenshotFile = document.getElementById('payment-screenshot').files[0]
+      if (!screenshotFile) {
+        alert('Please upload your payment screenshot.')
+        return
+      }
+
+      const fileExt = screenshotFile.name.split('.').pop()
+      const fileName = `payment-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`
+
+      try {
+        const { data: uploadData, error: uploadError } = await supabaseClient
+          .storage
+          .from('payment-screenshots')
+          .upload(fileName, screenshotFile, {
+            contentType: screenshotFile.type,
+            upsert: false
+          })
+
+        if (uploadError) {
+          console.error('Upload error details:', uploadError)
+          
+          if (uploadError.message && uploadError.message.includes('row-level security')) {
+            alert('Upload failed: Storage permissions not configured.\n\nPlease go to Supabase Dashboard → Storage → Buckets → payment-screenshots → Policies, and add an INSERT policy with definition: true\n\nOr disable RLS on the bucket for testing.')
+            return
+          }
+          
+          throw uploadError
+        }
+
+        const { data: urlData } = supabaseClient
+          .storage
+          .from('payment-screenshots')
+          .getPublicUrl(fileName)
+
+        paymentScreenshotUrl = urlData.publicUrl
+        closePaymentModal()
+        await submitOrder()
+
+      } catch (err) {
+        console.error('Screenshot upload failed:', err)
+        alert('Upload failed: ' + (err.message || 'Unknown error') + '\n\nPlease check Storage RLS policies in Supabase dashboard.')
+      }
     }
 
     // Form submission handler
@@ -472,6 +572,7 @@
       if (method === 'half-payment' || method === 'full-payment') {
         openPaymentModal()
       } else {
+        paymentScreenshotUrl = null
         await submitOrder()
       }
     })
@@ -549,7 +650,8 @@
           order_id: order.id,
           amount: paymentMethod === 'half-payment' ? total / 2 : total,
           method: paymentMethod,
-          status: 'pending'
+          status: 'pending',
+          screenshot_url: paymentScreenshotUrl || null
         })
 
         localStorage.removeItem('cart')
