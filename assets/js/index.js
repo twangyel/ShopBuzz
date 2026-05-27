@@ -43,3 +43,30 @@
     } else {
       loadOutlets()
     }
+
+       // Navbar scroll effect
+    const navbar = document.getElementById('navbar')
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        navbar.classList.add('bg-white/95', 'backdrop-blur-sm', 'shadow-sm')
+      } else {
+        navbar.classList.remove('bg-white/95', 'backdrop-blur-sm', 'shadow-sm')
+      }
+    })
+
+    // Mobile menu toggle
+    const mobileBtn = document.getElementById('mobile-menu-btn')
+    const mobileMenu = document.getElementById('mobile-menu')
+    mobileBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden')
+    })
+
+    // Sticky mobile button (show after scrolling past hero)
+    const stickyBtn = document.getElementById('sticky-order')
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > window.innerHeight * 0.8) {
+        stickyBtn.classList.add('visible')
+      } else {
+        stickyBtn.classList.remove('visible')
+      }
+    })
