@@ -55,39 +55,42 @@
 <body class="bg-cream-50 text-espresso-900 antialiased">
 
   <!-- Navigation -->
-  <nav id="navbar" class="fixed top-0 left-0 right-0 z-40 transition-all duration-500">
-    <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
-      <a href="index.html" class="font-display text-2xl md:text-3xl font-semibold text-espresso-800 tracking-tight">
-        Your Cafe
+    <!-- Navigation -->
+  <nav id="navbar" class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm shadow-sm transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <a href="index.html" class="font-display text-2xl md:text-3xl font-semibold text-espresso-900 tracking-tight">
+        ☕ Your Cafe
       </a>
-
+      
       <!-- Desktop Nav -->
       <div class="hidden md:flex items-center gap-10 text-sm font-medium tracking-wide">
-        <a href="#menu" class="text-espresso-700 hover:text-espresso-900 transition">Menu</a>
-        <a href="#about" class="text-espresso-700 hover:text-espresso-900 transition">Our Story</a>
-        <a href="#gallery" class="text-espresso-700 hover:text-espresso-900 transition">Gallery</a>
-        <a href="#locations" class="text-espresso-700 hover:text-espresso-900 transition">Locations</a>
-        <a href="order.html" class="bg-espresso-800 text-cream-100 px-7 py-2.5 rounded-full hover:bg-espresso-700 transition text-sm font-semibold tracking-wide">
+        <a href="index.html" class="text-espresso-900 font-semibold border-b-2 border-orange-600 pb-1">Home</a>
+        <a href="#menu" class="text-espresso-700 hover:text-espresso-900 hover:border-b-2 hover:border-cream-500 pb-1 transition">Menu</a>
+        <a href="#about" class="text-espresso-700 hover:text-espresso-900 hover:border-b-2 hover:border-cream-500 pb-1 transition">Our Story</a>
+        <a href="#gallery" class="text-espresso-700 hover:text-espresso-900 hover:border-b-2 hover:border-cream-500 pb-1 transition">Gallery</a>
+        <a href="#locations" class="text-espresso-700 hover:text-espresso-900 hover:border-b-2 hover:border-cream-500 pb-1 transition">Locations</a>
+        <a href="order.html" class="bg-orange-600 text-white px-7 py-2.5 rounded-full hover:bg-orange-700 transition text-sm font-semibold tracking-wide shadow-md">
           Order Now
         </a>
       </div>
-
+      
       <!-- Mobile Menu Button -->
-      <button id="mobile-menu-btn" class="md:hidden text-espresso-800 p-2">
+      <button id="mobile-menu-btn" class="md:hidden text-espresso-900 p-2">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/>
         </svg>
       </button>
     </div>
-
+    
     <!-- Mobile Menu -->
-    <div id="mobile-menu" class="hidden md:hidden bg-cream-100 border-t border-cream-300">
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-cream-200 shadow-lg">
       <div class="px-6 py-4 space-y-3">
+        <a href="index.html" class="block text-espresso-900 font-semibold py-2">Home</a>
         <a href="#menu" class="block text-espresso-700 py-2">Menu</a>
         <a href="#about" class="block text-espresso-700 py-2">Our Story</a>
         <a href="#gallery" class="block text-espresso-700 py-2">Gallery</a>
         <a href="#locations" class="block text-espresso-700 py-2">Locations</a>
-        <a href="order.html" class="block bg-espresso-800 text-cream-100 text-center py-3 rounded-full font-semibold mt-2">Order Now</a>
+        <a href="order.html" class="block bg-orange-600 text-white text-center py-3 rounded-full font-semibold mt-2 shadow-md">Order Now</a>
       </div>
     </div>
   </nav>
