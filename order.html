@@ -113,14 +113,14 @@
       position: relative;
       overflow: hidden;
     }
-    .outlet-card:hover {
+    .outlet-card:not(.outlet-closed):hover {
       transform: translateY(-4px);
       box-shadow: 0 20px 40px -12px rgba(139, 115, 72, 0.18), 0 8px 16px -4px rgba(139, 115, 72, 0.08);
     }
-    .outlet-card:hover .outlet-image img {
+    .outlet-card:not(.outlet-closed):hover .outlet-image img {
       transform: scale(1.05);
     }
-    .outlet-card:hover .outlet-overlay {
+    .outlet-card:not(.outlet-closed):hover .outlet-overlay {
       opacity: 1;
     }
     .outlet-image img {
@@ -129,6 +129,22 @@
     .outlet-overlay {
       opacity: 0;
       transition: opacity 0.3s ease;
+    }
+
+    /* Closed Outlet */
+    .outlet-closed {
+      cursor: not-allowed;
+    }
+    .outlet-closed .outlet-image img,
+    .outlet-closed .p-5 {
+      filter: grayscale(0.4);
+      opacity: 0.6;
+    }
+    .outlet-closed .outlet-overlay {
+      display: none !important;
+    }
+    .closed-overlay {
+      animation: fadeIn 0.3s ease-out;
     }
 
     /* Status Badge */
@@ -355,6 +371,13 @@
 
     // ===== SELECT OUTLET =====
     window.selectOutlet = function(id) {
+      // Block if outlet is closed
+      const card = document.querySelector(`[data-outlet-id="${id}"]`)
+      if (card && card.dataset.status === 'closed') {
+        showToast('This outlet is currently closed. Please try another location.')
+        return
+      }
+
       const btn = event.currentTarget
       btn.classList.add('selecting')
       btn.style.pointerEvents = 'none'
@@ -415,6 +438,51 @@
       </div>`
     }
 
+    // ===== REALTIME: UPDATE SINGLE CARD =====
+    function updateOutletCard(outlet) {
+      const card = document.querySelector(`[data-outlet-id="${outlet.id}"]`)
+      if (!card) return
+
+      const newStatus = outlet.status || 'open'
+      const isClosed = newStatus === 'closed'
+      const wasClosed = card.dataset.status === 'closed'
+
+      // Update data attribute
+      card.dataset.status = newStatus
+
+      // Update badge
+      const badgeContainer = card.querySelector('.status-badge-container')
+      if (badgeContainer) {
+        badgeContainer.innerHTML = getStatusBadge(newStatus)
+      }
+
+      // Handle closed/open transitions
+      let overlay = card.querySelector('.closed-overlay')
+
+      if (isClosed) {
+        card.classList.add('outlet-closed')
+        card.removeAttribute('onclick')
+        if (!overlay) {
+          const newOverlay = document.createElement('div')
+          newOverlay.className = 'closed-overlay absolute inset-0 bg-white/70 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-2xl'
+          newOverlay.innerHTML = `<span class="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-bold border border-red-200 shadow-sm">Currently Unavailable</span>`
+          card.appendChild(newOverlay)
+        }
+        // Notify user if this just closed while they were browsing
+        if (!wasClosed) {
+          showToast(`${outlet.name} is now closed`, 5000)
+        }
+      } else {
+        card.classList.remove('outlet-closed')
+        card.setAttribute('onclick', `selectOutlet(${outlet.id})`)
+        if (overlay) overlay.remove()
+        // Notify user if this just opened while they were browsing
+        if (wasClosed) {
+          showToast(`${outlet.name} is now open!`, 5000)
+        }
+      }
+    }
+
     // ===== LOAD OUTLETS =====
     async function loadOutlets() {
       console.log('Loading outlets...')
@@ -429,9 +497,7 @@
         console.log('Outlets data:', data)
         console.log('Outlets error:', error)
 
-        if (error) {
-          throw error
-        }
+        if (error) throw error
 
         if (!data || data.length === 0) {
           document.getElementById('outlet-list').classList.add('hidden')
@@ -443,19 +509,30 @@
         const html = data.map((o, index) => {
           const distance = formatDistance(o.distance_km)
           const status = o.status || 'open'
+          const isClosed = status === 'closed'
           const badge = getStatusBadge(status)
           const imageHtml = getOutletImage(o.image_url, o.name)
           const delay = index * 0.08
 
+          // Closed outlets: no click handler, add overlay, dimmed style
+          const clickAttr = isClosed ? '' : `onclick="selectOutlet(${o.id})"`
+          const closedClass = isClosed ? 'outlet-closed' : ''
+          const closedOverlay = isClosed 
+            ? `<div class="closed-overlay absolute inset-0 bg-white/70 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-2xl"><span class="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-bold border border-red-200 shadow-sm">Currently Unavailable</span></div>` 
+            : ''
+
           return `
-          <button type="button" onclick="selectOutlet(${o.id})" 
-            class="outlet-card w-full bg-white rounded-2xl shadow-sm border border-cream-200 text-left group cursor-pointer animate-slide-up"
-            style="animation-delay: ${delay}s; animation-fill-mode: both;">
+          <button type="button" ${clickAttr}
+            class="outlet-card w-full bg-white rounded-2xl shadow-sm border border-cream-200 text-left group cursor-pointer animate-slide-up ${closedClass}"
+            style="animation-delay: ${delay}s; animation-fill-mode: both;"
+            data-outlet-id="${o.id}"
+            data-status="${status}">
+            ${closedOverlay}
             ${imageHtml}
-            <div class="p-5">
+            <div class="p-5 relative z-10">
               <div class="flex items-start justify-between gap-3 mb-2">
                 <h3 class="font-display text-lg font-bold text-espresso-900 group-hover:text-cream-600 transition-colors leading-tight">${o.name}</h3>
-                ${badge}
+                <span class="status-badge-container">${badge}</span>
               </div>
               <p class="text-sm text-cream-600 leading-relaxed line-clamp-2">${o.location || ''}</p>
               <div class="flex items-center flex-wrap gap-x-4 gap-y-2 mt-3 pt-3 border-t border-cream-100">
@@ -485,6 +562,9 @@
 
         document.getElementById('outlet-list').innerHTML = html
 
+        // Start realtime subscription after initial load
+        subscribeToOutlets()
+
       } catch (err) {
         console.error('Failed to load outlets:', err)
         document.getElementById('outlet-list').innerHTML = `
@@ -508,6 +588,26 @@
         `
         showToast('Connection error. Please try again.')
       }
+    }
+
+    // ===== REALTIME SUBSCRIPTION =====
+    function subscribeToOutlets() {
+      console.log('Subscribing to outlet status updates...')
+
+      supabaseClient
+        .channel('outlets-status')
+        .on('postgres_changes', { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'outlets',
+          filter: 'is_active=eq.true'
+        }, payload => {
+          console.log('Realtime update received:', payload)
+          updateOutletCard(payload.new)
+        })
+        .subscribe((status) => {
+          console.log('Realtime subscription status:', status)
+        })
     }
 
     // Load immediately

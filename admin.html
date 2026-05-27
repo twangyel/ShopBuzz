@@ -6,7 +6,79 @@
   <title>Admin — Cafe Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>body{font-family:'Inter',sans-serif;}</style>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    
+    /* Toggle Switch */
+    .toggle-checkbox:checked {
+      right: 0;
+      border-color: #16a34a;
+    }
+    .toggle-checkbox:checked + .toggle-label {
+      background-color: #16a34a;
+    }
+    
+    /* Tab transitions */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.2s ease-out;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Disabled schedule */
+    .disabled-section {
+      opacity: 0.5;
+      pointer-events: none;
+      filter: grayscale(0.6);
+    }
+    
+    /* Toast notification */
+    #toast-container {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .toast {
+      background: #1a1a1a;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      transform: translateX(120%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 320px;
+    }
+    .toast.show {
+      transform: translateX(0);
+    }
+    .toast-order { border-left: 3px solid #f59e0b; }
+    .toast-payment { border-left: 3px solid #3b82f6; }
+    .toast-review { border-left: 3px solid #ec4899; }
+    .toast-outlet { border-left: 3px solid #10b981; }
+    
+    /* Search highlight */
+    .search-highlight {
+      background: #fef3c7;
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+  </style>
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen">
 
@@ -35,6 +107,11 @@
 
   <!-- DASHBOARD -->
   <div id="dashboard-view" class="hidden">
+    
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Header -->
     <header class="bg-white border-b sticky top-0 z-40">
       <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
         <div class="flex items-center gap-3">
@@ -42,69 +119,285 @@
           <h1 class="font-bold text-lg">Cafe Portal</h1>
         </div>
         <div class="flex items-center gap-4">
+          <!-- Store Toggle -->
+          <div class="flex items-center gap-2 mr-4">
+            <span class="text-sm font-medium text-gray-600" id="store-status-label">Loading...</span>
+            <div class="relative inline-block w-12 h-6 align-middle select-none">
+              <input type="checkbox" id="store-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-300 appearance-none cursor-pointer transition-all duration-200 ease-in-out" style="top:0;left:0;">
+              <label for="store-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-colors duration-200 ease-in-out"></label>
+            </div>
+          </div>
           <span id="staff-email" class="text-sm text-gray-500 hidden sm:inline"></span>
           <button onclick="logout()" class="text-sm text-red-600 hover:text-red-700 font-medium">Logout</button>
         </div>
       </div>
     </header>
 
+    <!-- Auto Schedule Banner (Non-clickable / Future) -->
+    <div class="bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-100">
+      <div class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-sm text-orange-700">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span class="font-medium">Auto Schedule</span>
+          <span class="text-orange-400 text-xs">— Coming soon</span>
+        </div>
+        <div class="disabled-section flex items-center gap-3">
+          <span class="text-xs text-gray-400">Mon-Sun: 8:00 AM - 10:00 PM</span>
+          <button disabled class="text-xs bg-gray-200 text-gray-400 px-3 py-1 rounded-full cursor-not-allowed">Configure</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Navigation -->
+    <div class="bg-white border-b">
+      <div class="max-w-7xl mx-auto px-4">
+        <nav class="flex gap-1 -mb-px">
+          <button onclick="switchMainTab('orders')" class="main-tab active px-5 py-3 text-sm font-medium border-b-2 border-orange-600 text-orange-600" data-tab="orders">
+            📋 Orders
+          </button>
+          <button onclick="switchMainTab('reviews')" class="main-tab px-5 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="reviews">
+            ⭐ Reviews
+          </button>
+          <button onclick="switchMainTab('analytics')" class="main-tab px-5 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="analytics">
+            📊 Analytics
+          </button>
+          <button onclick="switchMainTab('portal')" class="main-tab px-5 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="portal">
+            🏪 Portal
+          </button>
+        </nav>
+      </div>
+    </div>
+
     <main class="max-w-7xl mx-auto px-4 py-6">
-      <!-- Stats -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <div class="bg-white p-4 rounded-xl border shadow-sm">
-          <p class="text-gray-500 text-xs uppercase font-medium">Today</p>
-          <p id="stat-today" class="text-2xl font-bold">0</p>
+
+      <!-- ========== ORDERS TAB ========== -->
+      <div id="tab-orders" class="tab-content active">
+        
+        <!-- Orders Sub-tabs -->
+        <div class="flex gap-2 mb-4 border-b border-gray-200 pb-2">
+          <button onclick="switchOrdersSubTab('all')" class="orders-sub-tab active px-4 py-2 text-sm font-medium rounded-lg bg-orange-100 text-orange-700" data-subtab="all">
+            All Orders
+          </button>
+          <button onclick="switchOrdersSubTab('payments')" class="orders-sub-tab px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100" data-subtab="payments">
+            Payments
+          </button>
         </div>
-        <div class="bg-white p-4 rounded-xl border shadow-sm">
-          <p class="text-gray-500 text-xs uppercase font-medium">Pending</p>
-          <p id="stat-pending" class="text-2xl font-bold text-orange-600">0</p>
+
+        <!-- Search -->
+        <div class="mb-4">
+          <div class="relative max-w-md">
+            <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="orders-search" oninput="searchOrders()" placeholder="Search orders by name, phone, order #..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none">
+          </div>
         </div>
-        <div class="bg-white p-4 rounded-xl border shadow-sm">
-          <p class="text-gray-500 text-xs uppercase font-medium">Preparing</p>
-          <p id="stat-preparing" class="text-2xl font-bold text-blue-600">0</p>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <div class="bg-white p-4 rounded-xl border shadow-sm">
+            <p class="text-gray-500 text-xs uppercase font-medium">Today</p>
+            <p id="stat-today" class="text-2xl font-bold">0</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border shadow-sm">
+            <p class="text-gray-500 text-xs uppercase font-medium">Pending</p>
+            <p id="stat-pending" class="text-2xl font-bold text-orange-600">0</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border shadow-sm">
+            <p class="text-gray-500 text-xs uppercase font-medium">Preparing</p>
+            <p id="stat-preparing" class="text-2xl font-bold text-blue-600">0</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border shadow-sm">
+            <p class="text-gray-500 text-xs uppercase font-medium">Revenue</p>
+            <p id="stat-revenue" class="text-2xl font-bold text-green-600">Nu. 0</p>
+          </div>
         </div>
-        <div class="bg-white p-4 rounded-xl border shadow-sm">
-          <p class="text-gray-500 text-xs uppercase font-medium">Ready</p>
-          <p id="stat-ready" class="text-2xl font-bold text-green-600">0</p>
+
+        <!-- All Orders Sub-tab -->
+        <div id="orders-sub-all" class="orders-sub-content active">
+          <!-- Filters -->
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button onclick="filterOrders('all')" class="filter-btn active px-4 py-2 rounded-lg text-sm font-medium bg-gray-900 text-white" data-filter="all">All</button>
+            <button onclick="filterOrders('pending')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700" data-filter="pending">Pending</button>
+            <button onclick="filterOrders('confirmed')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700" data-filter="confirmed">Confirmed</button>
+            <button onclick="filterOrders('preparing')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700" data-filter="preparing">Preparing</button>
+            <button onclick="filterOrders('ready')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700" data-filter="ready">Ready</button>
+            <button onclick="filterOrders('completed')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700" data-filter="completed">Completed</button>
+          </div>
+
+          <!-- Orders Table -->
+          <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left">
+                <thead class="bg-gray-50 border-b text-xs uppercase text-gray-500 font-medium">
+                  <tr>
+                    <th class="px-3 py-3">Order #</th>
+                    <th class="px-3 py-3">Customer</th>
+                    <th class="px-3 py-3">Items</th>
+                    <th class="px-3 py-3">Total</th>
+                    <th class="px-3 py-3">Status</th>
+                    <th class="px-3 py-3">Time</th>
+                    <th class="px-3 py-3">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="orders-table" class="divide-y divide-gray-100">
+                  <tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">Loading orders...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payments Sub-tab -->
+        <div id="orders-sub-payments" class="orders-sub-content hidden">
+          <!-- Payment Search -->
+          <div class="mb-4">
+            <div class="relative max-w-md">
+              <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="payments-search" oninput="searchPayments()" placeholder="Search payments by order #, method..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none">
+            </div>
+          </div>
+
+          <!-- Payments Table -->
+          <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left">
+                <thead class="bg-gray-50 border-b text-xs uppercase text-gray-500 font-medium">
+                  <tr>
+                    <th class="px-3 py-3">Order #</th>
+                    <th class="px-3 py-3">Customer</th>
+                    <th class="px-3 py-3">Amount</th>
+                    <th class="px-3 py-3">Method</th>
+                    <th class="px-3 py-3">Status</th>
+                    <th class="px-3 py-3">Screenshot</th>
+                    <th class="px-3 py-3">Time</th>
+                  </tr>
+                </thead>
+                <tbody id="payments-table" class="divide-y divide-gray-100">
+                  <tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">Loading payments...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Filters -->
-      <div class="flex flex-wrap gap-2 mb-4">
-        <button onclick="filterOrders('all')" class="filter-btn active px-4 py-2 rounded-lg text-sm font-medium bg-gray-900 text-white" data-filter="all">All</button>
-        <button onclick="filterOrders('pending')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700" data-filter="pending">Pending</button>
-        <button onclick="filterOrders('confirmed')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700" data-filter="confirmed">Confirmed</button>
-        <button onclick="filterOrders('preparing')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700" data-filter="preparing">Preparing</button>
-        <button onclick="filterOrders('ready')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700" data-filter="ready">Ready</button>
-        <button onclick="filterOrders('completed')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700" data-filter="completed">Completed</button>
-      </div>
+      <!-- ========== REVIEWS TAB ========== -->
+      <div id="tab-reviews" class="tab-content">
+        <div class="mb-4">
+          <div class="relative max-w-md">
+            <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="reviews-search" oninput="searchReviews()" placeholder="Search reviews by customer, comment..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none">
+          </div>
+        </div>
 
-      <!-- Orders Table -->
-      <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm text-left">
-            <thead class="bg-gray-50 border-b text-xs uppercase text-gray-500 font-medium">
-              <tr>
-                <th class="px-3 py-3">Order #</th>
-                <th class="px-3 py-3">Customer</th>
-                <th class="px-3 py-3">Items</th>
-                <th class="px-3 py-3">Total</th>
-                <th class="px-3 py-3">Status</th>
-                <th class="px-3 py-3">Time</th>
-                <th class="px-3 py-3">Action</th>
-              </tr>
-            </thead>
-            <tbody id="orders-table" class="divide-y divide-gray-100">
-              <tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">Loading orders...</td></tr>
-            </tbody>
-          </table>
+        <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="bg-gray-50 border-b text-xs uppercase text-gray-500 font-medium">
+                <tr>
+                  <th class="px-3 py-3">Customer</th>
+                  <th class="px-3 py-3">Rating</th>
+                  <th class="px-3 py-3">Comment</th>
+                  <th class="px-3 py-3">Order</th>
+                  <th class="px-3 py-3">Date</th>
+                </tr>
+              </thead>
+              <tbody id="reviews-table" class="divide-y divide-gray-100">
+                <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">Loading reviews...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
+
+      <!-- ========== ANALYTICS TAB ========== -->
+      <div id="tab-analytics" class="tab-content">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-white p-6 rounded-xl border shadow-sm">
+            <p class="text-gray-500 text-xs uppercase font-medium">Total Orders (This Month)</p>
+            <p id="analytics-orders" class="text-3xl font-bold mt-2">0</p>
+          </div>
+          <div class="bg-white p-6 rounded-xl border shadow-sm">
+            <p class="text-gray-500 text-xs uppercase font-medium">Total Revenue</p>
+            <p id="analytics-revenue" class="text-3xl font-bold mt-2 text-green-600">Nu. 0</p>
+          </div>
+          <div class="bg-white p-6 rounded-xl border shadow-sm">
+            <p class="text-gray-500 text-xs uppercase font-medium">Avg. Rating</p>
+            <p id="analytics-rating" class="text-3xl font-bold mt-2 text-amber-500">0.0</p>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border shadow-sm p-6">
+          <h3 class="font-semibold text-gray-900 mb-4">Top Selling Items</h3>
+          <div id="analytics-top-items" class="space-y-3">
+            <p class="text-gray-400 text-sm">Loading analytics...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== PORTAL TAB ========== -->
+      <div id="tab-portal" class="tab-content">
+        <div class="max-w-2xl">
+          <div class="bg-white rounded-xl border shadow-sm p-6 mb-6">
+            <h3 class="font-semibold text-gray-900 mb-4">Store Settings</h3>
+            
+            <!-- Manual Toggle -->
+            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+              <div>
+                <p class="font-medium text-gray-900">Manual Control</p>
+                <p class="text-sm text-gray-500">Open or close the store immediately</p>
+              </div>
+              <div class="relative inline-block w-14 h-7 align-middle select-none">
+                <input type="checkbox" id="portal-store-toggle" class="toggle-checkbox absolute block w-7 h-7 rounded-full bg-white border-4 border-gray-300 appearance-none cursor-pointer transition-all duration-200 ease-in-out" style="top:0;left:0;">
+                <label for="portal-store-toggle" class="toggle-label block overflow-hidden h-7 rounded-full bg-gray-300 cursor-pointer transition-colors duration-200 ease-in-out"></label>
+              </div>
+            </div>
+
+            <!-- Auto Schedule (Disabled) -->
+            <div class="disabled-section py-4 border-b border-gray-100">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-medium text-gray-900">Auto Schedule</p>
+                  <p class="text-sm text-gray-500">Automatically open/close based on time</p>
+                </div>
+                <span class="text-xs bg-gray-100 text-gray-400 px-3 py-1 rounded-full">Coming Soon</span>
+              </div>
+              <div class="mt-3 grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-xs text-gray-500">Opening Time</label>
+                  <input type="time" disabled value="08:00" class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50">
+                </div>
+                <div>
+                  <label class="text-xs text-gray-500">Closing Time</label>
+                  <input type="time" disabled value="22:00" class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50">
+                </div>
+              </div>
+              <div class="mt-3">
+                <label class="text-xs text-gray-500">Active Days</label>
+                <div class="flex gap-2 mt-1">
+                  <label class="flex items-center gap-1 text-sm text-gray-400"><input type="checkbox" disabled checked class="rounded"> Mon</label>
+                  <label class="flex items-center gap-1 text-sm text-gray-400"><input type="checkbox" disabled checked class="rounded"> Tue</label>
+                  <label class="flex items-center gap-1 text-sm text-gray-400"><input type="checkbox" disabled checked class="rounded"> Wed</label>
+                  <label class="flex items-center gap-1 text-sm text-gray-400"><input type="checkbox" disabled checked class="rounded"> Thu</label>
+                  <label class="flex items-center gap-1 text-sm text-gray-400"><input type="checkbox" disabled checked class="rounded"> Fri</label>
+                  <label class="flex items-center gap-1 text-sm text-gray-400"><input type="checkbox" disabled checked class="rounded"> Sat</label>
+                  <label class="flex items-center gap-1 text-sm text-gray-400"><input type="checkbox" disabled checked class="rounded"> Sun</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Outlet Info -->
+            <div class="py-3">
+              <p class="font-medium text-gray-900 mb-2">Outlet Information</p>
+              <div id="portal-outlet-info" class="text-sm text-gray-600 space-y-1">
+                <p>Loading...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
-
-  <!-- Toast -->
-  <div id="toast" class="fixed bottom-4 right-4 bg-gray-900 text-white px-5 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition duration-300 z-50 text-sm font-medium"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -113,14 +406,17 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
     let allOrders = []
+    let allPayments = []
+    let allReviews = []
     let currentFilter = 'all'
+    let currentOutletId = null
+    let currentOutletStatus = 'open'
 
-    // Check session
+    // ========== AUTH ==========
     supabaseClient.auth.getSession().then(({ data: { session } }) => {
       if (session) showDashboard(session.user.email)
     })
 
-    // Login
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault()
       const email = document.getElementById('login-email').value
@@ -135,25 +431,120 @@
       }
     })
 
-    function showDashboard(email) {
-      document.getElementById('login-view').classList.add('hidden')
-      document.getElementById('dashboard-view').classList.remove('hidden')
-      document.getElementById('staff-email').textContent = email
-      loadOrders()
-      setInterval(loadOrders, 15000) // Auto-refresh every 15s
-    }
-
     async function logout() {
       await supabaseClient.auth.signOut()
       location.reload()
     }
 
+    // ========== DASHBOARD INIT ==========
+    async function showDashboard(email) {
+      document.getElementById('login-view').classList.add('hidden')
+      document.getElementById('dashboard-view').classList.remove('hidden')
+      document.getElementById('staff-email').textContent = email
+
+      // Get first outlet (assuming single outlet for now)
+      const { data: outlets } = await supabaseClient.from('outlets').select('*').eq('is_active', true).limit(1)
+      if (outlets && outlets.length > 0) {
+        currentOutletId = outlets[0].id
+        currentOutletStatus = outlets[0].status || 'open'
+        updateStoreToggleUI(currentOutletStatus)
+        updatePortalInfo(outlets[0])
+      }
+
+      loadOrders()
+      loadPayments()
+      loadReviews()
+      loadAnalytics()
+      setupRealtimeSubscriptions()
+    }
+
+    // ========== STORE TOGGLE ==========
+    function updateStoreToggleUI(status) {
+      const isOpen = status === 'open'
+      document.getElementById('store-toggle').checked = isOpen
+      document.getElementById('portal-store-toggle').checked = isOpen
+      document.getElementById('store-status-label').textContent = isOpen ? 'Open' : 'Closed'
+      document.getElementById('store-status-label').className = isOpen 
+        ? 'text-sm font-medium text-green-600' 
+        : 'text-sm font-medium text-red-600'
+    }
+
+    async function toggleStoreStatus() {
+      if (!currentOutletId) return
+      
+      const newStatus = document.getElementById('store-toggle').checked ? 'open' : 'closed'
+      
+      const { error } = await supabaseClient
+        .from('outlets')
+        .update({ status: newStatus })
+        .eq('id', currentOutletId)
+
+      if (error) {
+        showToast('Failed to update status', 'error')
+        // Revert toggle
+        document.getElementById('store-toggle').checked = !document.getElementById('store-toggle').checked
+      } else {
+        currentOutletStatus = newStatus
+        updateStoreToggleUI(newStatus)
+        showToast(`Store is now ${newStatus}`, 'outlet')
+      }
+    }
+
+    document.getElementById('store-toggle').addEventListener('change', toggleStoreStatus)
+    document.getElementById('portal-store-toggle').addEventListener('change', async function() {
+      // Sync with header toggle
+      document.getElementById('store-toggle').checked = this.checked
+      await toggleStoreStatus()
+    })
+
+    function updatePortalInfo(outlet) {
+      document.getElementById('portal-outlet-info').innerHTML = `
+        <p><span class="text-gray-400">Name:</span> ${outlet.name}</p>
+        <p><span class="text-gray-400">Location:</span> ${outlet.location || 'N/A'}</p>
+        <p><span class="text-gray-400">Phone:</span> ${outlet.phone || 'N/A'}</p>
+        <p><span class="text-gray-400">Status:</span> <span class="${outlet.status === 'open' ? 'text-green-600' : 'text-red-600'} font-medium">${outlet.status || 'open'}</span></p>
+      `
+    }
+
+    // ========== TAB SWITCHING ==========
+    window.switchMainTab = function(tabName) {
+      // Update nav
+      document.querySelectorAll('.main-tab').forEach(btn => {
+        const isActive = btn.dataset.tab === tabName
+        btn.classList.toggle('border-orange-600', isActive)
+        btn.classList.toggle('text-orange-600', isActive)
+        btn.classList.toggle('border-transparent', !isActive)
+        btn.classList.toggle('text-gray-500', !isActive)
+      })
+
+      // Show content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.toggle('active', content.id === `tab-${tabName}`)
+      })
+    }
+
+    window.switchOrdersSubTab = function(subTabName) {
+      document.querySelectorAll('.orders-sub-tab').forEach(btn => {
+        const isActive = btn.dataset.subtab === subTabName
+        btn.classList.toggle('bg-orange-100', isActive)
+        btn.classList.toggle('text-orange-700', isActive)
+        btn.classList.toggle('text-gray-600', !isActive)
+        btn.classList.toggle('hover:bg-gray-100', !isActive)
+      })
+
+      document.querySelectorAll('.orders-sub-content').forEach(content => {
+        content.classList.toggle('hidden', content.id !== `orders-sub-${subTabName}`)
+        content.classList.toggle('active', content.id === `orders-sub-${subTabName}`)
+      })
+    }
+
+    // ========== ORDERS ==========
     async function loadOrders() {
       const { data: orders } = await supabaseClient
         .from('orders')
-        .select('*, order_items(*)')
+        .select('*, order_items(*), payments(*)')
         .order('created_at', { ascending: false })
-        .limit(100)
+        .limit(200)
 
       allOrders = orders || []
       renderOrders()
@@ -162,13 +553,16 @@
 
     function updateStats() {
       const today = new Date().toISOString().split('T')[0]
-      document.getElementById('stat-today').textContent = allOrders.filter(o => o.created_at.startsWith(today)).length
+      const todayOrders = allOrders.filter(o => o.created_at.startsWith(today))
+      const todayRevenue = todayOrders.reduce((sum, o) => sum + (parseFloat(o.total_amount) || 0), 0)
+
+      document.getElementById('stat-today').textContent = todayOrders.length
       document.getElementById('stat-pending').textContent = allOrders.filter(o => o.status === 'pending').length
       document.getElementById('stat-preparing').textContent = allOrders.filter(o => o.status === 'preparing').length
-      document.getElementById('stat-ready').textContent = allOrders.filter(o => o.status === 'ready').length
+      document.getElementById('stat-revenue').textContent = 'Nu. ' + todayRevenue.toFixed(2)
     }
 
-    function filterOrders(status) {
+    window.filterOrders = function(status) {
       currentFilter = status
       document.querySelectorAll('.filter-btn').forEach(btn => {
         const isActive = btn.dataset.filter === status
@@ -180,9 +574,9 @@
       renderOrders()
     }
 
-    function renderOrders() {
+    function renderOrders(ordersToRender = null) {
       const tbody = document.getElementById('orders-table')
-      let filtered = currentFilter === 'all' ? allOrders : allOrders.filter(o => o.status === currentFilter)
+      let filtered = ordersToRender || (currentFilter === 'all' ? allOrders : allOrders.filter(o => o.status === currentFilter))
 
       if (filtered.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No orders found</td></tr>'
@@ -210,7 +604,7 @@
               <div class="text-gray-500 text-xs">${order.customer_phone}</div>
             </td>
             <td class="px-3 py-3 text-gray-600">${itemCount} items</td>
-            <td class="px-3 py-3 font-semibold">$${order.total_amount}</td>
+            <td class="px-3 py-3 font-semibold">Nu. ${parseFloat(order.total_amount).toFixed(2)}</td>
             <td class="px-3 py-3">
               <span class="text-xs font-medium px-2 py-1 rounded-full ${statusColors[order.status] || 'bg-gray-100'}">${order.status}</span>
             </td>
@@ -230,19 +624,287 @@
       }).join('')
     }
 
-    async function updateStatus(orderId, status) {
+    window.searchOrders = function() {
+      const query = document.getElementById('orders-search').value.toLowerCase().trim()
+      if (!query) {
+        renderOrders()
+        return
+      }
+
+      const filtered = allOrders.filter(o => 
+        (o.customer_name || '').toLowerCase().includes(query) ||
+        (o.customer_phone || '').toLowerCase().includes(query) ||
+        (o.order_number || '').toLowerCase().includes(query) ||
+        (o.id || '').toLowerCase().includes(query)
+      )
+      renderOrders(filtered)
+    }
+
+    window.updateStatus = async function(orderId, status) {
       const { error } = await supabaseClient.from('orders').update({ status }).eq('id', orderId)
       if (!error) {
-        showToast(`Order updated to ${status}`)
+        showToast(`Order updated to ${status}`, 'order')
         loadOrders()
       }
     }
 
-    function showToast(msg) {
-      const toast = document.getElementById('toast')
-      toast.textContent = msg
-      toast.classList.remove('translate-y-20', 'opacity-0')
-      setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 2000)
+    // ========== PAYMENTS ==========
+    async function loadPayments() {
+      const { data: payments } = await supabaseClient
+        .from('payments')
+        .select('*, orders(customer_name, customer_phone, order_number)')
+        .order('created_at', { ascending: false })
+        .limit(200)
+
+      allPayments = payments || []
+      renderPayments()
+    }
+
+    function renderPayments(paymentsToRender = null) {
+      const tbody = document.getElementById('payments-table')
+      const filtered = paymentsToRender || allPayments
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No payments found</td></tr>'
+        return
+      }
+
+      const methodColors = {
+        'half-payment': 'bg-orange-100 text-orange-800',
+        'full-payment': 'bg-green-100 text-green-800',
+        'cash-on-delivery': 'bg-blue-100 text-blue-800'
+      }
+
+      tbody.innerHTML = filtered.map(p => {
+        const time = new Date(p.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        const order = p.orders || {}
+        
+        return `
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-3 py-3 font-mono text-xs text-gray-500">#${order.order_number || p.order_id?.slice(0,8).toUpperCase()}</td>
+            <td class="px-3 py-3">
+              <div class="font-medium text-gray-900">${order.customer_name || 'N/A'}</div>
+              <div class="text-gray-500 text-xs">${order.customer_phone || ''}</div>
+            </td>
+            <td class="px-3 py-3 font-semibold">Nu. ${parseFloat(p.amount).toFixed(2)}</td>
+            <td class="px-3 py-3">
+              <span class="text-xs font-medium px-2 py-1 rounded-full ${methodColors[p.method] || 'bg-gray-100'}">${p.method?.replace(/-/g, ' ')}</span>
+            </td>
+            <td class="px-3 py-3">
+              <span class="text-xs font-medium px-2 py-1 rounded-full ${p.status === 'verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${p.status}</span>
+            </td>
+            <td class="px-3 py-3">
+              ${p.screenshot_url 
+                ? `<a href="${p.screenshot_url}" target="_blank" class="text-blue-600 hover:underline text-xs">View Screenshot</a>` 
+                : '<span class="text-gray-400 text-xs">—</span>'}
+            </td>
+            <td class="px-3 py-3 text-gray-500 text-xs">${time}</td>
+          </tr>
+        `
+      }).join('')
+    }
+
+    window.searchPayments = function() {
+      const query = document.getElementById('payments-search').value.toLowerCase().trim()
+      if (!query) {
+        renderPayments()
+        return
+      }
+
+      const filtered = allPayments.filter(p => {
+        const order = p.orders || {}
+        return (
+          (order.order_number || '').toLowerCase().includes(query) ||
+          (p.order_id || '').toLowerCase().includes(query) ||
+          (p.method || '').toLowerCase().includes(query) ||
+          (order.customer_name || '').toLowerCase().includes(query)
+        )
+      })
+      renderPayments(filtered)
+    }
+
+    // ========== REVIEWS ==========
+    async function loadReviews() {
+      const { data: reviews } = await supabaseClient
+        .from('reviews')
+        .select('*, orders(customer_name, order_number)')
+        .order('created_at', { ascending: false })
+        .limit(200)
+
+      allReviews = reviews || []
+      renderReviews()
+    }
+
+    function renderReviews(reviewsToRender = null) {
+      const tbody = document.getElementById('reviews-table')
+      const filtered = reviewsToRender || allReviews
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">No reviews yet</td></tr>'
+        return
+      }
+
+      tbody.innerHTML = filtered.map(r => {
+        const order = r.orders || {}
+        const date = new Date(r.created_at).toLocaleDateString()
+        const stars = '★'.repeat(r.rating || 0) + '☆'.repeat(5 - (r.rating || 0))
+        
+        return `
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-3 py-3 font-medium text-gray-900">${order.customer_name || 'Anonymous'}</td>
+            <td class="px-3 py-3 text-amber-500 text-sm tracking-wider">${stars}</td>
+            <td class="px-3 py-3 text-gray-600 max-w-xs truncate">${r.comment || 'No comment'}</td>
+            <td class="px-3 py-3 font-mono text-xs text-gray-500">#${order.order_number || r.order_id?.slice(0,8).toUpperCase()}</td>
+            <td class="px-3 py-3 text-gray-500 text-xs">${date}</td>
+          </tr>
+        `
+      }).join('')
+    }
+
+    window.searchReviews = function() {
+      const query = document.getElementById('reviews-search').value.toLowerCase().trim()
+      if (!query) {
+        renderReviews()
+        return
+      }
+
+      const filtered = allReviews.filter(r => {
+        const order = r.orders || {}
+        return (
+          (order.customer_name || '').toLowerCase().includes(query) ||
+          (r.comment || '').toLowerCase().includes(query) ||
+          (r.rating?.toString() || '').includes(query)
+        )
+      })
+      renderReviews(filtered)
+    }
+
+    // ========== ANALYTICS ==========
+    async function loadAnalytics() {
+      // Orders this month
+      const startOfMonth = new Date()
+      startOfMonth.setDate(1)
+      startOfMonth.setHours(0,0,0,0)
+
+      const { data: monthOrders } = await supabaseClient
+        .from('orders')
+        .select('total_amount')
+        .gte('created_at', startOfMonth.toISOString())
+
+      const { data: allReviewsData } = await supabaseClient
+        .from('reviews')
+        .select('rating')
+
+      const { data: topItems } = await supabaseClient
+        .from('order_items')
+        .select('item_name, quantity')
+        .limit(500)
+
+      // Calculate
+      const totalOrders = monthOrders?.length || 0
+      const totalRevenue = monthOrders?.reduce((sum, o) => sum + (parseFloat(o.total_amount) || 0), 0) || 0
+      const avgRating = allReviewsData?.length 
+        ? (allReviewsData.reduce((sum, r) => sum + r.rating, 0) / allReviewsData.length).toFixed(1) 
+        : '0.0'
+
+      // Top items
+      const itemCounts = {}
+      topItems?.forEach(i => {
+        itemCounts[i.item_name] = (itemCounts[i.item_name] || 0) + i.quantity
+      })
+      const sortedItems = Object.entries(itemCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+
+      // Render
+      document.getElementById('analytics-orders').textContent = totalOrders
+      document.getElementById('analytics-revenue').textContent = 'Nu. ' + totalRevenue.toFixed(2)
+      document.getElementById('analytics-rating').textContent = avgRating
+
+      document.getElementById('analytics-top-items').innerHTML = sortedItems.length 
+        ? sortedItems.map(([name, count], i) => `
+            <div class="flex items-center justify-between py-2 ${i < sortedItems.length - 1 ? 'border-b border-gray-100' : ''}">
+              <div class="flex items-center gap-3">
+                <span class="w-6 h-6 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center text-xs font-bold">${i + 1}</span>
+                <span class="text-sm text-gray-700">${name}</span>
+              </div>
+              <span class="text-sm font-medium text-gray-900">${count} sold</span>
+            </div>
+          `).join('')
+        : '<p class="text-gray-400 text-sm">No data available</p>'
+    }
+
+    // ========== REALTIME SUBSCRIPTIONS ==========
+    function setupRealtimeSubscriptions() {
+      // Orders
+      supabaseClient
+        .channel('admin-orders')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
+          console.log('Order change:', payload)
+          showToast(`New order received! #${payload.new.order_number || payload.new.id.slice(0,8)}`, 'order')
+          loadOrders()
+        })
+        .subscribe()
+
+      // Payments
+      supabaseClient
+        .channel('admin-payments')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, payload => {
+          console.log('Payment change:', payload)
+          showToast('Payment updated', 'payment')
+          loadPayments()
+        })
+        .subscribe()
+
+      // Reviews
+      supabaseClient
+        .channel('admin-reviews')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reviews' }, payload => {
+          console.log('New review:', payload)
+          showToast('New review received!', 'review')
+          loadReviews()
+        })
+        .subscribe()
+
+      // Outlets (for store status sync)
+      supabaseClient
+        .channel('admin-outlets')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'outlets' }, payload => {
+          console.log('Outlet update:', payload)
+          if (payload.new.id === currentOutletId) {
+            currentOutletStatus = payload.new.status
+            updateStoreToggleUI(payload.new.status)
+            showToast(`Store status changed to ${payload.new.status}`, 'outlet')
+          }
+        })
+        .subscribe()
+    }
+
+    // ========== TOAST ==========
+    function showToast(message, type = 'order') {
+      const container = document.getElementById('toast-container')
+      const toast = document.createElement('div')
+      toast.className = `toast toast-${type}`
+      
+      const icons = {
+        order: '📋',
+        payment: '💳',
+        review: '⭐',
+        outlet: '🏪',
+        error: '⚠️'
+      }
+      
+      toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${message}</span>`
+      container.appendChild(toast)
+
+      // Trigger animation
+      requestAnimationFrame(() => toast.classList.add('show'))
+
+      // Remove after 4 seconds
+      setTimeout(() => {
+        toast.classList.remove('show')
+        setTimeout(() => toast.remove(), 300)
+      }, 4000)
     }
   </script>
 
