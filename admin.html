@@ -10,7 +10,7 @@
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen">
 
-  <!-- LOGIN VIEW -->
+  <!-- LOGIN -->
   <div id="login-view" class="min-h-screen flex items-center justify-center p-4">
     <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 w-full max-w-md">
       <div class="text-center mb-8">
@@ -33,11 +33,10 @@
     </div>
   </div>
 
-  <!-- DASHBOARD VIEW (hidden until login) -->
+  <!-- DASHBOARD -->
   <div id="dashboard-view" class="hidden">
-    <!-- Top Bar -->
     <header class="bg-white border-b sticky top-0 z-40">
-      <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
         <div class="flex items-center gap-3">
           <span class="text-xl">☕</span>
           <h1 class="font-bold text-lg">Cafe Portal</h1>
@@ -49,35 +48,35 @@
       </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 py-8">
+    <main class="max-w-7xl mx-auto px-4 py-6">
       <!-- Stats -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white p-5 rounded-xl border shadow-sm">
-          <p class="text-gray-500 text-xs uppercase tracking-wide font-medium">Today's Orders</p>
-          <p id="stat-today" class="text-3xl font-bold mt-1">0</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="bg-white p-4 rounded-xl border shadow-sm">
+          <p class="text-gray-500 text-xs uppercase font-medium">Today</p>
+          <p id="stat-today" class="text-2xl font-bold">0</p>
         </div>
-        <div class="bg-white p-5 rounded-xl border shadow-sm">
-          <p class="text-gray-500 text-xs uppercase tracking-wide font-medium">Pending</p>
-          <p id="stat-pending" class="text-3xl font-bold mt-1 text-orange-600">0</p>
+        <div class="bg-white p-4 rounded-xl border shadow-sm">
+          <p class="text-gray-500 text-xs uppercase font-medium">Pending</p>
+          <p id="stat-pending" class="text-2xl font-bold text-orange-600">0</p>
         </div>
-        <div class="bg-white p-5 rounded-xl border shadow-sm">
-          <p class="text-gray-500 text-xs uppercase tracking-wide font-medium">Preparing</p>
-          <p id="stat-preparing" class="text-3xl font-bold mt-1 text-blue-600">0</p>
+        <div class="bg-white p-4 rounded-xl border shadow-sm">
+          <p class="text-gray-500 text-xs uppercase font-medium">Preparing</p>
+          <p id="stat-preparing" class="text-2xl font-bold text-blue-600">0</p>
         </div>
-        <div class="bg-white p-5 rounded-xl border shadow-sm">
-          <p class="text-gray-500 text-xs uppercase tracking-wide font-medium">Ready</p>
-          <p id="stat-ready" class="text-3xl font-bold mt-1 text-green-600">0</p>
+        <div class="bg-white p-4 rounded-xl border shadow-sm">
+          <p class="text-gray-500 text-xs uppercase font-medium">Ready</p>
+          <p id="stat-ready" class="text-2xl font-bold text-green-600">0</p>
         </div>
       </div>
 
       <!-- Filters -->
-      <div class="flex flex-wrap gap-3 mb-6">
-        <button onclick="filterOrders('all')" class="filter-btn active px-4 py-2 rounded-lg text-sm font-medium bg-gray-900 text-white" data-filter="all">All Orders</button>
-        <button onclick="filterOrders('pending')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700 hover:bg-gray-50" data-filter="pending">Pending</button>
-        <button onclick="filterOrders('confirmed')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700 hover:bg-gray-50" data-filter="confirmed">Confirmed</button>
-        <button onclick="filterOrders('preparing')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700 hover:bg-gray-50" data-filter="preparing">Preparing</button>
-        <button onclick="filterOrders('ready')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700 hover:bg-gray-50" data-filter="ready">Ready</button>
-        <button onclick="filterOrders('completed')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700 hover:bg-gray-50" data-filter="completed">Completed</button>
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button onclick="filterOrders('all')" class="filter-btn active px-4 py-2 rounded-lg text-sm font-medium bg-gray-900 text-white" data-filter="all">All</button>
+        <button onclick="filterOrders('pending')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700" data-filter="pending">Pending</button>
+        <button onclick="filterOrders('confirmed')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700" data-filter="confirmed">Confirmed</button>
+        <button onclick="filterOrders('preparing')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700" data-filter="preparing">Preparing</button>
+        <button onclick="filterOrders('ready')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700" data-filter="ready">Ready</button>
+        <button onclick="filterOrders('completed')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-700" data-filter="completed">Completed</button>
       </div>
 
       <!-- Orders Table -->
@@ -86,13 +85,13 @@
           <table class="w-full text-sm text-left">
             <thead class="bg-gray-50 border-b text-xs uppercase text-gray-500 font-medium">
               <tr>
-                <th class="px-4 py-3">Order #</th>
-                <th class="px-4 py-3">Customer</th>
-                <th class="px-4 py-3">Items</th>
-                <th class="px-4 py-3">Total</th>
-                <th class="px-4 py-3">Status</th>
-                <th class="px-4 py-3">Time</th>
-                <th class="px-4 py-3">Action</th>
+                <th class="px-3 py-3">Order #</th>
+                <th class="px-3 py-3">Customer</th>
+                <th class="px-3 py-3">Items</th>
+                <th class="px-3 py-3">Total</th>
+                <th class="px-3 py-3">Status</th>
+                <th class="px-3 py-3">Time</th>
+                <th class="px-3 py-3">Action</th>
               </tr>
             </thead>
             <tbody id="orders-table" class="divide-y divide-gray-100">
@@ -111,13 +110,12 @@
   <script>
     const SUPABASE_URL = 'https://mzkbjfcdagomqirfsjld.supabase.co'
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16a2JqZmNkYWdvbXFpcmZzamxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4NTQ0MzcsImV4cCI6MjA5NTQzMDQzN30.H05EbXCSUYADZWlgOU1_rtxcYLFpjpg7W7Iaytc0OS4'
-
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
     let allOrders = []
     let currentFilter = 'all'
 
-    // Check session on load
+    // Check session
     supabaseClient.auth.getSession().then(({ data: { session } }) => {
       if (session) showDashboard(session.user.email)
     })
@@ -127,13 +125,11 @@
       e.preventDefault()
       const email = document.getElementById('login-email').value
       const password = document.getElementById('login-password').value
-      const errorEl = document.getElementById('login-error')
-
+      
       const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password })
-
       if (error) {
-        errorEl.textContent = error.message
-        errorEl.classList.remove('hidden')
+        document.getElementById('login-error').textContent = error.message
+        document.getElementById('login-error').classList.remove('hidden')
       } else {
         showDashboard(data.user.email)
       }
@@ -144,9 +140,7 @@
       document.getElementById('dashboard-view').classList.remove('hidden')
       document.getElementById('staff-email').textContent = email
       loadOrders()
-      
-      // Auto-refresh every 15 seconds
-      setInterval(loadOrders, 15000)
+      setInterval(loadOrders, 15000) // Auto-refresh every 15s
     }
 
     async function logout() {
@@ -168,9 +162,7 @@
 
     function updateStats() {
       const today = new Date().toISOString().split('T')[0]
-      const todayOrders = allOrders.filter(o => o.created_at.startsWith(today))
-      
-      document.getElementById('stat-today').textContent = todayOrders.length
+      document.getElementById('stat-today').textContent = allOrders.filter(o => o.created_at.startsWith(today)).length
       document.getElementById('stat-pending').textContent = allOrders.filter(o => o.status === 'pending').length
       document.getElementById('stat-preparing').textContent = allOrders.filter(o => o.status === 'preparing').length
       document.getElementById('stat-ready').textContent = allOrders.filter(o => o.status === 'ready').length
@@ -179,13 +171,11 @@
     function filterOrders(status) {
       currentFilter = status
       document.querySelectorAll('.filter-btn').forEach(btn => {
-        if (btn.dataset.filter === status) {
-          btn.classList.remove('bg-white', 'border', 'text-gray-700')
-          btn.classList.add('bg-gray-900', 'text-white')
-        } else {
-          btn.classList.remove('bg-gray-900', 'text-white')
-          btn.classList.add('bg-white', 'border', 'text-gray-700')
-        }
+        const isActive = btn.dataset.filter === status
+        btn.classList.toggle('bg-gray-900', isActive)
+        btn.classList.toggle('text-white', isActive)
+        btn.classList.toggle('bg-white', !isActive)
+        btn.classList.toggle('text-gray-700', !isActive)
       })
       renderOrders()
     }
@@ -199,35 +189,33 @@
         return
       }
 
+      const statusColors = {
+        pending: 'bg-yellow-100 text-yellow-800',
+        confirmed: 'bg-blue-100 text-blue-800',
+        preparing: 'bg-purple-100 text-purple-800',
+        ready: 'bg-green-100 text-green-800',
+        completed: 'bg-gray-100 text-gray-800',
+        cancelled: 'bg-red-100 text-red-800'
+      }
+
       tbody.innerHTML = filtered.map(order => {
-        const statusColors = {
-          pending: 'bg-yellow-100 text-yellow-800',
-          confirmed: 'bg-blue-100 text-blue-800',
-          preparing: 'bg-purple-100 text-purple-800',
-          ready: 'bg-green-100 text-green-800',
-          completed: 'bg-gray-100 text-gray-800',
-          cancelled: 'bg-red-100 text-red-800'
-        }
-        
         const time = new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         const itemCount = order.order_items?.reduce((sum, i) => sum + i.quantity, 0) || 0
 
         return `
           <tr class="hover:bg-gray-50 transition">
-            <td class="px-4 py-3 font-mono text-xs text-gray-500">#${order.order_number || order.id.slice(0,8).toUpperCase()}</td>
-            <td class="px-4 py-3">
+            <td class="px-3 py-3 font-mono text-xs text-gray-500">#${order.order_number || order.id.slice(0,8).toUpperCase()}</td>
+            <td class="px-3 py-3">
               <div class="font-medium text-gray-900">${order.customer_name}</div>
               <div class="text-gray-500 text-xs">${order.customer_phone}</div>
             </td>
-            <td class="px-4 py-3 text-gray-600">${itemCount} items</td>
-            <td class="px-4 py-3 font-semibold">$${order.total_amount}</td>
-            <td class="px-4 py-3">
-              <span class="text-xs font-medium px-2.5 py-1 rounded-full ${statusColors[order.status] || 'bg-gray-100'}">
-                ${order.status}
-              </span>
+            <td class="px-3 py-3 text-gray-600">${itemCount} items</td>
+            <td class="px-3 py-3 font-semibold">$${order.total_amount}</td>
+            <td class="px-3 py-3">
+              <span class="text-xs font-medium px-2 py-1 rounded-full ${statusColors[order.status] || 'bg-gray-100'}">${order.status}</span>
             </td>
-            <td class="px-4 py-3 text-gray-500 text-xs">${time}</td>
-            <td class="px-4 py-3">
+            <td class="px-3 py-3 text-gray-500 text-xs">${time}</td>
+            <td class="px-3 py-3">
               <select onchange="updateStatus('${order.id}', this.value)" class="text-xs border rounded-lg px-2 py-1 bg-white cursor-pointer hover:border-orange-400 outline-none">
                 <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
                 <option value="confirmed" ${order.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>

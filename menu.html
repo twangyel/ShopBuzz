@@ -3,46 +3,188 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Menu</title>
+  <title>Menu — Your Cafe</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>body{font-family:'Inter',sans-serif;}</style>
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#ea580c">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#C4A77D">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .font-display { font-family: 'Playfair Display', Georgia, serif; }
+    
+    #loader {
+      position: fixed; inset: 0; background: #FDFCF8; z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+    #loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .loader-logo { width: 60px; height: 60px; animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:0.7} }
+    
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: #1A130C; color: #FAF7F0; padding: 12px 24px; border-radius: 12px;
+      font-size: 14px; font-weight: 500; opacity: 0; transition: all 0.3s ease; z-index: 100;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-cream-50 text-espresso-900 antialiased">
+
+  <!-- Loader -->
+  <div id="loader">
+    <div class="loader-logo bg-cream-500 rounded-full flex items-center justify-center text-white text-2xl">☕</div>
+    <p class="text-cream-600 text-xs mt-4 tracking-widest uppercase">Loading Menu</p>
+  </div>
 
   <!-- Header -->
-  <header class="bg-white border-b sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+  <header class="bg-white border-b sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center gap-3">
-        <a href="index.html" class="text-gray-400 hover:text-gray-600">←</a>
+        <a href="index.html" class="text-cream-600 hover:text-espresso-900">←</a>
         <div>
-          <h1 class="font-bold text-gray-900" id="outlet-name">Loading...</h1>
-          <p class="text-xs text-gray-500">Our Menu</p>
+          <h1 class="font-bold text-espresso-900" id="outlet-name">Menu</h1>
+          <p class="text-xs text-cream-600">Browse & Order</p>
         </div>
       </div>
-      <a href="cart.html" class="relative bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition">
+      <a href="cart.html" class="relative bg-espresso-800 text-white px-4 py-2 rounded-lg text-sm font-medium">
         Cart
-        <span id="cart-count" class="absolute -top-2 -right-2 bg-orange-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+        <span id="cart-badge" class="absolute -top-2 -right-2 bg-orange-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
       </a>
     </div>
   </header>
 
   <!-- Menu Content -->
-  <main class="max-w-6xl mx-auto px-4 py-8">
+  <main class="max-w-6xl mx-auto px-4 py-6 pb-24">
     <div id="menu-container">
-      <p class="text-center text-gray-400 py-20">Loading menu...</p>
+      <p class="text-center text-cream-400 py-20">Loading menu items...</p>
     </div>
   </main>
 
-  <!-- Toast Notification -->
-  <div id="toast" class="fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition duration-300 z-50 text-sm font-medium">
-    Added to cart
-  </div>
+  <!-- Toast -->
+  <div id="toast">Added to cart</div>
 
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script type="module" src="assets/js/menu.js"></script>
+  <script>
+    const SUPABASE_URL = 'https://mzkbjfcdagomqirfsjld.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16a2JqZmNkYWdvbXFpcmZzamxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4NTQ0MzcsImV4cCI6MjA5NTQzMDQzN30.H05EbXCSUYADZWlgOU1_rtxcYLFpjpg7W7Iaytc0OS4'
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    const outletId = localStorage.getItem('selected_outlet')
+    if (!outletId) { window.location.href = 'order.html' }
+
+    // Loading
+    window.addEventListener('load', () => {
+      setTimeout(() => document.getElementById('loader').classList.add('hidden'), 600)
+    })
+
+    // Cart functions
+    function getCart() { return JSON.parse(localStorage.getItem('cart') || '[]') }
+    function saveCart(cart) { 
+      localStorage.setItem('cart', JSON.stringify(cart))
+      updateBadge()
+    }
+    function updateBadge() {
+      const cart = getCart()
+      const count = cart.reduce((sum, i) => sum + i.quantity, 0)
+      const badge = document.getElementById('cart-badge')
+      if (count > 0) {
+        badge.textContent = count
+        badge.classList.remove('hidden')
+      } else {
+        badge.classList.add('hidden')
+      }
+    }
+
+    function addToCart(item) {
+      let cart = getCart()
+      const existing = cart.find(i => i.id === item.id)
+      if (existing) {
+        existing.quantity += 1
+      } else {
+        cart.push({ ...item, quantity: 1 })
+      }
+      saveCart(cart)
+      showToast(`${item.name} added`)
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast')
+      toast.textContent = msg
+      toast.classList.add('show')
+      setTimeout(() => toast.classList.remove('show'), 2000)
+    }
+
+    // Load menu
+    async function loadMenu() {
+      // Get outlet name
+      const { data: outlet } = await supabaseClient
+        .from('outlets').select('name').eq('id', outletId).single()
+      if (outlet) document.getElementById('outlet-name').textContent = outlet.name
+
+      // Get categories
+      const { data: categories } = await supabaseClient
+        .from('categories').select('*').order('sort_order')
+
+      // Get items for this outlet
+      const { data: items } = await supabaseClient
+        .from('menu_items')
+        .select('*')
+        .eq('outlet_id', outletId)
+        .eq('is_available', true)
+        .order('name')
+
+      if (!items || items.length === 0) {
+        document.getElementById('menu-container').innerHTML = 
+          '<div class="text-center py-20"><p class="text-cream-500 text-lg">No items available.</p></div>'
+        return
+      }
+
+      let html = ''
+      categories.forEach(cat => {
+        const catItems = items.filter(i => i.category_id === cat.id)
+        if (catItems.length === 0) return
+
+        html += `
+          <section class="mb-10">
+            <h2 class="font-display text-xl font-bold text-espresso-800 mb-4 pb-2 border-b-2 border-cream-200">${cat.name}</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              ${catItems.map(item => `
+                <div class="bg-white rounded-xl shadow-sm border border-cream-100 overflow-hidden flex flex-col">
+                  ${item.image_url ? 
+                    `<div class="h-40 bg-gray-100"><img src="${item.image_url}" alt="${item.name}" class="w-full h-full object-cover" loading="lazy"></div>` :
+                    `<div class="h-40 bg-cream-100 flex items-center justify-center text-cream-400 text-3xl">🍽️</div>`
+                  }
+                  <div class="p-4 flex-1 flex flex-col">
+                    <div class="flex justify-between items-start mb-1">
+                      <h3 class="font-bold text-espresso-900">${item.name}</h3>
+                      <span class="font-bold text-orange-600">$${item.price}</span>
+                    </div>
+                    <p class="text-cream-600 text-sm mb-3 flex-1">${item.description || ''}</p>
+                    <button onclick='addToCart(${JSON.stringify(item)})' 
+                      class="w-full bg-espresso-800 text-white py-2.5 rounded-lg hover:bg-espresso-700 transition text-sm font-medium">
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </section>
+        `
+      })
+
+      document.getElementById('menu-container').innerHTML = html
+    }
+
+    updateBadge()
+    loadMenu()
+
+    // PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+    }
+  </script>
+
 </body>
 </html>

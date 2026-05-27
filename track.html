@@ -3,120 +3,145 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Track Your Order</title>
+  <title>Track Order — Your Cafe</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>body{font-family:'Inter',sans-serif;}</style>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .font-display { font-family: 'Playfair Display', Georgia, serif; }
+    
+    .step-dot { transition: all 0.4s ease; }
+    .step-dot.active .dot-circle { background: #C4A77D; border-color: #C4A77D; }
+    .step-dot.active .dot-label { color: #4A3D28; font-weight: 600; }
+    .step-dot.completed .dot-circle { background: #4A3D28; border-color: #4A3D28; }
+    .step-line { transition: width 0.6s ease; }
+  </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-cream-50 text-espresso-900 min-h-screen">
 
   <!-- Nav -->
   <nav class="bg-white border-b">
-    <div class="max-w-3xl mx-auto px-4 py-4 flex justify-between items-center">
+    <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
       <a href="index.html" class="font-bold text-lg">☕ Your Cafe</a>
-      <a href="index.html" class="text-sm text-gray-600 hover:text-gray-900">← Back Home</a>
+      <a href="index.html" class="text-sm text-cream-600 hover:text-espresso-900">← Home</a>
     </div>
   </nav>
 
-  <main class="max-w-2xl mx-auto px-4 py-12">
-    <div class="text-center mb-10">
-      <h1 class="text-3xl font-bold mb-2">Track Your Order</h1>
-      <p class="text-gray-500">Enter your order number to see live status</p>
-    </div>
-
+  <main class="max-w-2xl mx-auto px-4 py-8">
+    
     <!-- Search -->
-    <div class="bg-white p-6 rounded-xl shadow-sm border mb-8">
-      <div class="flex gap-3">
-        <input 
-          type="text" 
-          id="order-input" 
-          placeholder="e.g. CAFE-001 or paste order ID" 
-          class="flex-1 border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none uppercase"
-        >
-        <button onclick="trackOrder()" class="bg-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition">
-          Track
-        </button>
+    <div class="text-center mb-8">
+      <h1 class="font-display text-2xl font-bold mb-2">Track Your Order</h1>
+      <p class="text-cream-600 text-sm mb-6">Enter your order number to see live status</p>
+      
+      <div class="flex gap-2 max-w-md mx-auto">
+        <input type="text" id="order-input" placeholder="e.g. CAFE-001" 
+          class="flex-1 border border-cream-300 rounded-lg px-4 py-3 uppercase tracking-wider font-bold text-center focus:ring-2 focus:ring-cream-500 outline-none">
+        <button onclick="trackOrder()" class="bg-espresso-800 text-white px-6 py-3 rounded-lg font-medium hover:bg-espresso-700 transition">Track</button>
       </div>
     </div>
 
     <!-- Result -->
     <div id="result" class="hidden">
-      <div class="bg-white rounded-xl shadow-sm border overflow-hidden mb-6">
-        <div class="p-6 border-b bg-gray-50">
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="text-sm text-gray-500 mb-1">Order <span id="res-number" class="font-mono font-bold text-gray-900"></span></p>
-              <h2 id="res-status" class="text-2xl font-bold capitalize"></h2>
-            </div>
-            <div id="res-badge" class="px-3 py-1 rounded-full text-xs font-bold"></div>
+      
+      <!-- Status Card -->
+      <div class="bg-white rounded-xl border border-cream-200 shadow-sm p-6 mb-6">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <p class="text-xs text-cream-500 uppercase tracking-wide">Order</p>
+            <p id="res-number" class="text-2xl font-bold font-mono">---</p>
           </div>
-          <p id="res-time" class="text-sm text-gray-500 mt-2"></p>
+          <span id="res-status" class="px-3 py-1 rounded-full text-xs font-bold text-white bg-gray-400">---</span>
         </div>
-        
-        <!-- Progress Bar -->
-        <div class="p-6">
-          <div class="relative">
-            <div class="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 -translate-y-1/2 rounded-full"></div>
-            <div id="progress-fill" class="absolute top-1/2 left-0 h-1 bg-orange-500 -translate-y-1/2 rounded-full transition-all duration-500" style="width: 0%"></div>
-            <div class="relative flex justify-between">
-              <div class="step-dot flex flex-col items-center" data-step="pending">
-                <div class="w-4 h-4 rounded-full bg-gray-300 border-2 border-white shadow transition-colors duration-300"></div>
-                <span class="text-xs mt-2 text-gray-500">Pending</span>
-              </div>
-              <div class="step-dot flex flex-col items-center" data-step="confirmed">
-                <div class="w-4 h-4 rounded-full bg-gray-300 border-2 border-white shadow transition-colors duration-300"></div>
-                <span class="text-xs mt-2 text-gray-500">Confirmed</span>
-              </div>
-              <div class="step-dot flex flex-col items-center" data-step="preparing">
-                <div class="w-4 h-4 rounded-full bg-gray-300 border-2 border-white shadow transition-colors duration-300"></div>
-                <span class="text-xs mt-2 text-gray-500">Preparing</span>
-              </div>
-              <div class="step-dot flex flex-col items-center" data-step="ready">
-                <div class="w-4 h-4 rounded-full bg-gray-300 border-2 border-white shadow transition-colors duration-300"></div>
-                <span class="text-xs mt-2 text-gray-500">Ready</span>
-              </div>
-              <div class="step-dot flex flex-col items-center" data-step="completed">
-                <div class="w-4 h-4 rounded-full bg-gray-300 border-2 border-white shadow transition-colors duration-300"></div>
-                <span class="text-xs mt-2 text-gray-500">Completed</span>
-              </div>
+        <p id="res-time" class="text-sm text-cream-500">---</p>
+      </div>
+
+      <!-- Progress Steps -->
+      <div class="bg-white rounded-xl border border-cream-200 shadow-sm p-6 mb-6">
+        <div class="relative flex justify-between items-start">
+          <!-- Background line -->
+          <div class="absolute top-3 left-0 right-0 h-0.5 bg-cream-200"></div>
+          <!-- Active line -->
+          <div id="progress-line" class="absolute top-3 left-0 h-0.5 bg-cream-500 step-line" style="width: 0%"></div>
+          
+          <div class="step-dot flex flex-col items-center relative z-10" data-step="pending">
+            <div class="dot-circle w-6 h-6 rounded-full border-2 border-cream-300 bg-white flex items-center justify-center mb-2">
+              <div class="w-2 h-2 rounded-full bg-transparent"></div>
             </div>
+            <span class="dot-label text-xs text-cream-500">Pending</span>
+          </div>
+          
+          <div class="step-dot flex flex-col items-center relative z-10" data-step="confirmed">
+            <div class="dot-circle w-6 h-6 rounded-full border-2 border-cream-300 bg-white flex items-center justify-center mb-2">
+              <div class="w-2 h-2 rounded-full bg-transparent"></div>
+            </div>
+            <span class="dot-label text-xs text-cream-500">Confirmed</span>
+          </div>
+          
+          <div class="step-dot flex flex-col items-center relative z-10" data-step="preparing">
+            <div class="dot-circle w-6 h-6 rounded-full border-2 border-cream-300 bg-white flex items-center justify-center mb-2">
+              <div class="w-2 h-2 rounded-full bg-transparent"></div>
+            </div>
+            <span class="dot-label text-xs text-cream-500">Preparing</span>
+          </div>
+          
+          <div class="step-dot flex flex-col items-center relative z-10" data-step="ready">
+            <div class="dot-circle w-6 h-6 rounded-full border-2 border-cream-300 bg-white flex items-center justify-center mb-2">
+              <div class="w-2 h-2 rounded-full bg-transparent"></div>
+            </div>
+            <span class="dot-label text-xs text-cream-500">Ready</span>
+          </div>
+          
+          <div class="step-dot flex flex-col items-center relative z-10" data-step="completed">
+            <div class="dot-circle w-6 h-6 rounded-full border-2 border-cream-300 bg-white flex items-center justify-center mb-2">
+              <div class="w-2 h-2 rounded-full bg-transparent"></div>
+            </div>
+            <span class="dot-label text-xs text-cream-500">Completed</span>
           </div>
         </div>
       </div>
 
       <!-- Order Details -->
-      <div class="bg-white rounded-xl shadow-sm border p-6">
-        <h3 class="font-bold mb-4">Order Details</h3>
-        <div id="res-items" class="space-y-3 mb-4"></div>
-        <div class="border-t pt-4 flex justify-between items-center">
-          <span class="text-gray-600">Total</span>
-          <span id="res-total" class="text-xl font-bold"></span>
+      <div class="bg-white rounded-xl border border-cream-200 shadow-sm p-6">
+        <h3 class="font-bold mb-4">Items</h3>
+        <div id="res-items" class="space-y-2 mb-4"></div>
+        <div class="border-t border-cream-100 pt-4 flex justify-between">
+          <span class="text-cream-600">Total</span>
+          <span id="res-total" class="font-bold text-lg">$0.00</span>
         </div>
       </div>
+
+      <!-- Refresh -->
+      <button onclick="refreshOrder()" class="w-full mt-4 bg-white border border-cream-200 text-espresso-700 py-3 rounded-xl font-medium hover:bg-cream-50 transition">
+        Refresh Status
+      </button>
     </div>
 
     <!-- Not Found -->
     <div id="not-found" class="hidden text-center py-12">
-      <p class="text-gray-400 text-lg mb-2">Order not found</p>
-      <p class="text-sm text-gray-400">Check your order number and try again</p>
+      <p class="text-cream-400 text-lg">Order not found</p>
+      <p class="text-sm text-cream-400 mt-1">Check your order number and try again</p>
     </div>
+
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-     const SUPABASE_URL = 'https://mzkbjfcdagomqirfsjld.supabase.co'
+    const SUPABASE_URL = 'https://mzkbjfcdagomqirfsjld.supabase.co'
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16a2JqZmNkYWdvbXFpcmZzamxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4NTQ0MzcsImV4cCI6MjA5NTQzMDQzN30.H05EbXCSUYADZWlgOU1_rtxcYLFpjpg7W7Iaytc0OS4'
-
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
     const steps = ['pending', 'confirmed', 'preparing', 'ready', 'completed']
-    const stepColors = {
+    const statusColors = {
       pending: 'bg-yellow-500',
       confirmed: 'bg-blue-500',
-      preparing: 'bg-purple-500',
+      preparing: 'bg-orange-500',
       ready: 'bg-green-500',
-      completed: 'bg-gray-800'
+      completed: 'bg-gray-800',
+      cancelled: 'bg-red-500'
     }
+
+    let currentOrderId = null
 
     async function trackOrder() {
       const input = document.getElementById('order-input').value.trim().toUpperCase()
@@ -125,7 +150,6 @@
       document.getElementById('result').classList.add('hidden')
       document.getElementById('not-found').classList.add('hidden')
 
-      // Try to find by order_number or id
       let query = supabaseClient.from('orders').select('*, order_items(*)')
       
       if (input.startsWith('CAFE-')) {
@@ -141,6 +165,7 @@
         return
       }
 
+      currentOrderId = data.id
       showResult(data)
     }
 
@@ -148,52 +173,74 @@
       document.getElementById('result').classList.remove('hidden')
       
       document.getElementById('res-number').textContent = order.order_number || order.id.slice(0,8).toUpperCase()
-      document.getElementById('res-status').textContent = order.status
-      document.getElementById('res-time').textContent = 'Placed on ' + new Date(order.created_at).toLocaleString()
-      document.getElementById('res-total').textContent = '$' + order.total_amount
+      document.getElementById('res-time').textContent = 'Placed ' + new Date(order.created_at).toLocaleString()
+      document.getElementById('res-total').textContent = '$' + parseFloat(order.total_amount).toFixed(2)
 
-      const badge = document.getElementById('res-badge')
-      badge.textContent = order.status
-      badge.className = `px-3 py-1 rounded-full text-xs font-bold capitalize text-white ${stepColors[order.status] || 'bg-gray-500'}`
+      const statusBadge = document.getElementById('res-status')
+      statusBadge.textContent = order.status
+      statusBadge.className = `px-3 py-1 rounded-full text-xs font-bold text-white capitalize ${statusColors[order.status] || 'bg-gray-400'}`
 
       // Progress bar
       const currentIndex = steps.indexOf(order.status)
       const progress = currentIndex >= 0 ? (currentIndex / (steps.length - 1)) * 100 : 0
-      document.getElementById('progress-fill').style.width = progress + '%'
+      document.getElementById('progress-line').style.width = progress + '%'
 
       // Step dots
-      document.querySelectorAll('.step-dot').forEach((dot, i) => {
+      document.querySelectorAll('.step-dot').forEach((dot) => {
         const dotStep = dot.dataset.step
-        const dotEl = dot.querySelector('div')
-        const labelEl = dot.querySelector('span')
+        const stepIndex = steps.indexOf(dotStep)
+        const circle = dot.querySelector('.dot-circle')
         
-        if (steps.indexOf(dotStep) <= currentIndex) {
-          dotEl.classList.remove('bg-gray-300')
-          dotEl.classList.add(stepColors[order.status] || 'bg-orange-500')
-          labelEl.classList.add('font-bold', 'text-gray-900')
-          labelEl.classList.remove('text-gray-500')
+        dot.classList.remove('active', 'completed')
+        
+        if (stepIndex < currentIndex) {
+          dot.classList.add('completed')
+          circle.innerHTML = '<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>'
+        } else if (stepIndex === currentIndex) {
+          dot.classList.add('active')
+          circle.innerHTML = '<div class="w-2 h-2 rounded-full bg-white"></div>'
         } else {
-          dotEl.classList.add('bg-gray-300')
-          dotEl.classList.remove(stepColors[order.status] || 'bg-orange-500')
-          labelEl.classList.remove('font-bold', 'text-gray-900')
-          labelEl.classList.add('text-gray-500')
+          circle.innerHTML = '<div class="w-2 h-2 rounded-full bg-transparent"></div>'
         }
       })
 
       // Items
-      const itemsContainer = document.getElementById('res-items')
-      itemsContainer.innerHTML = (order.order_items || []).map(item => `
+      document.getElementById('res-items').innerHTML = (order.order_items || []).map(item => `
         <div class="flex justify-between text-sm">
-          <span class="text-gray-700">${item.quantity}x ${item.name}</span>
+          <span class="text-espresso-700">${item.quantity}x ${item.item_name}</span>
           <span class="font-medium">$${(item.price * item.quantity).toFixed(2)}</span>
         </div>
       `).join('')
     }
 
+    async function refreshOrder() {
+      if (!currentOrderId) return
+      const { data } = await supabaseClient.from('orders').select('*, order_items(*)').eq('id', currentOrderId).single()
+      if (data) showResult(data)
+    }
+
+    // Auto-refresh every 30 seconds
+    setInterval(() => {
+      if (currentOrderId && !document.hidden) refreshOrder()
+    }, 30000)
+
     // Allow Enter key
     document.getElementById('order-input').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') trackOrder()
     })
+
+    // Check URL params (from confirmation page)
+    const urlParams = new URLSearchParams(window.location.search)
+    const urlOrder = urlParams.get('order')
+    if (urlOrder) {
+      document.getElementById('order-input').value = urlOrder
+      trackOrder()
+    }
+
+    // PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+    }
   </script>
 
 </body>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cart — Your Cafe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#C4A77D">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .font-display { font-family: 'Playfair Display', Georgia, serif; }
+    
+    #loader {
+      position: fixed; inset: 0; background: #FDFCF8; z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+    #loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    
+    /* Birthday section animation */
+    #birthday-section {
+      max-height: 0; overflow: hidden; opacity: 0;
+      transition: max-height 0.5s ease, opacity 0.4s ease;
+    }
+    #birthday-section.show {
+      max-height: 300px; opacity: 1;
+    }
+  </style>
+</head>
+<body class="bg-cream-50 text-espresso-900 antialiased">
+
+  <!-- Loader -->
+  <div id="loader">
+    <div class="w-16 h-16 bg-cream-500 rounded-full flex items-center justify-center text-white text-2xl animate-pulse">☕</div>
+    <p class="text-cream-600 text-xs mt-4 tracking-widest uppercase">Loading Cart</p>
+  </div>
+
+  <!-- Header -->
+  <header class="bg-white border-b sticky top-0 z-40">
+    <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <a href="menu.html" class="text-cream-600 hover:text-espresso-900">←</a>
+        <h1 class="font-bold text-espresso-900">Your Cart</h1>
+      </div>
+      <button onclick="clearCart()" class="text-red-600 text-sm hover:text-red-700">Clear</button>
+    </div>
+  </header>
+
+  <main class="max-w-2xl mx-auto px-4 py-6 pb-32">
+    
+    <!-- Cart Items -->
+    <div id="cart-items" class="space-y-3 mb-6"></div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden text-center py-16">
+      <p class="text-cream-500 text-lg mb-4">Your cart is empty</p>
+      <a href="menu.html" class="inline-block bg-espresso-800 text-white px-8 py-3 rounded-lg font-medium hover:bg-espresso-700">Browse Menu</a>
+    </div>
+
+    <!-- Order Summary -->
+    <div id="checkout-section" class="hidden">
+      <div class="bg-white p-5 rounded-xl border border-cream-200 mb-6">
+        <div class="flex justify-between text-lg font-bold mb-1">
+          <span>Total</span>
+          <span id="cart-total">$0.00</span>
+        </div>
+        <p class="text-cream-500 text-xs">Tax included. Pay on pickup.</p>
+      </div>
+
+      <!-- Checkout Form -->
+      <form id="checkout-form" class="bg-white p-5 rounded-xl border border-cream-200 space-y-4">
+        
+        <h3 class="font-bold text-espresso-900 mb-2">Customer Details</h3>
+        
+        <div>
+          <label class="block text-sm font-medium text-espresso-700 mb-1">Full Name *</label>
+          <input type="text" id="customer-name" required class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none" placeholder="John Doe">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-espresso-700 mb-1">Phone Number *</label>
+          <input type="tel" id="customer-phone" required class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none" placeholder="555-123-4567">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-espresso-700 mb-1">Email (optional)</label>
+          <input type="email" id="customer-email" class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none" placeholder="john@example.com">
+        </div>
+
+        <!-- Birthday Section (hidden by default, shown for new customers) -->
+        <div id="birthday-section">
+          <div class="bg-cream-100 p-4 rounded-lg border border-cream-200">
+            <p class="text-sm text-espresso-700 mb-3">🎂 <strong>First time ordering?</strong> Add your birthday and get a free treat on your special day!</p>
+            <label class="block text-sm font-medium text-espresso-700 mb-1">Birthday</label>
+            <input type="date" id="customer-birthday" class="w-full border border-cream-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cream-500 outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-espresso-700 mb-1">Special Instructions</label>
+          <textarea id="special-notes" rows="2" class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none" placeholder="Allergies, dietary needs, pickup time..."></textarea>
+        </div>
+
+        <button type="submit" id="place-order-btn" class="w-full bg-orange-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-orange-700 transition shadow-lg">
+          Place Order
+        </button>
+        
+        <p class="text-center text-xs text-cream-500 mt-2">You'll receive an order number to track your order</p>
+      </form>
+    </div>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://mzkbjfcdagomqirfsjld.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16a2JqZmNkYWdvbXFpcmZzamxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4NTQ0MzcsImV4cCI6MjA5NTQzMDQzN30.H05EbXCSUYADZWlgOU1_rtxcYLFpjpg7W7Iaytc0OS4'
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    const outletId = localStorage.getItem('selected_outlet')
+    if (!outletId) { window.location.href = 'order.html' }
+
+    // Loading
+    window.addEventListener('load', () => {
+      setTimeout(() => document.getElementById('loader').classList.add('hidden'), 400)
+    })
+
+    function getCart() { return JSON.parse(localStorage.getItem('cart') || '[]') }
+    function saveCart(cart) { localStorage.setItem('cart', JSON.stringify(cart)) }
+
+    function renderCart() {
+      const cart = getCart()
+      const container = document.getElementById('cart-items')
+      const emptyState = document.getElementById('empty-state')
+      const checkoutSection = document.getElementById('checkout-section')
+
+      if (cart.length === 0) {
+        container.innerHTML = ''
+        emptyState.classList.remove('hidden')
+        checkoutSection.classList.add('hidden')
+        return
+      }
+
+      emptyState.classList.add('hidden')
+      checkoutSection.classList.remove('hidden')
+
+      const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+      document.getElementById('cart-total').textContent = '$' + total.toFixed(2)
+
+      container.innerHTML = cart.map((item, index) => `
+        <div class="flex gap-3 bg-white p-4 rounded-xl border border-cream-100">
+          ${item.image_url ? 
+            `<img src="${item.image_url}" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">` :
+            `<div class="w-20 h-20 rounded-lg bg-cream-100 flex items-center justify-center text-cream-400 text-2xl flex-shrink-0">🍽️</div>`
+          }
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-start mb-1">
+              <h3 class="font-bold text-espresso-900 truncate">${item.name}</h3>
+              <span class="font-bold text-orange-600">$${(item.price * item.quantity).toFixed(2)}</span>
+            </div>
+            <p class="text-cream-500 text-xs mb-2">$${item.price} each</p>
+            <div class="flex items-center gap-2">
+              <button onclick="updateQty(${index}, -1)" class="w-8 h-8 border border-cream-200 rounded-lg hover:bg-cream-50 flex items-center justify-center font-bold text-cream-600">-</button>
+              <span class="w-8 text-center font-medium">${item.quantity}</span>
+              <button onclick="updateQty(${index}, 1)" class="w-8 h-8 border border-cream-200 rounded-lg hover:bg-cream-50 flex items-center justify-center font-bold text-cream-600">+</button>
+              <button onclick="removeItem(${index})" class="ml-auto text-red-500 text-sm hover:text-red-700">Remove</button>
+            </div>
+          </div>
+        </div>
+      `).join('')
+    }
+
+    function updateQty(index, change) {
+      let cart = getCart()
+      cart[index].quantity += change
+      if (cart[index].quantity < 1) cart.splice(index, 1)
+      saveCart(cart)
+      renderCart()
+    }
+
+    function removeItem(index) {
+      let cart = getCart()
+      cart.splice(index, 1)
+      saveCart(cart)
+      renderCart()
+    }
+
+    function clearCart() {
+      if (!confirm('Clear all items?')) return
+      localStorage.removeItem('cart')
+      renderCart()
+    }
+
+    // Check if customer exists by phone
+    async function checkCustomer(phone) {
+      const { data } = await supabaseClient
+        .from('customers')
+        .select('*')
+        .eq('phone', phone)
+        .single()
+      return data
+    }
+
+    // Show/hide birthday based on phone input
+    let customerChecked = false
+    document.getElementById('customer-phone').addEventListener('blur', async function() {
+      const phone = this.value.trim()
+      if (!phone || customerChecked) return
+      
+      const existing = await checkCustomer(phone)
+      const birthdaySection = document.getElementById('birthday-section')
+      
+      if (!existing) {
+        // New customer - show birthday field
+        birthdaySection.classList.add('show')
+      } else {
+        // Returning customer - hide birthday, maybe show welcome
+        birthdaySection.classList.remove('show')
+      }
+      customerChecked = true
+    })
+
+    // Place Order
+    document.getElementById('checkout-form').addEventListener('submit', async function(e) {
+      e.preventDefault()
+      
+      const cart = getCart()
+      if (cart.length === 0) return alert('Cart is empty!')
+
+      const btn = document.getElementById('place-order-btn')
+      btn.disabled = true
+      btn.textContent = 'Placing Order...'
+
+      const name = document.getElementById('customer-name').value.trim()
+      const phone = document.getElementById('customer-phone').value.trim()
+      const email = document.getElementById('customer-email').value.trim()
+      const birthday = document.getElementById('customer-birthday').value
+      const notes = document.getElementById('special-notes').value.trim()
+      const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
+
+      try {
+        // 1. Get or create customer
+        let customerId = null
+        const existingCustomer = await checkCustomer(phone)
+
+        if (existingCustomer) {
+          customerId = existingCustomer.id
+          // Update order count
+          await supabaseClient.from('customers').update({ 
+            total_orders: existingCustomer.total_orders + 1 
+          }).eq('id', customerId)
+        } else {
+          const { data: newCustomer } = await supabaseClient.from('customers').insert({
+            name, phone, email, birthday: birthday || null, total_orders: 1
+          }).select().single()
+          customerId = newCustomer.id
+        }
+
+        // 2. Create order
+        const { data: order } = await supabaseClient.from('orders').insert({
+          outlet_id: outletId,
+          customer_id: customerId,
+          customer_name: name,
+          customer_phone: phone,
+          customer_email: email || null,
+          total_amount: total,
+          status: 'pending',
+          special_instructions: notes || null
+        }).select().single()
+
+        // 3. Create order items
+        const orderItems = cart.map(i => ({
+          order_id: order.id,
+          menu_item_id: i.id,
+          item_name: i.name,
+          price: i.price,
+          quantity: i.quantity
+        }))
+        await supabaseClient.from('order_items').insert(orderItems)
+
+        // 4. Create payment record
+        await supabaseClient.from('payments').insert({
+          order_id: order.id,
+          amount: total,
+          method: 'cash',
+          status: 'pending'
+        })
+
+        // 5. Clear cart and redirect
+        localStorage.removeItem('cart')
+        window.location.href = `confirmation.html?order=${order.order_number || order.id}`
+
+      } catch (err) {
+        console.error(err)
+        alert('Something went wrong. Please try again.')
+        btn.disabled = false
+        btn.textContent = 'Place Order'
+      }
+    })
+
+    renderCart()
+
+    // PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+    }
+  </script>
+
+</body>
+</html>
