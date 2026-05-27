@@ -109,44 +109,43 @@
 
     /* Outlet Card */
     .outlet-card {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
     }
-    .outlet-card::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 0; bottom: 0; width: 3px;
-      background: linear-gradient(to bottom, #C4A77D, #8B7348);
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
     .outlet-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 24px -8px rgba(139, 115, 72, 0.15), 0 4px 8px -2px rgba(139, 115, 72, 0.08);
-      border-color: #C4A77D;
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px -12px rgba(139, 115, 72, 0.18), 0 8px 16px -4px rgba(139, 115, 72, 0.08);
     }
-    .outlet-card:hover::before { opacity: 1; }
-    .outlet-card:hover .outlet-arrow {
+    .outlet-card:hover .outlet-image img {
+      transform: scale(1.05);
+    }
+    .outlet-card:hover .outlet-overlay {
       opacity: 1;
-      transform: translateX(0);
     }
-    .outlet-arrow {
+    .outlet-image img {
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .outlet-overlay {
       opacity: 0;
-      transform: translateX(-8px);
-      transition: all 0.3s ease;
+      transition: opacity 0.3s ease;
     }
 
     /* Status Badge */
     .status-open {
-      background: rgba(34, 197, 94, 0.1);
+      background: rgba(34, 197, 94, 0.12);
       color: #16a34a;
       border: 1px solid rgba(34, 197, 94, 0.2);
     }
     .status-busy {
-      background: rgba(234, 179, 8, 0.1);
+      background: rgba(234, 179, 8, 0.12);
       color: #ca8a04;
       border: 1px solid rgba(234, 179, 8, 0.2);
+    }
+    .status-closed {
+      background: rgba(239, 68, 68, 0.08);
+      color: #dc2626;
+      border: 1px solid rgba(239, 68, 68, 0.15);
     }
 
     /* Toast */
@@ -182,11 +181,19 @@
     /* Selection ring animation */
     @keyframes selectPulse {
       0% { box-shadow: 0 0 0 0 rgba(196, 167, 125, 0.4); }
-      70% { box-shadow: 0 0 0 12px rgba(196, 167, 125, 0); }
+      70% { box-shadow: 0 0 0 16px rgba(196, 167, 125, 0); }
       100% { box-shadow: 0 0 0 0 rgba(196, 167, 125, 0); }
     }
     .selecting {
       animation: selectPulse 0.6s ease-out;
+    }
+
+    /* Image fallback pattern */
+    .image-fallback {
+      background: linear-gradient(135deg, #F7F3EB 0%, #EDE5D3 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
   </style>
 <base target="_blank">
@@ -219,7 +226,7 @@
     <span id="toast-message">Something went wrong</span>
   </div>
 
-  <div class="w-full max-w-lg">
+  <div class="w-full max-w-4xl">
     <!-- Back Link -->
     <a href="index.html" class="inline-flex items-center gap-2 text-cream-600 text-sm font-medium hover:text-espresso-900 transition-colors mb-8 group">
       <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -233,7 +240,7 @@
       <div class="relative w-20 h-20 mx-auto mb-6">
         <div class="absolute inset-0 bg-cream-400 rounded-full opacity-20 animate-pulse-soft"></div>
         <div class="relative w-20 h-20 bg-white rounded-full mx-auto flex items-center justify-center shadow-lg border-2 border-cream-200">
-          <img src="image/logo.svg" alt="Your Cafe" class="w-12 h-12 object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+          <img src="logo.svg" alt="Your Cafe" class="w-12 h-12 object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
           <div class="hidden text-cream-500">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
@@ -249,37 +256,63 @@
       <p class="text-cream-600 mt-3 text-base font-light">Select your nearest outlet to begin</p>
     </div>
 
-    <!-- Outlet List -->
-    <div id="outlet-list" class="space-y-4">
+    <!-- Outlet Grid -->
+    <div id="outlet-list" class="grid grid-cols-1 md:grid-cols-2 gap-5">
       <!-- Skeleton Loading State -->
-      <div class="bg-white p-5 rounded-2xl border border-cream-200 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div class="space-y-3 flex-1">
+      <div class="bg-white rounded-2xl border border-cream-200 shadow-sm overflow-hidden">
+        <div class="skeleton h-48 w-full rounded-none"></div>
+        <div class="p-5 space-y-3">
+          <div class="flex items-center justify-between">
             <div class="skeleton h-5 w-2/3"></div>
-            <div class="skeleton h-4 w-1/2"></div>
-            <div class="skeleton h-3 w-1/3"></div>
+            <div class="skeleton h-5 w-16"></div>
           </div>
-          <div class="skeleton h-8 w-8 rounded-full ml-4"></div>
+          <div class="skeleton h-4 w-full"></div>
+          <div class="flex gap-3">
+            <div class="skeleton h-3 w-20"></div>
+            <div class="skeleton h-3 w-24"></div>
+          </div>
         </div>
       </div>
-      <div class="bg-white p-5 rounded-2xl border border-cream-200 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div class="space-y-3 flex-1">
+      <div class="bg-white rounded-2xl border border-cream-200 shadow-sm overflow-hidden">
+        <div class="skeleton h-48 w-full rounded-none"></div>
+        <div class="p-5 space-y-3">
+          <div class="flex items-center justify-between">
             <div class="skeleton h-5 w-3/4"></div>
-            <div class="skeleton h-4 w-1/2"></div>
-            <div class="skeleton h-3 w-1/4"></div>
+            <div class="skeleton h-5 w-16"></div>
           </div>
-          <div class="skeleton h-8 w-8 rounded-full ml-4"></div>
+          <div class="skeleton h-4 w-full"></div>
+          <div class="flex gap-3">
+            <div class="skeleton h-3 w-20"></div>
+            <div class="skeleton h-3 w-24"></div>
+          </div>
         </div>
       </div>
-      <div class="bg-white p-5 rounded-2xl border border-cream-200 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div class="space-y-3 flex-1">
+      <div class="bg-white rounded-2xl border border-cream-200 shadow-sm overflow-hidden">
+        <div class="skeleton h-48 w-full rounded-none"></div>
+        <div class="p-5 space-y-3">
+          <div class="flex items-center justify-between">
             <div class="skeleton h-5 w-1/2"></div>
-            <div class="skeleton h-4 w-2/3"></div>
-            <div class="skeleton h-3 w-1/3"></div>
+            <div class="skeleton h-5 w-16"></div>
           </div>
-          <div class="skeleton h-8 w-8 rounded-full ml-4"></div>
+          <div class="skeleton h-4 w-full"></div>
+          <div class="flex gap-3">
+            <div class="skeleton h-3 w-20"></div>
+            <div class="skeleton h-3 w-24"></div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl border border-cream-200 shadow-sm overflow-hidden">
+        <div class="skeleton h-48 w-full rounded-none"></div>
+        <div class="p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="skeleton h-5 w-2/3"></div>
+            <div class="skeleton h-5 w-16"></div>
+          </div>
+          <div class="skeleton h-4 w-full"></div>
+          <div class="flex gap-3">
+            <div class="skeleton h-3 w-20"></div>
+            <div class="skeleton h-3 w-24"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -344,13 +377,42 @@
       const statuses = {
         'open': { class: 'status-open', label: 'Open', icon: '<circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2"/><circle cx="12" cy="12" r="3" fill="currentColor"/>' },
         'busy': { class: 'status-busy', label: 'Busy', icon: '<circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2"/><path d="M12 8v4l3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' },
-        'closed': { class: 'bg-red-50 text-red-600 border border-red-200', label: 'Closed', icon: '<circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2"/><path d="M15 9l-6 6M9 9l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' }
+        'closed': { class: 'status-closed', label: 'Closed', icon: '<circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2"/><path d="M15 9l-6 6M9 9l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' }
       }
       const s = statuses[status] || statuses['open']
       return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${s.class}">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none">${s.icon}</svg>
         ${s.label}
       </span>`
+    }
+
+    // ===== GET IMAGE HTML =====
+    function getOutletImage(imageUrl, name) {
+      if (imageUrl) {
+        return `<div class="outlet-image relative h-48 overflow-hidden bg-cream-100">
+          <img src="${imageUrl}" alt="${name}" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.innerHTML=getImageFallback('${name.replace(/'/g, "\'")}')">
+          <div class="outlet-overlay absolute inset-0 bg-gradient-to-t from-espresso-900/60 to-transparent flex items-end justify-end p-4">
+            <span class="inline-flex items-center gap-1.5 text-white text-xs font-medium bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/30">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+              Select
+            </span>
+          </div>
+        </div>`
+      }
+      return getImageFallback(name)
+    }
+
+    function getImageFallback(name) {
+      const initial = name.charAt(0).toUpperCase()
+      return `<div class="image-fallback h-48 w-full relative">
+        <div class="text-center">
+          <div class="w-16 h-16 bg-cream-200 rounded-full mx-auto flex items-center justify-center text-cream-500 text-2xl font-display font-bold mb-2">${initial}</div>
+          <span class="text-cream-500 text-xs font-medium">${name}</span>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-cream-100/50 to-transparent"></div>
+      </div>`
     }
 
     // ===== LOAD OUTLETS =====
@@ -382,45 +444,40 @@
           const distance = formatDistance(o.distance_km)
           const status = o.status || 'open'
           const badge = getStatusBadge(status)
+          const imageHtml = getOutletImage(o.image_url, o.name)
           const delay = index * 0.08
 
           return `
           <button type="button" onclick="selectOutlet(${o.id})" 
-            class="outlet-card w-full bg-white p-5 rounded-2xl shadow-sm border border-cream-200 text-left group cursor-pointer animate-slide-up"
+            class="outlet-card w-full bg-white rounded-2xl shadow-sm border border-cream-200 text-left group cursor-pointer animate-slide-up"
             style="animation-delay: ${delay}s; animation-fill-mode: both;">
-            <div class="flex items-start justify-between gap-4">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-2 flex-wrap">
-                  <h3 class="font-display text-lg font-bold text-espresso-900 group-hover:text-cream-600 transition-colors">${o.name}</h3>
-                  ${badge}
-                </div>
-                <p class="text-sm text-cream-600 leading-relaxed">${o.location || ''}</p>
-                <div class="flex items-center gap-4 mt-3 text-xs text-cream-500">
-                  ${o.phone ? `<span class="inline-flex items-center gap-1.5">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
-                    </svg>
-                    ${o.phone}
-                  </span>` : ''}
-                  ${distance ? `<span class="inline-flex items-center gap-1.5">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="10"/>
-                      <path d="M12 6v6l4 2"/>
-                    </svg>
-                    ${distance}
-                  </span>` : ''}
-                  ${o.rating ? `<span class="inline-flex items-center gap-1 text-amber-600">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                    </svg>
-                    ${o.rating}
-                  </span>` : ''}
-                </div>
+            ${imageHtml}
+            <div class="p-5">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <h3 class="font-display text-lg font-bold text-espresso-900 group-hover:text-cream-600 transition-colors leading-tight">${o.name}</h3>
+                ${badge}
               </div>
-              <div class="outlet-arrow flex-shrink-0 w-10 h-10 rounded-full bg-cream-50 flex items-center justify-center text-cream-500 group-hover:bg-cream-400 group-hover:text-white transition-all">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
+              <p class="text-sm text-cream-600 leading-relaxed line-clamp-2">${o.location || ''}</p>
+              <div class="flex items-center flex-wrap gap-x-4 gap-y-2 mt-3 pt-3 border-t border-cream-100">
+                ${o.phone ? `<span class="inline-flex items-center gap-1.5 text-xs text-cream-500">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+                  </svg>
+                  ${o.phone}
+                </span>` : ''}
+                ${distance ? `<span class="inline-flex items-center gap-1.5 text-xs text-cream-500">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 6v6l4 2"/>
+                  </svg>
+                  ${distance}
+                </span>` : ''}
+                ${o.rating ? `<span class="inline-flex items-center gap-1 text-xs text-amber-600 font-medium">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
+                  ${o.rating}
+                </span>` : ''}
               </div>
             </div>
           </button>
@@ -431,20 +488,22 @@
       } catch (err) {
         console.error('Failed to load outlets:', err)
         document.getElementById('outlet-list').innerHTML = `
-          <div class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center animate-fade-in">
-            <div class="w-12 h-12 bg-red-100 rounded-full mx-auto flex items-center justify-center mb-3">
-              <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
-              </svg>
+          <div class="col-span-full">
+            <div class="bg-red-50 border border-red-200 rounded-2xl p-8 text-center animate-fade-in max-w-md mx-auto">
+              <div class="w-14 h-14 bg-red-100 rounded-full mx-auto flex items-center justify-center mb-4">
+                <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                </svg>
+              </div>
+              <h3 class="font-display text-xl font-semibold text-red-900 mb-2">Unable to load outlets</h3>
+              <p class="text-red-600 text-sm mb-5">Please check your connection and try again.</p>
+              <button onclick="loadOutlets()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl text-sm font-medium transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/>
+                </svg>
+                Try Again
+              </button>
             </div>
-            <h3 class="font-display text-lg font-semibold text-red-900 mb-1">Unable to load outlets</h3>
-            <p class="text-red-600 text-sm mb-4">Please check your connection and try again.</p>
-            <button onclick="loadOutlets()" class="inline-flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium transition-colors">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/>
-              </svg>
-              Try Again
-            </button>
           </div>
         `
         showToast('Connection error. Please try again.')
