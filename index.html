@@ -8,9 +8,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/index.css">
-  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/assets/css/index.css">
+  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#C4A77D">
+  <link rel="apple-touch-icon" href="logo-192.png">
 
   <script>
     tailwind.config = {
@@ -18,28 +19,14 @@
         extend: {
           colors: {
             cream: {
-              50: '#FDFCF8',
-              100: '#FAF7F0',
-              200: '#F5F0E4',
-              300: '#EDE5D3',
-              400: '#E0D4BC',
-              500: '#C4A77D',
-              600: '#A68B5B',
-              700: '#8B7348',
-              800: '#6B5A3A',
-              900: '#4A3D28',
+              50: '#FDFCF8', 100: '#FAF7F0', 200: '#F5F0E4', 300: '#EDE5D3',
+              400: '#E0D4BC', 500: '#C4A77D', 600: '#A68B5B', 700: '#8B7348',
+              800: '#6B5A3A', 900: '#4A3D28',
             },
             espresso: {
-              50: '#F5F0EB',
-              100: '#E8DDD3',
-              200: '#D4C4B0',
-              300: '#BFA68A',
-              400: '#A88B6A',
-              500: '#8B6F4E',
-              600: '#6B5238',
-              700: '#4A3826',
-              800: '#332618',
-              900: '#1A130C',
+              50: '#F5F0EB', 100: '#E8DDD3', 200: '#D4C4B0', 300: '#BFA68A',
+              400: '#A88B6A', 500: '#8B6F4E', 600: '#6B5238', 700: '#4A3826',
+              800: '#332618', 900: '#1A130C',
             }
           },
           fontFamily: {
@@ -50,12 +37,86 @@
       }
     }
   </script>
-<base target="_blank">
+  <style>
+    /* Loading Screen */
+    #loader {
+      position: fixed;
+      inset: 0;
+      background: #FDFCF8;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+    #loader.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .loader-logo {
+      width: 80px;
+      height: 80px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.7; }
+    }
+    .loader-bar {
+      width: 120px;
+      height: 3px;
+      background: #EDE5D3;
+      border-radius: 3px;
+      margin-top: 24px;
+      overflow: hidden;
+    }
+    .loader-bar::after {
+      content: '';
+      display: block;
+      width: 40%;
+      height: 100%;
+      background: #C4A77D;
+      border-radius: 3px;
+      animation: loadSlide 1s ease-in-out infinite;
+    }
+    @keyframes loadSlide {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(300%); }
+    }
+    .loader-text {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #8B7348;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    /* Mobile menu smooth animation */
+    #mobile-menu {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, opacity 0.35s ease;
+      opacity: 0;
+    }
+    #mobile-menu.open {
+      max-height: 400px;
+      opacity: 1;
+    }
+  </style>
 </head>
 <body class="bg-cream-50 text-espresso-900 antialiased">
 
+  <!-- Loading Screen -->
+  <div id="loader">
+    <img src="logo.png" alt="Your Cafe" class="loader-logo" onerror="this.style.display='none'; document.querySelector('.loader-fallback').style.display='flex'">
+    <div class="loader-fallback" style="display:none; width:80px; height:80px; background:#C4A77D; border-radius:50%; align-items:center; justify-content:center; color:white; font-size:36px;">☕</div>
+    <div class="loader-bar"></div>
+    <p class="loader-text">Loading</p>
+  </div>
+
   <!-- Navigation -->
-    <!-- Navigation -->
   <nav id="navbar" class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm shadow-sm transition-all duration-300">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
       <a href="index.html" class="font-display text-2xl md:text-3xl font-semibold text-espresso-900 tracking-tight">
@@ -65,9 +126,9 @@
       <!-- Desktop Nav -->
       <div class="hidden md:flex items-center gap-10 text-sm font-medium tracking-wide">
         <a href="index.html" class="text-espresso-900 font-semibold border-b-2 border-orange-600 pb-1">Home</a>
-        <a href="#menu" class="text-espresso-700 hover:text-espresso-900 hover:border-b-2 hover:border-cream-500 pb-1 transition">Menu</a>
+        <a href="menu.html" class="text-espresso-700 hover:text-espresso-900 hover:border-b-2 hover:border-cream-500 pb-1 transition">Menu</a>
+        <a href="track.html" class="text-espresso-700 hover:text-espresso-900 hover:border-b-2 hover:border-cream-500 pb-1 transition">Track</a>
         <a href="#about" class="text-espresso-700 hover:text-espresso-900 hover:border-b-2 hover:border-cream-500 pb-1 transition">Our Story</a>
-        <a href="#gallery" class="text-espresso-700 hover:text-espresso-900 hover:border-b-2 hover:border-cream-500 pb-1 transition">Gallery</a>
         <a href="#locations" class="text-espresso-700 hover:text-espresso-900 hover:border-b-2 hover:border-cream-500 pb-1 transition">Locations</a>
         <a href="order.html" class="bg-orange-600 text-white px-7 py-2.5 rounded-full hover:bg-orange-700 transition text-sm font-semibold tracking-wide shadow-md">
           Order Now
@@ -75,65 +136,50 @@
       </div>
       
       <!-- Mobile Menu Button -->
-      <button id="mobile-menu-btn" class="md:hidden text-espresso-900 p-2">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <button id="mobile-menu-btn" class="md:hidden text-espresso-900 p-2" aria-label="Menu" aria-expanded="false">
+        <svg id="menu-icon-open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+        <svg id="menu-icon-close" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
     </div>
     
     <!-- Mobile Menu -->
-    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-cream-200 shadow-lg">
-      <div class="px-6 py-4 space-y-3">
-        <a href="index.html" class="block text-espresso-900 font-semibold py-2">Home</a>
-        <a href="#menu" class="block text-espresso-700 py-2">Menu</a>
-        <a href="#about" class="block text-espresso-700 py-2">Our Story</a>
-        <a href="#gallery" class="block text-espresso-700 py-2">Gallery</a>
-        <a href="#locations" class="block text-espresso-700 py-2">Locations</a>
-        <a href="order.html" class="block bg-orange-600 text-white text-center py-3 rounded-full font-semibold mt-2 shadow-md">Order Now</a>
+    <div id="mobile-menu" class="md:hidden bg-white border-t border-cream-200 shadow-lg">
+      <div class="px-6 py-4 space-y-1">
+        <a href="index.html" class="block text-espresso-900 font-semibold py-3 border-b border-cream-100">Home</a>
+        <a href="menu.html" class="block text-espresso-700 py-3 border-b border-cream-100">Menu</a>
+        <a href="track.html" class="block text-espresso-700 py-3 border-b border-cream-100">Track Order</a>
+        <a href="#about" class="block text-espresso-700 py-3 border-b border-cream-100">Our Story</a>
+        <a href="#locations" class="block text-espresso-700 py-3 border-b border-cream-100">Locations</a>
+        <a href="order.html" class="block bg-orange-600 text-white text-center py-3 rounded-xl font-semibold mt-3 shadow-md">Order Now</a>
       </div>
     </div>
   </nav>
 
   <!-- Hero Section -->
   <header class="relative min-h-screen flex items-center justify-center overflow-hidden">
-    <!-- Background Image with Overlay -->
     <div class="absolute inset-0">
-      <img 
-        src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1920&q=80" 
-        alt="Coffee shop interior" 
-        class="w-full h-full object-cover"
-      >
+      <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1920&q=80" alt="Coffee shop interior" class="w-full h-full object-cover">
       <div class="absolute inset-0 bg-gradient-to-b from-espresso-900/60 via-espresso-900/40 to-cream-50"></div>
     </div>
-
-    <!-- Hero Content -->
     <div class="relative z-10 text-center px-6 max-w-4xl mx-auto pt-20">
-      <p class="text-cream-300 text-sm md:text-base tracking-[0.3em] uppercase font-medium mb-6 animate-fade-up">
-        Est. 2020 • Artisan Coffee & Kitchen
-      </p>
-      <h1 class="font-display text-5xl md:text-7xl lg:text-8xl text-white font-medium leading-[0.95] mb-8 animate-fade-up delay-100">
-        Where Every<br>
-        <span class="italic text-cream-200">Sip</span> Tells a Story
+      <p class="text-cream-300 text-sm md:text-base tracking-[0.3em] uppercase font-medium mb-6">Est. 2020 • Artisan Coffee & Kitchen</p>
+      <h1 class="font-display text-5xl md:text-7xl lg:text-8xl text-white font-medium leading-[0.95] mb-8">
+        Where Every<br><span class="italic text-cream-200">Sip</span> Tells a Story
       </h1>
-      <p class="text-cream-200 text-lg md:text-xl max-w-xl mx-auto mb-10 font-light leading-relaxed animate-fade-up delay-200">
+      <p class="text-cream-200 text-lg md:text-xl max-w-xl mx-auto mb-10 font-light leading-relaxed">
         Handcrafted coffee, fresh smoothies, and custom cakes made with love at two locations across the city.
       </p>
-      <div class="flex flex-col sm:flex-row gap-4 justify-center animate-fade-up delay-300">
-        <a href="order.html" class="bg-cream-100 text-espresso-900 px-10 py-4 rounded-full font-semibold hover:bg-white transition shadow-lg text-sm tracking-wide">
-          Order Online
-        </a>
-        <a href="#menu" class="border border-cream-300/50 text-cream-100 px-10 py-4 rounded-full font-medium hover:bg-cream-100/10 transition text-sm tracking-wide">
-          Explore Menu
-        </a>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="order.html" class="bg-cream-100 text-espresso-900 px-10 py-4 rounded-full font-semibold hover:bg-white transition shadow-lg text-sm tracking-wide">Order Online</a>
+        <a href="menu.html" class="border border-cream-300/50 text-cream-100 px-10 py-4 rounded-full font-medium hover:bg-cream-100/10 transition text-sm tracking-wide">View Menu</a>
       </div>
     </div>
-
-    <!-- Scroll Indicator -->
     <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-cream-300 animate-bounce">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
-      </svg>
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
     </div>
   </header>
 
@@ -142,205 +188,115 @@
     <div class="max-w-7xl mx-auto">
       <div class="text-center mb-16">
         <p class="text-cream-600 text-sm tracking-[0.2em] uppercase font-medium mb-3">Our Offerings</p>
-        <h2 class="font-display text-4xl md:text-5xl text-espresso-900 font-medium">
-          Crafted with <span class="italic text-cream-600">Passion</span>
-        </h2>
+        <h2 class="font-display text-4xl md:text-5xl text-espresso-900 font-medium">Crafted with <span class="italic text-cream-600">Passion</span></h2>
       </div>
-
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Coffee -->
         <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer">
-          <img 
-            src="https://images.unsplash.com/photo-1498804103079-a6351b050096?w=800&q=80" 
-            alt="Artisan Coffee" 
-            class="w-full h-full object-cover img-zoom"
-          >
+          <img src="https://images.unsplash.com/photo-1498804103079-a6351b050096?w=800&q=80" alt="Artisan Coffee" class="w-full h-full object-cover img-zoom">
           <div class="absolute inset-0 bg-gradient-to-t from-espresso-900/80 via-transparent to-transparent"></div>
           <div class="absolute bottom-0 left-0 right-0 p-8">
             <p class="text-cream-300 text-xs tracking-widest uppercase mb-2">Signature</p>
             <h3 class="font-display text-3xl text-white font-medium mb-2">Artisan Coffee</h3>
-            <p class="text-cream-200 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              Single-origin beans, hand-pulled espresso, velvety lattes
-            </p>
+            <p class="text-cream-200 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">Single-origin beans, hand-pulled espresso, velvety lattes</p>
           </div>
         </div>
-
-        <!-- Smoothies -->
         <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer">
-          <img 
-            src="https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?w=800&q=80" 
-            alt="Fresh Smoothies" 
-            class="w-full h-full object-cover img-zoom"
-          >
+          <img src="https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?w=800&q=80" alt="Fresh Smoothies" class="w-full h-full object-cover img-zoom">
           <div class="absolute inset-0 bg-gradient-to-t from-espresso-900/80 via-transparent to-transparent"></div>
           <div class="absolute bottom-0 left-0 right-0 p-8">
             <p class="text-cream-300 text-xs tracking-widest uppercase mb-2">Fresh</p>
             <h3 class="font-display text-3xl text-white font-medium mb-2">Smoothies</h3>
-            <p class="text-cream-200 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              Real fruits, no syrups. Refreshing blends for every mood
-            </p>
+            <p class="text-cream-200 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">Real fruits, no syrups. Refreshing blends for every mood</p>
           </div>
         </div>
-
-        <!-- Pizza -->
         <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer">
-          <img 
-            src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80" 
-            alt="Wood-fired Pizza" 
-            class="w-full h-full object-cover img-zoom"
-          >
+          <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80" alt="Wood-fired Pizza" class="w-full h-full object-cover img-zoom">
           <div class="absolute inset-0 bg-gradient-to-t from-espresso-900/80 via-transparent to-transparent"></div>
           <div class="absolute bottom-0 left-0 right-0 p-8">
             <p class="text-cream-300 text-xs tracking-widest uppercase mb-2">Hot & Fresh</p>
             <h3 class="font-display text-3xl text-white font-medium mb-2">Pizza</h3>
-            <p class="text-cream-200 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              Hand-tossed dough, premium toppings, baked to perfection
-            </p>
+            <p class="text-cream-200 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">Hand-tossed dough, premium toppings, baked to perfection</p>
           </div>
         </div>
-
-        <!-- Burgers -->
         <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer">
-          <img 
-            src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80" 
-            alt="Gourmet Burgers" 
-            class="w-full h-full object-cover img-zoom"
-          >
+          <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80" alt="Gourmet Burgers" class="w-full h-full object-cover img-zoom">
           <div class="absolute inset-0 bg-gradient-to-t from-espresso-900/80 via-transparent to-transparent"></div>
           <div class="absolute bottom-0 left-0 right-0 p-8">
             <p class="text-cream-300 text-xs tracking-widest uppercase mb-2">Hearty</p>
             <h3 class="font-display text-3xl text-white font-medium mb-2">Burgers</h3>
-            <p class="text-cream-200 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              Juicy patties, fresh buns, house-made sauces
-            </p>
+            <p class="text-cream-200 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">Juicy patties, fresh buns, house-made sauces</p>
           </div>
         </div>
-
-        <!-- Custom Cakes -->
         <div class="group relative overflow-hidden rounded-2xl aspect-[4/5] cursor-pointer md:col-span-2 lg:col-span-1">
-          <img 
-            src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&q=80" 
-            alt="Custom Cakes" 
-            class="w-full h-full object-cover img-zoom"
-          >
+          <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&q=80" alt="Custom Cakes" class="w-full h-full object-cover img-zoom">
           <div class="absolute inset-0 bg-gradient-to-t from-espresso-900/80 via-transparent to-transparent"></div>
           <div class="absolute bottom-0 left-0 right-0 p-8">
             <p class="text-cream-300 text-xs tracking-widest uppercase mb-2">Made to Order</p>
             <h3 class="font-display text-3xl text-white font-medium mb-2">Custom Cakes</h3>
-            <p class="text-cream-200 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              Birthdays, anniversaries, celebrations. Your design, our craft
-            </p>
+            <p class="text-cream-200 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">Birthdays, anniversaries, celebrations. Your design, our craft</p>
           </div>
         </div>
       </div>
-
       <div class="text-center mt-12">
-        <a href="menu.html" class="inline-flex items-center gap-2 text-espresso-700 font-medium hover:text-espresso-900 transition border-b border-cream-500 pb-1">
-          View Full Menu
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-          </svg>
-        </a>
+        <a href="menu.html" class="inline-flex items-center gap-2 text-espresso-700 font-medium hover:text-espresso-900 transition border-b border-cream-500 pb-1">View Full Menu <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg></a>
       </div>
     </div>
   </section>
 
-  <!-- About / Story Section -->
+  <!-- About -->
   <section id="about" class="py-24 bg-cream-100">
     <div class="max-w-7xl mx-auto px-6">
       <div class="grid lg:grid-cols-2 gap-16 items-center">
         <div class="relative">
           <div class="aspect-[3/4] rounded-2xl overflow-hidden">
-            <img 
-              src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=80" 
-              alt="Cafe interior" 
-              class="w-full h-full object-cover"
-            >
+            <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=80" alt="Cafe interior" class="w-full h-full object-cover">
           </div>
           <div class="absolute -bottom-6 -right-6 bg-white p-6 rounded-xl shadow-lg max-w-xs hidden md:block">
             <p class="font-display text-2xl text-espresso-800 italic">"Every cup is a conversation"</p>
             <p class="text-cream-600 text-sm mt-2">— Our Philosophy</p>
           </div>
         </div>
-
         <div>
           <p class="text-cream-600 text-sm tracking-[0.2em] uppercase font-medium mb-4">Our Story</p>
-          <h2 class="font-display text-4xl md:text-5xl text-espresso-900 font-medium mb-6 leading-tight">
-            From a Small Corner<br>to Your <span class="italic text-cream-600">Neighborhood</span>
-          </h2>
+          <h2 class="font-display text-4xl md:text-5xl text-espresso-900 font-medium mb-6 leading-tight">From a Small Corner<br>to Your <span class="italic text-cream-600">Neighborhood</span></h2>
           <div class="space-y-4 text-espresso-700 leading-relaxed">
-            <p>
-              What started as a tiny espresso bar with three stools and a dream has grown into two beloved locations across the city. We still roast our own beans, bake our own bread, and hand-craft every drink that leaves our counter.
-            </p>
-            <p>
-              Our custom cakes have become the talk of every celebration — from first birthdays to golden anniversaries. Each one is designed with you, baked by us, and remembered by everyone who takes a bite.
-            </p>
-            <p>
-              Two outlets. One commitment: fresh ingredients, zero shortcuts, and a warm welcome every time you walk through our doors.
-            </p>
+            <p>What started as a tiny espresso bar with three stools and a dream has grown into two beloved locations across the city. We still roast our own beans, bake our own bread, and hand-craft every drink that leaves our counter.</p>
+            <p>Our custom cakes have become the talk of every celebration — from first birthdays to golden anniversaries. Each one is designed with you, baked by us, and remembered by everyone who takes a bite.</p>
+            <p>Two outlets. One commitment: fresh ingredients, zero shortcuts, and a warm welcome every time you walk through our doors.</p>
           </div>
-
           <div class="flex gap-8 mt-10">
-            <div>
-              <p class="font-display text-4xl text-espresso-900">2</p>
-              <p class="text-cream-600 text-sm">Locations</p>
-            </div>
-            <div>
-              <p class="font-display text-4xl text-espresso-900">50+</p>
-              <p class="text-cream-600 text-sm">Menu Items</p>
-            </div>
-            <div>
-              <p class="font-display text-4xl text-espresso-900">6K+</p>
-              <p class="text-cream-600 text-sm">Happy Customers</p>
-            </div>
+            <div><p class="font-display text-4xl text-espresso-900">2</p><p class="text-cream-600 text-sm">Locations</p></div>
+            <div><p class="font-display text-4xl text-espresso-900">50+</p><p class="text-cream-600 text-sm">Menu Items</p></div>
+            <div><p class="font-display text-4xl text-espresso-900">6K+</p><p class="text-cream-600 text-sm">Happy Customers</p></div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Gallery / Food Photography -->
+  <!-- Gallery -->
   <section id="gallery" class="py-24 bg-cream-50">
     <div class="max-w-7xl mx-auto px-6">
       <div class="text-center mb-16">
         <p class="text-cream-600 text-sm tracking-[0.2em] uppercase font-medium mb-3">Visual Feast</p>
-        <h2 class="font-display text-4xl md:text-5xl text-espresso-900 font-medium">
-          A Glimpse of <span class="italic text-cream-600">Goodness</span>
-        </h2>
+        <h2 class="font-display text-4xl md:text-5xl text-espresso-900 font-medium">A Glimpse of <span class="italic text-cream-600">Goodness</span></h2>
       </div>
-
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="space-y-4">
-          <div class="aspect-[3/4] rounded-xl overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&q=80" alt="Latte art" class="w-full h-full object-cover hover:scale-110 transition duration-700">
-          </div>
-          <div class="aspect-square rounded-xl overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&q=80" alt="Smoothie" class="w-full h-full object-cover hover:scale-110 transition duration-700">
-          </div>
+          <div class="aspect-[3/4] rounded-xl overflow-hidden"><img src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&q=80" alt="Latte art" class="w-full h-full object-cover hover:scale-110 transition duration-700"></div>
+          <div class="aspect-square rounded-xl overflow-hidden"><img src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&q=80" alt="Smoothie" class="w-full h-full object-cover hover:scale-110 transition duration-700"></div>
         </div>
         <div class="space-y-4 pt-8">
-          <div class="aspect-square rounded-xl overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80" alt="Pancakes" class="w-full h-full object-cover hover:scale-110 transition duration-700">
-          </div>
-          <div class="aspect-[3/4] rounded-xl overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1550617931-e17a7b70dce2?w=600&q=80" alt="Coffee beans" class="w-full h-full object-cover hover:scale-110 transition duration-700">
-          </div>
+          <div class="aspect-square rounded-xl overflow-hidden"><img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80" alt="Pancakes" class="w-full h-full object-cover hover:scale-110 transition duration-700"></div>
+          <div class="aspect-[3/4] rounded-xl overflow-hidden"><img src="https://images.unsplash.com/photo-1550617931-e17a7b70dce2?w=600&q=80" alt="Coffee beans" class="w-full h-full object-cover hover:scale-110 transition duration-700"></div>
         </div>
         <div class="space-y-4">
-          <div class="aspect-[3/4] rounded-xl overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=600&q=80" alt="Cake slice" class="w-full h-full object-cover hover:scale-110 transition duration-700">
-          </div>
-          <div class="aspect-square rounded-xl overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&q=80" alt="Breakfast" class="w-full h-full object-cover hover:scale-110 transition duration-700">
-          </div>
+          <div class="aspect-[3/4] rounded-xl overflow-hidden"><img src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=600&q=80" alt="Cake slice" class="w-full h-full object-cover hover:scale-110 transition duration-700"></div>
+          <div class="aspect-square rounded-xl overflow-hidden"><img src="https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&q=80" alt="Breakfast" class="w-full h-full object-cover hover:scale-110 transition duration-700"></div>
         </div>
         <div class="space-y-4 pt-8">
-          <div class="aspect-square rounded-xl overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=600&q=80" alt="Toast" class="w-full h-full object-cover hover:scale-110 transition duration-700">
-          </div>
-          <div class="aspect-[3/4] rounded-xl overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&q=80" alt="Iced coffee" class="w-full h-full object-cover hover:scale-110 transition duration-700">
-          </div>
+          <div class="aspect-square rounded-xl overflow-hidden"><img src="https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=600&q=80" alt="Toast" class="w-full h-full object-cover hover:scale-110 transition duration-700"></div>
+          <div class="aspect-[3/4] rounded-xl overflow-hidden"><img src="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&q=80" alt="Iced coffee" class="w-full h-full object-cover hover:scale-110 transition duration-700"></div>
         </div>
       </div>
     </div>
@@ -351,58 +307,28 @@
     <div class="max-w-7xl mx-auto px-6">
       <div class="text-center mb-16">
         <p class="text-cream-600 text-sm tracking-[0.2em] uppercase font-medium mb-3">Find Us</p>
-        <h2 class="font-display text-4xl md:text-5xl text-espresso-900 font-medium">
-          Two Spots, Same <span class="italic text-cream-600">Soul</span>
-        </h2>
+        <h2 class="font-display text-4xl md:text-5xl text-espresso-900 font-medium">Two Spots, Same <span class="italic text-cream-600">Soul</span></h2>
       </div>
-
       <div class="grid md:grid-cols-2 gap-8">
-        <!-- Outlet 1 -->
         <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-cream-200">
-          <div class="aspect-video bg-gray-200">
-            <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=80" alt="Downtown location" class="w-full h-full object-cover">
-          </div>
+          <div class="aspect-video bg-gray-200"><img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=80" alt="Downtown location" class="w-full h-full object-cover"></div>
           <div class="p-8">
             <h3 class="font-display text-2xl text-espresso-900 mb-2">Downtown Cafe</h3>
             <p class="text-cream-600 mb-4">123 Main Street, City Center</p>
             <div class="flex items-center gap-6 text-sm text-espresso-700">
-              <span class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-cream-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                7AM — 10PM
-              </span>
-              <span class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-cream-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                </svg>
-                555-0101
-              </span>
+              <span class="flex items-center gap-2"><svg class="w-4 h-4 text-cream-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>7AM — 10PM</span>
+              <span class="flex items-center gap-2"><svg class="w-4 h-4 text-cream-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>555-0101</span>
             </div>
           </div>
         </div>
-
-        <!-- Outlet 2 -->
         <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-cream-200">
-          <div class="aspect-video bg-gray-200">
-            <img src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=800&q=80" alt="Mall location" class="w-full h-full object-cover">
-          </div>
+          <div class="aspect-video bg-gray-200"><img src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=800&q=80" alt="Mall location" class="w-full h-full object-cover"></div>
           <div class="p-8">
             <h3 class="font-display text-2xl text-espresso-900 mb-2">Mall Branch</h3>
             <p class="text-cream-600 mb-4">City Center Mall, 2nd Floor</p>
             <div class="flex items-center gap-6 text-sm text-espresso-700">
-              <span class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-cream-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                8AM — 11PM
-              </span>
-              <span class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-cream-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                </svg>
-                555-0102
-              </span>
+              <span class="flex items-center gap-2"><svg class="w-4 h-4 text-cream-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>8AM — 11PM</span>
+              <span class="flex items-center gap-2"><svg class="w-4 h-4 text-cream-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>555-0102</span>
             </div>
           </div>
         </div>
@@ -416,9 +342,7 @@
       <div class="grid md:grid-cols-4 gap-10 mb-12">
         <div class="md:col-span-2">
           <h3 class="font-display text-3xl text-cream-100 mb-4">Your Cafe</h3>
-          <p class="text-cream-400 leading-relaxed max-w-md">
-            Artisan coffee, fresh bakes, and heartfelt service. Two locations, one commitment to quality.
-          </p>
+          <p class="text-cream-400 leading-relaxed max-w-md">Artisan coffee, fresh bakes, and heartfelt service. Two locations, one commitment to quality.</p>
         </div>
         <div>
           <h4 class="text-cream-100 font-semibold mb-4 text-sm tracking-widest uppercase">Quick Links</h4>
@@ -431,12 +355,8 @@
         <div>
           <h4 class="text-cream-100 font-semibold mb-4 text-sm tracking-widest uppercase">Follow Us</h4>
           <div class="flex gap-4">
-            <a href="https://facebook.com/yourcafe" target="_blank" class="w-10 h-10 bg-espresso-800 rounded-full flex items-center justify-center hover:bg-cream-600 hover:text-espresso-900 transition">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-            </a>
-            <a href="https://instagram.com/yourcafe" target="_blank" class="w-10 h-10 bg-espresso-800 rounded-full flex items-center justify-center hover:bg-cream-600 hover:text-espresso-900 transition">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-            </a>
+            <a href="https://facebook.com/yourcafe" target="_blank" class="w-10 h-10 bg-espresso-800 rounded-full flex items-center justify-center hover:bg-cream-600 hover:text-espresso-900 transition"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
+            <a href="https://instagram.com/yourcafe" target="_blank" class="w-10 h-10 bg-espresso-800 rounded-full flex items-center justify-center hover:bg-cream-600 hover:text-espresso-900 transition"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>
           </div>
         </div>
       </div>
@@ -449,20 +369,78 @@
 
   <!-- Sticky Mobile Order Button -->
   <div id="sticky-order" class="sticky-order bg-white border-t border-cream-200 p-4 md:hidden">
-    <a href="order.html" class="block w-full bg-espresso-800 text-cream-100 text-center py-4 rounded-xl font-semibold tracking-wide text-sm">
-      Order Now — Skip the Line
-    </a>
+    <a href="order.html" class="block w-full bg-espresso-800 text-cream-100 text-center py-4 rounded-xl font-semibold tracking-wide text-sm">Order Now — Skip the Line</a>
   </div>
 
-  <!-- Register service worker -->
+  <!-- Scripts -->
   <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('SW registered:', reg.scope))
-      .catch(err => console.log('SW registration failed:', err));
-  }
-</script>
-<script type="module" src="assets/js/index.js"></script>
+    // ===== LOADING SCREEN =====
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('loader').classList.add('hidden');
+      }, 1200);
+    });
 
+    // ===== MOBILE MENU (FIXED) =====
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const iconOpen = document.getElementById('menu-icon-open');
+    const iconClose = document.getElementById('menu-icon-close');
+    let menuOpen = false;
+
+    function toggleMenu() {
+      menuOpen = !menuOpen;
+      mobileMenu.classList.toggle('open', menuOpen);
+      iconOpen.classList.toggle('hidden', menuOpen);
+      iconClose.classList.toggle('hidden', !menuOpen);
+      mobileBtn.setAttribute('aria-expanded', menuOpen);
+      document.body.style.overflow = menuOpen ? 'hidden' : '';
+    }
+
+    mobileBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleMenu();
+    });
+
+    // Close menu when clicking a link
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        if (menuOpen) toggleMenu();
+      });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+      if (menuOpen && !mobileMenu.contains(e.target) && !mobileBtn.contains(e.target)) {
+        toggleMenu();
+      }
+    });
+
+    // Close menu on escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && menuOpen) toggleMenu();
+    });
+
+    // ===== STICKY MOBILE BUTTON =====
+    const stickyBtn = document.getElementById('sticky-order');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > window.innerHeight * 0.8) {
+        stickyBtn.classList.add('visible');
+      } else {
+        stickyBtn.classList.remove('visible');
+      }
+    });
+
+    // ===== PWA SERVICE WORKER =====
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('✅ SW registered:', reg.scope))
+          .catch(err => console.log('❌ SW failed:', err));
+      });
+    }
+  </script>
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </body>
 </html>

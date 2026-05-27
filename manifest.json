@@ -1,94 +1,79 @@
 {
   "name": "Your Cafe — Artisan Coffee & Kitchen",
   "short_name": "Your Cafe",
-  "description": "Order fresh coffee, smoothies, pizza, burgers and custom cakes online. Track your order in real-time.",
+  "description": "Order fresh coffee, smoothies, pizza, burgers and custom cakes. Track your order in real-time.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FDFCF8",
   "theme_color": "#C4A77D",
   "orientation": "portrait",
   "scope": "/",
+  "lang": "en",
   "icons": [
     {
-      "src": "/icons/icon-72x72.png",
+      "src": "/logo-72.png",
       "sizes": "72x72",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-96x96.png",
+      "src": "/logo-96.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-128x128.png",
+      "src": "/logo-128.png",
       "sizes": "128x128",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-144x144.png",
+      "src": "/logo-144.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-152x152.png",
+      "src": "/logo-152.png",
       "sizes": "152x152",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/logo-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-384x384.png",
+      "src": "/logo-384.png",
       "sizes": "384x384",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/logo-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  "categories": ["food", "shopping"],
-  "screenshots": [
-    {
-      "src": "/screenshots/menu.jpg",
-      "sizes": "1280x720",
-      "type": "image/jpeg",
-      "form_factor": "wide",
-      "label": "Browse our menu"
-    },
-    {
-      "src": "/screenshots/mobile.jpg",
-      "sizes": "750x1334",
-      "type": "image/jpeg",
-      "form_factor": "narrow",
-      "label": "Order on the go"
-    }
-  ],
+  "categories": ["food", "shopping", "lifestyle"],
   "shortcuts": [
     {
       "name": "Order Now",
       "short_name": "Order",
       "description": "Place a new order",
       "url": "/order.html",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+      "icons": [{ "src": "/logo-96.png", "sizes": "96x96" }]
     },
     {
       "name": "Track Order",
       "short_name": "Track",
       "description": "Check your order status",
       "url": "/track.html",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+      "icons": [{ "src": "/logo-96.png", "sizes": "96x96" }]
     }
   ]
 }
