@@ -43,3 +43,36 @@
     } else {
       loadOutlets()
     }
+
+    // MOBIEL MENU TOGGLE FUNCTION
+    const mobileBtn = document.getElementById('mobile-menu-btn')
+    const mobileMenu = document.getElementById('mobile-menu')
+    
+    mobileBtn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      mobileMenu.classList.toggle('hidden')
+    })
+
+    // Close menu when clicking a link
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden')
+      })
+    })
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!mobileMenu.contains(e.target) && !mobileBtn.contains(e.target)) {
+        mobileMenu.classList.add('hidden')
+      }
+    })
+
+    // Sticky mobile button (show after scrolling past hero)
+    const stickyBtn = document.getElementById('sticky-order')
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > window.innerHeight * 0.8) {
+        stickyBtn.classList.add('visible')
+      } else {
+        stickyBtn.classList.remove('visible')
+      }
+    })
