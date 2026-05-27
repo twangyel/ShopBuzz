@@ -1,114 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Basic Meta -->
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-
-  <!-- SEO -->
-  <title>Your Website Title</title>
-  <meta name="description" content="Short website description here." />
-  <meta name="keywords" content="html5, website, modern web" />
-  <meta name="author" content="Your Name or Company" />
-
-  <!-- Open Graph -->
-  <meta property="og:title" content="Your Website Title" />
-  <meta property="og:description" content="Short website description here." />
-  <meta property="og:type" content="website" />
-  <meta property="og:image" content="assets/images/preview.jpg" />
-  <meta property="og:url" content="https://yourwebsite.com" />
-
-  <!-- Favicon -->
-  <link rel="icon" href="assets/favicon/favicon.ico" type="image/x-icon" />
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="assets/css/menu.css" />
-
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
-  <!-- Manifest -->
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#f97316">
-  
-
-  <!-- Theme Color -->
-  <meta name="theme-color" content="#ffffff" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>body{font-family:'Inter',sans-serif;}</style>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#ea580c">
 </head>
-
-<body>
+<body class="bg-gray-50 min-h-screen">
 
   <!-- Header -->
-  <header>
-    <nav>
-      <div class="logo">
-        <a href="/">LOGO</a>
-      </div>
-
-      <ul class="nav-links">
-        <li><a href="#">Home</a></li>
-        <li><a href="#">About</a></li>
-        <li><a href="#">Services</a></li>
-        <li><a href="#">Contact</a></li>
-      </ul>
-
-      <button class="menu-toggle" aria-label="Toggle Menu">
-        ☰
-      </button>
-    </nav>
-  </header>
-
-  <!-- Main Content -->
-  <main>
-
-    <!-- Hero Section -->
-    <section id="hero">
-      <div class="container">
-        <h1>Welcome to Your Website</h1>
-        <p>Your modern HTML5 website starts here.</p>
-        <a href="#" class="btn">Get Started</a>
-      </div>
-    </section>
-
-    <!-- Features -->
-    <section id="features">
-      <div class="container">
-        <h2>Features</h2>
-
-        <div class="feature-grid">
-
-          <article class="feature-card">
-            <h3>Feature One</h3>
-            <p>Description for feature one.</p>
-          </article>
-
-          <article class="feature-card">
-            <h3>Feature Two</h3>
-            <p>Description for feature two.</p>
-          </article>
-
-          <article class="feature-card">
-            <h3>Feature Three</h3>
-            <p>Description for feature three.</p>
-          </article>
-
+  <header class="bg-white border-b sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="text-gray-400 hover:text-gray-600">←</a>
+        <div>
+          <h1 class="font-bold text-gray-900" id="outlet-name">Loading...</h1>
+          <p class="text-xs text-gray-500">Our Menu</p>
         </div>
       </div>
-    </section>
+      <a href="cart.html" class="relative bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition">
+        Cart
+        <span id="cart-count" class="absolute -top-2 -right-2 bg-orange-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+      </a>
+    </div>
+  </header>
 
+  <!-- Menu Content -->
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <div id="menu-container">
+      <p class="text-center text-gray-400 py-20">Loading menu...</p>
+    </div>
   </main>
 
-  <!-- Footer -->
-  <footer>
-    <div class="container">
-      <p>&copy; 2026 Your Company. All rights reserved.</p>
-    </div>
-  </footer>
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition duration-300 z-50 text-sm font-medium">
+    Added to cart
+  </div>
 
-  <!-- JavaScript -->
-  <script src="assets/js/menu.js"></script>
-
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module" src="assets/js/menu.js"></script>
 </body>
 </html>
