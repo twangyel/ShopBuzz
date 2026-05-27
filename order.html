@@ -5,28 +5,117 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Select Location — Order</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>body{font-family:'Inter',sans-serif;}</style>
-  <link rel="manifest" href="/manifest.json">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#C4A77D">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .font-display { font-family: 'Playfair Display', Georgia, serif; }
+    
+    #loader {
+      position: fixed; inset: 0; background: #FDFCF8; z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+    #loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .loader-logo { width: 80px; height: 80px; animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } }
+    .loader-bar { width: 120px; height: 3px; background: #EDE5D3; border-radius: 3px; margin-top: 24px; overflow: hidden; }
+    .loader-bar::after { content: ''; display: block; width: 40%; height: 100%; background: #C4A77D; border-radius: 3px; animation: loadSlide 1s ease-in-out infinite; }
+    @keyframes loadSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
+    .loader-text { margin-top: 16px; font-size: 13px; color: #8B7348; letter-spacing: 0.15em; text-transform: uppercase; }
+  </style>
 </head>
-<body class="bg-orange-50 min-h-screen flex items-center justify-center p-4">
+<body class="bg-cream-50 min-h-screen flex items-center justify-center p-4">
+
+  <!-- Loading Screen -->
+  <div id="loader">
+    <img src="logo.png" alt="Your Cafe" class="loader-logo" onerror="this.style.display='none'; document.querySelector('.loader-fallback').style.display='flex'">
+    <div class="loader-fallback" style="display:none; width:80px; height:80px; background:#C4A77D; border-radius:50%; align-items:center; justify-content:center; color:white; font-size:36px;">☕</div>
+    <div class="loader-bar"></div>
+    <p class="loader-text">Loading</p>
+  </div>
 
   <div class="w-full max-w-md text-center">
-    <a href="index.html" class="text-gray-400 text-sm hover:text-gray-600 mb-6 inline-block">← Back to Home</a>
+    <a href="index.html" class="text-cream-600 text-sm hover:text-espresso-700 mb-6 inline-block">← Back to Home</a>
     
     <div class="mb-8">
-      <div class="w-16 h-16 bg-orange-600 rounded-full mx-auto flex items-center justify-center text-white text-2xl mb-4 shadow-lg">☕</div>
-      <h1 class="text-2xl font-bold text-gray-900">Order Online</h1>
-      <p class="text-gray-600 mt-2">Select your nearest outlet</p>
+      <div class="w-16 h-16 bg-cream-500 rounded-full mx-auto flex items-center justify-center text-white text-2xl mb-4 shadow-lg">☕</div>
+      <h1 class="font-display text-2xl font-bold text-espresso-900">Order Online</h1>
+      <p class="text-cream-600 mt-2">Select your nearest outlet</p>
     </div>
 
     <div id="outlet-list" class="space-y-3">
-      <p class="text-gray-400 text-sm">Loading outlets...</p>
+      <p class="text-cream-400 text-sm">Loading outlets...</p>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
+  <script>
+    // ===== SUPABASE SETUP =====
+    const SUPABASE_URL = 'https://mzkbjfcdagomqirfsjld.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16a2JqZmNkYWdvbXFpcmZzamxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4NTQ0MzcsImV4cCI6MjA5NTQzMDQzN30.H05EbXCSUYADZWlgOU1_rtxcYLFpjpg7W7Iaytc0OS4'
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    // ===== LOADING SCREEN =====
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('loader').classList.add('hidden')
+      }, 800)
+    })
+
+    // ===== SELECT OUTLET FUNCTION (MUST BE GLOBAL) =====
+    window.selectOutlet = function(id) {
+      console.log('Selecting outlet:', id)
+      localStorage.setItem('selected_outlet', id)
+      window.location.href = 'menu.html'
+    }
+
+    // ===== LOAD OUTLETS =====
+    async function loadOutlets() {
+      console.log('Loading outlets...')
+      
+      const { data, error } = await supabaseClient
+        .from('outlets')
+        .select('*')
+        .eq('is_active', true)
+
+      console.log('Outlets data:', data)
+      console.log('Outlets error:', error)
+
+      if (error || !data || data.length === 0) {
+        document.getElementById('outlet-list').innerHTML = 
+          '<p class="text-red-500 text-sm">Error loading outlets. Check Supabase keys or add outlets in database.</p>'
+        return
+      }
+
+      const html = data.map(o => `
+        <button type="button" onclick="selectOutlet(${o.id})" 
+          class="w-full bg-white p-5 rounded-xl shadow-sm border border-cream-200 hover:border-cream-500 hover:shadow-md transition text-left group cursor-pointer">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-espresso-900 group-hover:text-cream-600 transition">${o.name}</h3>
+              <p class="text-sm text-cream-600 mt-1">${o.location || ''}</p>
+              <p class="text-xs text-cream-500 mt-1">📞 ${o.phone || ''}</p>
+            </div>
+            <span class="text-cream-500 opacity-0 group-hover:opacity-100 transition font-bold text-xl">→</span>
+          </div>
+        </button>
+      `).join('')
+
+      document.getElementById('outlet-list').innerHTML = html
+    }
+
+    // Load immediately
+    loadOutlets()
+
+    // ===== PWA =====
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('SW registered:', reg.scope))
+        .catch(err => console.log('SW failed:', err))
+    }
+  </script>
 
 </body>
 </html>

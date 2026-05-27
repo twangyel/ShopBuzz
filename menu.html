@@ -18,8 +18,6 @@
       transition: opacity 0.6s ease, visibility 0.6s ease;
     }
     #loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-    .loader-logo { width: 60px; height: 60px; animation: pulse 1.5s ease-in-out infinite; }
-    @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:0.7} }
     
     /* Toast */
     #toast {
@@ -29,12 +27,35 @@
     }
     #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   </style>
+  <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        cream: {
+          50: '#FDFCF8',
+          100: '#F7F1E8',
+          200: '#E8DCCB',
+          400: '#C4A77D',
+          500: '#B08968',
+          600: '#8B6B4A'
+        },
+        espresso: {
+          700: '#3B2A1F',
+          800: '#2A1B14',
+          900: '#1A130C'
+        }
+      }
+    }
+  }
+}
+</script>
 </head>
-<body class="bg-cream-50 text-espresso-900 antialiased">
+<h2 class="font-display text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-orange-200">
 
   <!-- Loader -->
   <div id="loader">
-    <div class="loader-logo bg-cream-500 rounded-full flex items-center justify-center text-white text-2xl">☕</div>
+    <div class="w-16 h-16 bg-cream-500 rounded-full flex items-center justify-center text-white text-2xl animate-pulse">☕</div>
     <p class="text-cream-600 text-xs mt-4 tracking-widest uppercase">Loading Menu</p>
   </div>
 
@@ -67,6 +88,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // ===== SUPABASE =====
     const SUPABASE_URL = 'https://mzkbjfcdagomqirfsjld.supabase.co'
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16a2JqZmNkYWdvbXFpcmZzamxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4NTQ0MzcsImV4cCI6MjA5NTQzMDQzN30.H05EbXCSUYADZWlgOU1_rtxcYLFpjpg7W7Iaytc0OS4'
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -74,17 +96,19 @@
     const outletId = localStorage.getItem('selected_outlet')
     if (!outletId) { window.location.href = 'order.html' }
 
-    // Loading
+    // ===== LOADING =====
     window.addEventListener('load', () => {
       setTimeout(() => document.getElementById('loader').classList.add('hidden'), 600)
     })
 
-    // Cart functions
+    // ===== CART FUNCTIONS =====
     function getCart() { return JSON.parse(localStorage.getItem('cart') || '[]') }
+    
     function saveCart(cart) { 
       localStorage.setItem('cart', JSON.stringify(cart))
       updateBadge()
     }
+    
     function updateBadge() {
       const cart = getCart()
       const count = cart.reduce((sum, i) => sum + i.quantity, 0)
@@ -97,7 +121,15 @@
       }
     }
 
-    function addToCart(item) {
+    // ===== ADD TO CART USING DATA ATTRIBUTES (FIXED) =====
+    window.addToCart = function(btn) {
+      const item = {
+        id: btn.dataset.id,
+        name: btn.dataset.name,
+        price: parseFloat(btn.dataset.price),
+        image_url: btn.dataset.image || ''
+      }
+      
       let cart = getCart()
       const existing = cart.find(i => i.id === item.id)
       if (existing) {
@@ -116,7 +148,7 @@
       setTimeout(() => toast.classList.remove('show'), 2000)
     }
 
-    // Load menu
+    // ===== LOAD MENU =====
     async function loadMenu() {
       // Get outlet name
       const { data: outlet } = await supabaseClient
@@ -137,7 +169,7 @@
 
       if (!items || items.length === 0) {
         document.getElementById('menu-container').innerHTML = 
-          '<div class="text-center py-20"><p class="text-cream-500 text-lg">No items available.</p></div>'
+          '<div class="text-center py-20"><p class="text-cream-500 text-lg">No items available at this outlet.</p><p class="text-sm text-cream-400 mt-2">Add items in Supabase database.</p></div>'
         return
       }
 
@@ -148,7 +180,7 @@
 
         html += `
           <section class="mb-10">
-            <h2 class="font-display text-xl font-bold text-espresso-800 mb-4 pb-2 border-b-2 border-cream-200">${cat.name}</h2>
+           <h2 class="font-display text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-orange-200">${cat.name}</h2>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               ${catItems.map(item => `
                 <div class="bg-white rounded-xl shadow-sm border border-cream-100 overflow-hidden flex flex-col">
@@ -162,8 +194,13 @@
                       <span class="font-bold text-orange-600">$${item.price}</span>
                     </div>
                     <p class="text-cream-600 text-sm mb-3 flex-1">${item.description || ''}</p>
-                    <button onclick='addToCart(${JSON.stringify(item)})' 
-                      class="w-full bg-espresso-800 text-white py-2.5 rounded-lg hover:bg-espresso-700 transition text-sm font-medium">
+                    <button type="button" 
+                      data-id="${item.id}" 
+                      data-name="${item.name.replace(/"/g, '&quot;')}" 
+                      data-price="${item.price}" 
+                      data-image="${item.image_url || ''}"
+                      onclick="addToCart(this)" 
+                      class="w-full bg-orange-600 text-white py-2.5 rounded-lg hover:bg-orange-700 transition text-sm font-medium cursor-pointer"
                       Add to Cart
                     </button>
                   </div>
@@ -180,7 +217,7 @@
     updateBadge()
     loadMenu()
 
-    // PWA
+    // ===== PWA =====
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js')
     }
