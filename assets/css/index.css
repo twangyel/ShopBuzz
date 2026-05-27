@@ -1,4 +1,4 @@
-   body { font-family: 'Inter', system-ui, sans-serif; }
+body { font-family: 'Inter', system-ui, sans-serif; }
     .font-display { font-family: 'Playfair Display', Georgia, serif; }
 
     /* Smooth scroll */
@@ -34,3 +34,88 @@
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: #FAF7F0; }
     ::-webkit-scrollbar-thumb { background: #C4A77D; border-radius: 3px; }
+
+/* ===== MOVED FROM INLINE <style> ===== */
+
+body {
+  padding-top: 72px; /* Adjust to match your navbar height */
+}
+/* Loading Screen */
+    #loader {
+      position: fixed;
+      inset: 0;
+      background: #FDFCF8;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+    #loader.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .loader-logo {
+      width: 80px;
+      height: 80px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.7; }
+    }
+    .loader-bar {
+      width: 120px;
+      height: 3px;
+      background: #EDE5D3;
+      border-radius: 3px;
+      margin-top: 24px;
+      overflow: hidden;
+    }
+    .loader-bar::after {
+      content: '';
+      display: block;
+      width: 40%;
+      height: 100%;
+      background: #C4A77D;
+      border-radius: 3px;
+      animation: loadSlide 1s ease-in-out infinite;
+    }
+    @keyframes loadSlide {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(300%); }
+    }
+    .loader-text {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #8B7348;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    /* Mobile menu smooth animation */
+    #mobile-menu {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, opacity 0.35s ease;
+      opacity: 0;
+    }
+    #mobile-menu.open {
+      max-height: 400px;
+      opacity: 1;
+    }
+
+/* Moved from inline style */
+.loader-fallback {
+  display: none;
+  width: 80px;
+  height: 80px;
+  background: #C4A77D;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 36px;
+}

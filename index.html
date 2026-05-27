@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Cafe — Artisan Coffee & Fresh Bakes</title>
+  <title>Buzz Cafe</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,81 +37,14 @@
       }
     }
   </script>
-  <style>
-    /* Loading Screen */
-    #loader {
-      position: fixed;
-      inset: 0;
-      background: #FDFCF8;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 0.6s ease, visibility 0.6s ease;
-    }
-    #loader.hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-    .loader-logo {
-      width: 80px;
-      height: 80px;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.1); opacity: 0.7; }
-    }
-    .loader-bar {
-      width: 120px;
-      height: 3px;
-      background: #EDE5D3;
-      border-radius: 3px;
-      margin-top: 24px;
-      overflow: hidden;
-    }
-    .loader-bar::after {
-      content: '';
-      display: block;
-      width: 40%;
-      height: 100%;
-      background: #C4A77D;
-      border-radius: 3px;
-      animation: loadSlide 1s ease-in-out infinite;
-    }
-    @keyframes loadSlide {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(300%); }
-    }
-    .loader-text {
-      margin-top: 16px;
-      font-size: 13px;
-      color: #8B7348;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-    }
-
-    /* Mobile menu smooth animation */
-    #mobile-menu {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.35s ease, opacity 0.35s ease;
-      opacity: 0;
-    }
-    #mobile-menu.open {
-      max-height: 400px;
-      opacity: 1;
-    }
-  </style>
+<base target="_blank">
 </head>
 <body class="bg-cream-50 text-espresso-900 antialiased">
 
   <!-- Loading Screen -->
   <div id="loader">
     <img src="logo.png" alt="Your Cafe" class="loader-logo" onerror="this.style.display='none'; document.querySelector('.loader-fallback').style.display='flex'">
-    <div class="loader-fallback" style="display:none; width:80px; height:80px; background:#C4A77D; border-radius:50%; align-items:center; justify-content:center; color:white; font-size:36px;">☕</div>
+    <div class="loader-fallback">☕</div>
     <div class="loader-bar"></div>
     <p class="loader-text">Loading</p>
   </div>
@@ -119,9 +52,10 @@
   <!-- Navigation -->
   <nav id="navbar" class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm shadow-sm transition-all duration-300">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-      <a href="index.html" class="font-display text-2xl md:text-3xl font-semibold text-espresso-900 tracking-tight">
-        ☕ Your Cafe
-      </a>
+     <!-- In the navbar <a> tag -->
+<a href="index.html" class="flex items-center">
+  <img src="/image/logo.png" alt="Buzz Cafe" class="h-12 md:h-14 w-auto object-contain">
+</a>
       
       <!-- Desktop Nav -->
       <div class="hidden md:flex items-center gap-10 text-sm font-medium tracking-wide">
@@ -372,75 +306,7 @@
     <a href="order.html" class="block w-full bg-espresso-800 text-cream-100 text-center py-4 rounded-xl font-semibold tracking-wide text-sm">Order Now — Skip the Line</a>
   </div>
 
-  <!-- Scripts -->
-  <script>
-    // ===== LOADING SCREEN =====
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        document.getElementById('loader').classList.add('hidden');
-      }, 1200);
-    });
-
-    // ===== MOBILE MENU (FIXED) =====
-    const mobileBtn = document.getElementById('mobile-menu-btn');
-    const mobileMenu = document.getElementById('mobile-menu');
-    const iconOpen = document.getElementById('menu-icon-open');
-    const iconClose = document.getElementById('menu-icon-close');
-    let menuOpen = false;
-
-    function toggleMenu() {
-      menuOpen = !menuOpen;
-      mobileMenu.classList.toggle('open', menuOpen);
-      iconOpen.classList.toggle('hidden', menuOpen);
-      iconClose.classList.toggle('hidden', !menuOpen);
-      mobileBtn.setAttribute('aria-expanded', menuOpen);
-      document.body.style.overflow = menuOpen ? 'hidden' : '';
-    }
-
-    mobileBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleMenu();
-    });
-
-    // Close menu when clicking a link
-    mobileMenu.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        if (menuOpen) toggleMenu();
-      });
-    });
-
-    // Close menu when clicking outside
-    document.addEventListener('click', function(e) {
-      if (menuOpen && !mobileMenu.contains(e.target) && !mobileBtn.contains(e.target)) {
-        toggleMenu();
-      }
-    });
-
-    // Close menu on escape key
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape' && menuOpen) toggleMenu();
-    });
-
-    // ===== STICKY MOBILE BUTTON =====
-    const stickyBtn = document.getElementById('sticky-order');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > window.innerHeight * 0.8) {
-        stickyBtn.classList.add('visible');
-      } else {
-        stickyBtn.classList.remove('visible');
-      }
-    });
-
-    // ===== PWA SERVICE WORKER =====
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('✅ SW registered:', reg.scope))
-          .catch(err => console.log('❌ SW failed:', err));
-      });
-    }
-  </script>
  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <script src="/assets/js/index.js"></script>
 </body>
 </html>

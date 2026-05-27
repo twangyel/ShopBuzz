@@ -2,52 +2,69 @@ const SUPABASE_URL = 'https://mzkbjfcdagomqirfsjld.supabase.co'
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16a2JqZmNkYWdvbXFpcmZzamxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4NTQ0MzcsImV4cCI6MjA5NTQzMDQzN30.H05EbXCSUYADZWlgOU1_rtxcYLFpjpg7W7Iaytc0OS4'
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-    // Loading screen
+    // ===== LOADING SCREEN =====
     window.addEventListener('load', () => {
       setTimeout(() => {
-        document.getElementById('loader').classList.add('hidden')
-      }, 800)
-    })
+        document.getElementById('loader').classList.add('hidden');
+      }, 1200);
+    });
 
-    async function loadOutlets() {
-      const { data, error } = await supabaseClient
-        .from('outlets')
-        .select('*')
-        .eq('is_active', true)
+    // ===== MOBILE MENU (FIXED) =====
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const iconOpen = document.getElementById('menu-icon-open');
+    const iconClose = document.getElementById('menu-icon-close');
+    let menuOpen = false;
 
-      if (error || !data || data.length === 0) {
-        document.getElementById('outlet-list').innerHTML = 
-          '<p class="text-red-500 text-sm">Error loading outlets. Check Supabase keys.</p>'
-        return
+    function toggleMenu() {
+      menuOpen = !menuOpen;
+      mobileMenu.classList.toggle('open', menuOpen);
+      iconOpen.classList.toggle('hidden', menuOpen);
+      iconClose.classList.toggle('hidden', !menuOpen);
+      mobileBtn.setAttribute('aria-expanded', menuOpen);
+      document.body.style.overflow = menuOpen ? 'hidden' : '';
+    }
+
+    mobileBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleMenu();
+    });
+
+    // Close menu when clicking a link
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        if (menuOpen) toggleMenu();
+      });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+      if (menuOpen && !mobileMenu.contains(e.target) && !mobileBtn.contains(e.target)) {
+        toggleMenu();
       }
+    });
 
-      const html = data.map(o => `
-        <button onclick="selectOutlet(${o.id})" 
-          class="w-full bg-white p-5 rounded-xl shadow-sm border border-cream-200 hover:border-cream-500 hover:shadow-md transition text-left group">
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="font-bold text-espresso-900 group-hover:text-cream-600 transition">${o.name}</h3>
-              <p class="text-sm text-cream-600 mt-1">${o.location || ''}</p>
-              <p class="text-xs text-cream-500 mt-1">📞 ${o.phone || ''}</p>
-            </div>
-            <span class="text-cream-500 opacity-0 group-hover:opacity-100 transition font-bold text-xl">→</span>
-          </div>
-        </button>
-      `).join('')
+    // Close menu on escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && menuOpen) toggleMenu();
+    });
 
-      document.getElementById('outlet-list').innerHTML = html
-    }
+    // ===== STICKY MOBILE BUTTON =====
+    const stickyBtn = document.getElementById('sticky-order');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > window.innerHeight * 0.8) {
+        stickyBtn.classList.add('visible');
+      } else {
+        stickyBtn.classList.remove('visible');
+      }
+    });
 
-    function selectOutlet(id) {
-      localStorage.setItem('selected_outlet', id)
-      window.location.href = 'menu.html'
-    }
-
-    loadOutlets()
-
-    // PWA
+    // ===== PWA SERVICE WORKER =====
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('✅ SW registered:', reg.scope))
-        .catch(err => console.log('❌ SW failed:', err))
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('✅ SW registered:', reg.scope))
+          .catch(err => console.log('❌ SW failed:', err));
+      });
     }
