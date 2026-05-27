@@ -1,4 +1,4 @@
-body { font-family: 'Inter', system-ui, sans-serif; }
+body { font-family: 'Inter', system-ui, sans-serif; padding-top: 80px; }
     .font-display { font-family: 'Playfair Display', Georgia, serif; }
 
     /* Smooth scroll */
@@ -35,11 +35,6 @@ body { font-family: 'Inter', system-ui, sans-serif; }
     ::-webkit-scrollbar-track { background: #FAF7F0; }
     ::-webkit-scrollbar-thumb { background: #C4A77D; border-radius: 3px; }
 
-/* ===== MOVED FROM INLINE <style> ===== */
-
-body {
-  padding-top: 72px; /* Adjust to match your navbar height */
-}
 /* Loading Screen */
     #loader {
       position: fixed;
@@ -107,7 +102,7 @@ body {
       opacity: 1;
     }
 
-/* Moved from inline style */
+/* Loader fallback circle */
 .loader-fallback {
   display: none;
   width: 80px;
