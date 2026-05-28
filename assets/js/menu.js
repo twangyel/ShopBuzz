@@ -8,6 +8,10 @@
   let allCategories = []
   let allOutlets = []
   let currentCategory = 'all'
+  let menuSections = []
+  let menuSubCategories = []
+  let activeSection = 'all'
+  
   let cart = JSON.parse(localStorage.getItem('cart') || '[]')
   let selectedOutlet = localStorage.getItem('selected_outlet')
   let currentUser = null
@@ -116,26 +120,65 @@
     if (catRes.error) throw catRes.error
     if (itemRes.error) throw itemRes.error
     allCategories = catRes.data || []
+    menuSections = allCategories.filter(c => !c.parent_id).sort((a,b) => (a.sort_order||0) - (b.sort_order||0))
+    menuSubCategories = allCategories.filter(c => c.parent_id).sort((a,b) => (a.sort_order||0) - (b.sort_order||0))
     allItems = itemRes.data || []
   }
 
-  function renderCategoryPills() {
-    const container = $('category-pills')
-    let html = `<button onclick="filterCategory('all')" class="cat-pill ${currentCategory === 'all' ? 'active' : ''}" data-cat="all">All</button>`
-    allCategories.forEach(cat => {
-      if (allItems.some(i => i.category_id === cat.id)) {
-        html += `<button onclick="filterCategory('${cat.id}')" class="cat-pill ${currentCategory === cat.id ? 'active' : ''}" data-cat="${cat.id}">${cat.name}</button>`
+  function renderSectionTabs() {
+    const container = $('section-tabs')
+    let html = `<button onclick="selectSection('all')" class="section-tab ${activeSection === 'all' ? 'active' : ''}" data-section="all">All</button>`
+    menuSections.forEach(sec => {
+      const subIds = menuSubCategories.filter(sc => sc.parent_id === sec.id).map(sc => sc.id)
+      const hasItems = subIds.length 
+        ? allItems.some(i => subIds.includes(i.category_id))
+        : allItems.some(i => i.category_id === sec.id)
+      if (hasItems) {
+        html += `<button onclick="selectSection('${sec.id}')" class="section-tab ${activeSection === sec.id ? 'active' : ''}" data-section="${sec.id}">${sec.name}</button>`
       }
     })
     container.innerHTML = html
   }
 
-  window.filterCategory = function(catId) {
-    currentCategory = catId
-    document.querySelectorAll('.cat-pill').forEach(pill => {
-      pill.classList.toggle('active', pill.dataset.cat === catId)
+  window.selectSection = function(secId) {
+    activeSection = secId
+    activeSubCategory = 'all'
+    document.querySelectorAll('.section-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.section === secId)
     })
-    const activePill = document.querySelector(`.cat-pill[data-cat="${catId}"]`)
+    const activeTab = document.querySelector(`.section-tab[data-section="${secId}"]`)
+    if (activeTab) activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+    renderSubCategories()
+    renderMenu()
+  }
+
+  function renderSubCategories() {
+    const container = $('category-pills')
+    if (activeSection === 'all') {
+      container.classList.add('hidden')
+      return
+    }
+    const children = menuSubCategories.filter(c => c.parent_id === activeSection)
+    if (children.length === 0) {
+      container.classList.add('hidden')
+      return
+    }
+    container.classList.remove('hidden')
+    let html = `<button onclick="selectSubCategory('all')" class="cat-pill ${activeSubCategory === 'all' ? 'active' : ''}" data-cat="all">All ${menuSections.find(s=>s.id===activeSection)?.name || ''}</button>`
+    children.forEach(sub => {
+      if (allItems.some(i => i.category_id === sub.id)) {
+        html += `<button onclick="selectSubCategory('${sub.id}')" class="cat-pill ${activeSubCategory === sub.id ? 'active' : ''}" data-cat="${sub.id}">${sub.name}</button>`
+      }
+    })
+    container.innerHTML = html
+  }
+
+  window.selectSubCategory = function(subId) {
+    activeSubCategory = subId
+    document.querySelectorAll('.cat-pill').forEach(pill => {
+      pill.classList.toggle('active', pill.dataset.cat === subId)
+    })
+    const activePill = document.querySelector(`.cat-pill[data-cat="${subId}"]`)
     if (activePill) activePill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
     renderMenu()
   }
@@ -143,7 +186,17 @@
   function renderMenu(itemsToRender = null) {
     const container = $('menu-container')
     let items = itemsToRender || allItems
-    if (currentCategory !== 'all') items = items.filter(i => i.category_id === currentCategory)
+
+    if (activeSection !== 'all') {
+      const childIds = menuSubCategories.filter(c => c.parent_id === activeSection).map(c => c.id)
+      if (activeSubCategory !== 'all') {
+        items = items.filter(i => i.category_id === activeSubCategory)
+      } else if (childIds.length > 0) {
+        items = items.filter(i => childIds.includes(i.category_id))
+      } else {
+        items = items.filter(i => i.category_id === activeSection)
+      }
+    }
 
     if (items.length === 0) {
       container.innerHTML = ''
@@ -154,7 +207,6 @@
 
     container.innerHTML = `<div class="menu-grid pt-2">${items.map(renderDishCard).join('')}</div>`
   }
-
   function renderDishCard(item) {
     const cartItem = cart.find(c => String(c.id) === String(item.id))
     const qty = cartItem ? cartItem.qty : 0
@@ -323,7 +375,7 @@
       await retry(loadMenuData, 2, 1000)
       // 5. Render
       await initAuth()
-      renderCategoryPills()
+          renderSectionTabs()
       renderMenu()
       updateCartBadge()
       $('loader').classList.add('hidden')

@@ -800,23 +800,55 @@ window.toggleReviewApproved = async function(id, approved) {
         category_name: productCategories.find(c => c.id === item.category_id)?.name || 'Uncategorized'
       }))
 
-      renderProducts()
+         renderProducts()
       renderCategoryFilters()
       populateCategorySelect()
+      populateParentCategorySelect()
       populateOutletSelect()
     }
 
-    function populateCategorySelect() {
+      function populateCategorySelect() {
       const select = document.getElementById('product-category')
       const currentVal = select.value
       select.innerHTML = '<option value="">Select category...</option>'
-      productCategories.forEach(cat => {
+      
+      const sections = productCategories.filter(c => !c.parent_id).sort((a,b) => (a.sort_order||0) - (b.sort_order||0))
+      const subCategories = productCategories.filter(c => c.parent_id)
+      
+      sections.forEach(section => {
+        const children = subCategories.filter(c => c.parent_id === section.id).sort((a,b) => (a.sort_order||0) - (b.sort_order||0))
+        if (children.length === 0) {
+          const option = document.createElement('option')
+          option.value = section.id
+          option.textContent = section.name
+          select.appendChild(option)
+        } else {
+          const optgroup = document.createElement('optgroup')
+          optgroup.label = section.name
+          children.forEach(child => {
+            const option = document.createElement('option')
+            option.value = child.id
+            option.textContent = '— ' + child.name
+            optgroup.appendChild(option)
+          })
+          select.appendChild(optgroup)
+        }
+      })
+      
+      if (currentVal) select.value = currentVal
+    }
+
+    function populateParentCategorySelect() {
+      const select = document.getElementById('new-category-parent')
+      if (!select) return
+      select.innerHTML = '<option value="">Top Level (New Section)</option>'
+      const sections = productCategories.filter(c => !c.parent_id).sort((a,b) => (a.sort_order||0) - (b.sort_order||0))
+      sections.forEach(section => {
         const option = document.createElement('option')
-        option.value = cat.id
-        option.textContent = cat.name
+        option.value = section.id
+        option.textContent = 'Under: ' + section.name
         select.appendChild(option)
       })
-      if (currentVal) select.value = currentVal
     }
 
     function populateOutletSelect() {
@@ -834,12 +866,31 @@ window.toggleReviewApproved = async function(id, approved) {
       else if (allOutlets.length === 1) select.value = allOutlets[0].id
     }
 
-    function renderCategoryFilters() {
+       function renderCategoryFilters() {
       const container = document.getElementById('category-filters')
       let html = `<button onclick="filterProducts('all')" class="cat-filter active px-3 py-1 rounded-lg text-xs font-medium bg-gray-900 text-white" data-cat="all">All</button>`
-      productCategories.forEach(cat => {
-        html += `<button onclick="filterProducts('${escapeHtml(cat.id)}')" class="cat-filter px-3 py-1 rounded-lg text-xs font-medium bg-white border text-gray-700" data-cat="${escapeHtml(cat.id)}">${escapeHtml(cat.name)}</button>`
+      
+      const sections = productCategories.filter(c => !c.parent_id).sort((a,b) => (a.sort_order||0) - (b.sort_order||0))
+      const subCategories = productCategories.filter(c => c.parent_id)
+      
+      sections.forEach(section => {
+        const children = subCategories.filter(c => c.parent_id === section.id).sort((a,b) => (a.sort_order||0) - (b.sort_order||0))
+        if (children.length === 0) {
+          html += `<button onclick="filterProducts('${escapeHtml(section.id)}')" class="cat-filter px-3 py-1 rounded-lg text-xs font-medium bg-white border text-gray-700" data-cat="${escapeHtml(section.id)}">${escapeHtml(section.name)}</button>`
+        } else {
+          html += `<div class="relative inline-block group">
+            <button class="px-3 py-1 rounded-lg text-xs font-medium bg-white border text-gray-700 hover:bg-gray-50">${escapeHtml(section.name)} ▾</button>
+            <div class="absolute left-0 top-full mt-1 hidden group-hover:flex flex-col bg-white border shadow-lg rounded-lg z-20 min-w-[140px]">
+              ${children.map(child => `
+                <button onclick="filterProducts('${escapeHtml(child.id)}')" class="text-left px-3 py-2 text-xs hover:bg-orange-50 text-gray-700 first:rounded-t-lg last:rounded-b-lg whitespace-nowrap">
+                  ${escapeHtml(child.name)}
+                </button>
+              `).join('')}
+            </div>
+          </div>`
+        }
       })
+      
       container.innerHTML = html
     }
 
@@ -856,9 +907,26 @@ window.toggleReviewApproved = async function(id, approved) {
       renderProducts()
     }
 
-    function renderProducts(productsToRender = null) {
+        function renderProducts(productsToRender = null) {
       const tbody = document.getElementById('products-table')
-      let filtered = productsToRender || (currentProductFilter === 'all' ? allProducts : allProducts.filter(p => p.category_id === currentProductFilter))
+      let filtered = productsToRender
+      if (!filtered) {
+        if (currentProductFilter === 'all') {
+          filtered = allProducts
+        } else {
+          const section = productCategories.find(c => c.id === currentProductFilter && !c.parent_id)
+          if (section) {
+            const childIds = productCategories.filter(c => c.parent_id === currentProductFilter).map(c => c.id)
+            if (childIds.length > 0) {
+              filtered = allProducts.filter(p => childIds.includes(p.category_id))
+            } else {
+              filtered = allProducts.filter(p => p.category_id === currentProductFilter)
+            }
+          } else {
+            filtered = allProducts.filter(p => p.category_id === currentProductFilter)
+          }
+        }
+      }
 
       if (filtered.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">No products found</td></tr>'
@@ -917,13 +985,17 @@ window.toggleReviewApproved = async function(id, approved) {
       }
     }
 
-    window.addCategory = async function() {
+     window.addCategory = async function() {
       const input = document.getElementById('new-category')
+      const parentSelect = document.getElementById('new-category-parent')
       const name = input.value.trim()
+      const parent_id = parentSelect.value || null
       if (!name) return
 
-      // Check if exists locally
-      const exists = productCategories.find(c => c.name.toLowerCase() === name.toLowerCase())
+      const exists = productCategories.find(c => 
+        c.name.toLowerCase() === name.toLowerCase() && 
+        (c.parent_id || null) === (parent_id || null)
+      )
       if (exists) {
         document.getElementById('product-category').value = exists.id
         input.value = ''
@@ -933,20 +1005,25 @@ window.toggleReviewApproved = async function(id, approved) {
       const { data: sortData } = await supabaseClient
         .from('categories')
         .select('sort_order')
+        .eq('parent_id', parent_id)
         .order('sort_order', { ascending: false })
         .limit(1)
-      // FIX #13: Use MAX existing sort_order + 1 to avoid collisions after deletions
       const nextSortOrder = sortData?.[0]?.sort_order != null ? sortData[0].sort_order + 1 : 1
-      const { data, error } = await supabaseClient.from('categories').insert({ name, sort_order: nextSortOrder }).select()
+      
+      const { data, error } = await supabaseClient
+        .from('categories')
+        .insert({ name, parent_id, sort_order: nextSortOrder })
+        .select()
+      
       if (error) {
         showToast('Failed to add category', 'error')
         return
       }
 
-      await loadProducts() // Reload to get new category with proper ID
+      await loadProducts()
       if (data && data[0]) document.getElementById('product-category').value = data[0].id
       input.value = ''
-      showToast('Category added', 'order')
+      showToast(parent_id ? 'Sub-category added' : 'Section added', 'order')
     }
 
     window.handleProductSubmit = async function(e) {
@@ -959,7 +1036,8 @@ window.toggleReviewApproved = async function(id, approved) {
       const fileInput = document.getElementById('product-photo')
       const file = fileInput.files[0]
 
-      if (!name || !category_id || !outlet_id || isNaN(price)) {
+         const applyAll = document.getElementById('apply-all-outlets').checked
+      if (!name || !category_id || (!applyAll && !outlet_id) || isNaN(price)) {
         showToast('Please fill all required fields', 'error')
         return
       }
@@ -1065,6 +1143,22 @@ window.toggleReviewApproved = async function(id, approved) {
       document.getElementById('photo-preview').querySelector('img').src = ''
       populateOutletSelect()
     }
+
+    window.toggleOutletRequired = function() {
+  const checked = document.getElementById('apply-all-outlets').checked
+  const outletSelect = document.getElementById('product-outlet')
+  const wrapper = outletSelect.closest('div')
+
+  outletSelect.required = !checked
+  outletSelect.disabled = checked
+
+  if (checked) {
+    outletSelect.value = ''
+    wrapper.classList.add('opacity-50', 'pointer-events-none')
+  } else {
+    wrapper.classList.remove('opacity-50', 'pointer-events-none')
+  }
+}
 
     window.toggleProductStatus = async function(id, makeAvailable) {
       const { error } = await supabaseClient.from('menu_items').update({ is_available: makeAvailable }).eq('id', id)
@@ -1179,3 +1273,9 @@ window.toggleReviewApproved = async function(id, approved) {
     window.clearAllNotifications = clearAllNotifications
     window.markNotifRead = markNotifRead
     window.toggleOutletStatus = toggleOutletStatus
+    window.logout = logout
+window.toggleNotifDropdown = toggleNotifDropdown
+window.clearAllNotifications = clearAllNotifications
+window.markNotifRead = markNotifRead
+window.toggleOutletStatus = toggleOutletStatus
+window.toggleOutletRequired = toggleOutletRequired

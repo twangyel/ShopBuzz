@@ -70,6 +70,32 @@
     }
     .cat-pill:active { transform: scale(.95); }
 
+        .section-tab {
+      white-space: nowrap;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 18px;
+      border-radius: 24px;
+      border: 1.5px solid #e5e7eb;
+      background: #fff;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all .25s cubic-bezier(.4,0,.2,1);
+      user-select: none;
+    }
+    .section-tab.active {
+      background: #1a1a1a;
+      color: #fff;
+      border-color: #1a1a1a;
+      box-shadow: 0 4px 14px rgba(0,0,0,.15);
+    }
+    .section-tab:not(.active):hover {
+      border-color: #1a1a1a;
+      color: #1a1a1a;
+      transform: translateY(-1px);
+    }
+    .section-tab:active { transform: scale(.95); }
+
     .menu-card {
       background: #fff;
       border-radius: 16px;
@@ -351,9 +377,14 @@
         <input type="text" id="search-input" placeholder="Search dishes, cuisines..." class="search-box">
       </div>
     </div>
+       <div class="w-full max-w-[1400px] mx-auto px-4 md:px-6 pb-1">
+      <div id="section-tabs" class="flex gap-2 overflow-x-auto hide-scroll pb-1">
+        <button class="section-tab active" data-section="all">All</button>
+      </div>
+    </div>
     <div class="w-full max-w-[1400px] mx-auto px-4 md:px-6 pb-3">
-      <div id="category-pills" class="flex gap-2 overflow-x-auto hide-scroll pb-1">
-        <button class="cat-pill active" data-cat="all">All</button>
+      <div id="category-pills" class="flex gap-2 overflow-x-auto hide-scroll pb-1 hidden">
+        <!-- sub-categories injected here -->
       </div>
     </div>
   </div>
@@ -434,6 +465,5 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script type="module" src="/assets/js/menu.js"></script>
-  </script>
 </body>
 </html>
