@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#f59e0b">
   <script>
     tailwind.config = {
       theme: {
@@ -26,15 +26,15 @@
 
     body {
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: #f8f9fa;
-      color: #1a1a1a;
+      background: #FAF7F0;
+      color: #2A1B14;
       -webkit-font-smoothing: antialiased;
       line-height: 1.4;
     }
 
     #loader {
       position: fixed; inset: 0; z-index: 9999;
-      background: #fff;
+      background: #FAF7F0;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       transition: opacity .4s ease;
@@ -58,19 +58,19 @@
       user-select: none;
     }
     .cat-pill.active {
-      background: #1a1a1a;
+      background: #f59e0b;
       color: #fff;
-      border-color: #1a1a1a;
-      box-shadow: 0 4px 14px rgba(0,0,0,.15);
+      border-color: #f59e0b;
+      box-shadow: 0 4px 14px rgba(245,158,11,.25);
     }
     .cat-pill:not(.active):hover {
-      border-color: #1a1a1a;
-      color: #1a1a1a;
+      border-color: #f59e0b;
+      color: #f59e0b;
       transform: translateY(-1px);
     }
     .cat-pill:active { transform: scale(.95); }
 
-        .section-tab {
+    .section-tab {
       white-space: nowrap;
       font-size: 13px;
       font-weight: 600;
@@ -84,21 +84,21 @@
       user-select: none;
     }
     .section-tab.active {
-      background: #1a1a1a;
+      background: #f59e0b;
       color: #fff;
-      border-color: #1a1a1a;
-      box-shadow: 0 4px 14px rgba(0,0,0,.15);
+      border-color: #f59e0b;
+      box-shadow: 0 4px 14px rgba(245,158,11,.25);
     }
     .section-tab:not(.active):hover {
-      border-color: #1a1a1a;
-      color: #1a1a1a;
+      border-color: #f59e0b;
+      color: #f59e0b;
       transform: translateY(-1px);
     }
     .section-tab:active { transform: scale(.95); }
 
     .menu-card {
       background: #fff;
-      border-radius: 16px;
+      border-radius: 24px;
       overflow: hidden;
       box-shadow: 0 1px 3px rgba(0,0,0,.06);
       transition: all .35s cubic-bezier(.4,0,.2,1);
@@ -139,7 +139,7 @@
     .dish-name {
       font-size: 15px;
       font-weight: 700;
-      color: #111;
+      color: #2A1B14;
       line-height: 1.25;
       margin-bottom: 4px;
       display: -webkit-box;
@@ -162,7 +162,7 @@
     .dish-price {
       font-size: 16px;
       font-weight: 800;
-      color: #1a1a1a;
+      color: #2A1B14;
       letter-spacing: -0.02em;
     }
 
@@ -175,18 +175,18 @@
       width: 100%;
       border: none;
       border-radius: 10px;
-      background: #1a1a1a;
+      background: #f59e0b;
       color: #fff;
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
       transition: all .25s cubic-bezier(.4,0,.2,1);
-      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+      box-shadow: 0 4px 12px rgba(245,158,11,.25);
     }
     .btn-add:hover {
-      background: #f59e0b;
+      background: #d97706;
       color: #fff;
-      box-shadow: 0 6px 20px rgba(245,158,11,.35);
+      box-shadow: 0 6px 20px rgba(245,158,11,.40);
       transform: translateY(-1px);
     }
     .btn-add:active {
@@ -199,7 +199,7 @@
       justify-content: space-between;
       border-radius: 10px;
       overflow: hidden;
-      background: #f3f4f6;
+      background: #fff7ed;
       height: 40px;
     }
     .stepper button {
@@ -209,19 +209,19 @@
       background: transparent;
       font-size: 18px;
       font-weight: 700;
-      color: #1a1a1a;
+      color: #2A1B14;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all .2s;
     }
-    .stepper button:hover { background: #e5e7eb; }
-    .stepper button:active { background: #d1d5db; }
+    .stepper button:hover { background: #ffedd5; color: #d97706; }
+    .stepper button:active { background: #fed7aa; }
     .stepper .qty {
       font-size: 14px;
       font-weight: 800;
-      color: #1a1a1a;
+      color: #2A1B14;
       min-width: 28px;
       text-align: center;
     }
@@ -231,15 +231,15 @@
       padding: 12px 16px 12px 44px;
       border: none;
       border-radius: 14px;
-      background: #f3f4f6;
+      background: #fff;
       font-size: 15px;
-      color: #1a1a1a;
+      color: #2A1B14;
       transition: all .25s;
     }
     .search-box:focus {
       outline: none;
       background: #fff;
-      box-shadow: 0 0 0 2.5px rgba(0,0,0,.08);
+      box-shadow: 0 0 0 2.5px rgba(245,158,11,.15);
     }
     .search-box::placeholder { color: #9ca3af; }
 
@@ -248,7 +248,7 @@
       bottom: 24px;
       left: 50%;
       transform: translateX(-50%) translateY(140%);
-      background: #1a1a1a;
+      background: #2A1B14;
       color: #fff;
       padding: 14px 24px;
       border-radius: 14px;
@@ -272,7 +272,7 @@
       width: 72px;
       height: 72px;
       border-radius: 50%;
-      background: #f3f4f6;
+      background: #ffedd5;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -280,7 +280,7 @@
       margin: 0 auto 16px;
     }
 
-    .header-scrolled { box-shadow: 0 4px 20px rgba(0,0,0,.15) !important; }
+    .header-scrolled { box-shadow: 0 4px 20px rgba(0,0,0,.08) !important; }
 
     .menu-grid {
       display: grid;
@@ -318,21 +318,22 @@
     #auth-modal .backdrop { transition: opacity .3s; }
     #auth-sheet { transition: transform .3s cubic-bezier(.4,0,.2,1); }
   </style>
+<base target="_blank">
 </head>
 <body>
 
   <!-- Loader -->
   <div id="loader">
-    <div class="w-10 h-10 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin"></div>
+    <div class="w-10 h-10 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
   </div>
 
   <!-- Header -->
-  <header id="main-header" class="fixed top-0 left-0 right-0 z-50 bg-dark transition-shadow duration-300">
+  <header id="main-header" class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 transition-shadow duration-300">
     <div class="nav-inner">
       <!-- Left: back + brand -->
       <div class="flex items-center gap-4">
-        <a href="order.html" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition">
-          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <a href="order.html" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition">
+          <svg class="w-5 h-5 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
           </svg>
         </a>
@@ -343,32 +344,32 @@
             </svg>
           </div>
           <div>
-            <h1 class="text-base font-bold text-white leading-tight tracking-tight" id="outlet-name">BuzzCafe</h1>
-            <p class="text-[11px] text-white/50 font-medium leading-tight" id="outlet-info">Select outlet</p>
+            <h1 class="text-base font-bold text-gray-900 leading-tight tracking-tight" id="outlet-name">BuzzCafe</h1>
+            <p class="text-[11px] text-gray-500 font-medium leading-tight" id="outlet-info">Select outlet</p>
           </div>
         </div>
       </div>
 
       <!-- Right: profile + cart (grouped user actions) -->
-      <div class="flex items-center gap-1">
-        <button id="auth-btn" class="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition active:scale-95" title="Login">
+      <div class="flex items-center gap-3">
+        <button id="auth-btn" class="relative w-11 h-11 flex items-center justify-center rounded-full bg-orange-500 text-white shadow-lg shadow-orange-500/30 hover:bg-orange-600 transition active:scale-95" title="Login">
           <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
           </svg>
         </button>
 
-        <a href="cart.html" class="relative w-11 h-11 flex items-center justify-center rounded-full hover:bg-white/10 transition active:scale-95">
+        <a href="cart.html" class="relative w-11 h-11 flex items-center justify-center rounded-full bg-orange-500 text-white shadow-lg shadow-orange-500/30 hover:bg-orange-600 transition active:scale-95">
           <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
           </svg>
-          <span id="cart-badge" class="absolute -top-0.5 -right-0.5 w-5 h-5 bg-accent text-white text-[10px] font-bold rounded-full flex items-center justify-center hidden shadow-md scale-0 transition-transform duration-300">0</span>
+          <span id="cart-badge" class="absolute -top-0.5 -right-0.5 w-5 h-5 bg-gray-900 text-white text-[10px] font-bold rounded-full flex items-center justify-center hidden shadow-md scale-0 transition-transform duration-300">0</span>
         </a>
       </div>
     </div>
   </header>
 
   <!-- Search & Categories -->
-  <div class="fixed top-16 left-0 right-0 z-40 bg-white border-b border-gray-100">
+  <div class="fixed top-16 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100">
     <div class="w-full max-w-[1400px] mx-auto px-4 py-3 md:px-6">
       <div class="relative">
         <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -377,7 +378,7 @@
         <input type="text" id="search-input" placeholder="Search dishes, cuisines..." class="search-box">
       </div>
     </div>
-       <div class="w-full max-w-[1400px] mx-auto px-4 md:px-6 pb-1">
+    <div class="w-full max-w-[1400px] mx-auto px-4 md:px-6 pb-1">
       <div id="section-tabs" class="flex gap-2 overflow-x-auto hide-scroll pb-1">
         <button class="section-tab active" data-section="all">All</button>
       </div>
@@ -430,31 +431,31 @@
             <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number <span class="text-red-500">*</span></label>
             <div class="flex">
               <span class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-medium">+975</span>
-              <input type="tel" id="auth-phone" required pattern="[0-9]{8}" maxlength="8" class="w-full px-4 py-3 rounded-r-xl border border-gray-200 focus:border-black focus:ring-2 focus:ring-black/5 outline-none transition" placeholder="17XXXXXX">
+              <input type="tel" id="auth-phone" required pattern="[0-9]{8}" maxlength="8" class="w-full px-4 py-3 rounded-r-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition" placeholder="17XXXXXX">
             </div>
             <p class="text-xs text-gray-400 mt-1">8 digits, no country code</p>
           </div>
           <div id="name-field" class="hidden">
             <label class="block text-sm font-medium text-gray-700 mb-1">Full Name <span class="text-red-500">*</span></label>
-            <input type="text" id="auth-name" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-2 focus:ring-black/5 outline-none transition" placeholder="Your name">
+            <input type="text" id="auth-name" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition" placeholder="Your name">
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-gray-400 font-normal">(optional)</span></label>
-            <input type="email" id="auth-email" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-2 focus:ring-black/5 outline-none transition" placeholder="For receipts (optional)">
+            <input type="email" id="auth-email" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition" placeholder="For receipts (optional)">
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Password <span class="text-red-500">*</span></label>
-            <input type="password" id="auth-password" required minlength="6" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-2 focus:ring-black/5 outline-none transition" placeholder="Min 6 characters">
+            <input type="password" id="auth-password" required minlength="6" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition" placeholder="Min 6 characters">
           </div>
         </div>
-        <button type="submit" class="w-full mt-6 bg-black text-white font-bold py-3.5 rounded-xl hover:bg-gray-800 active:scale-[0.98] transition-all">
+        <button type="submit" class="w-full mt-6 bg-orange-500 text-white font-bold py-3.5 rounded-xl hover:bg-orange-600 active:scale-[0.98] transition-all">
           <span id="auth-btn-text">Continue</span>
         </button>
       </form>
       <div class="mt-6 text-center">
         <p class="text-sm text-gray-500">
           <span id="auth-toggle-label">New here?</span>
-          <button onclick="toggleAuthMode()" class="text-black font-semibold underline ml-1" id="auth-toggle-btn">Create account</button>
+          <button onclick="toggleAuthMode()" class="text-orange-600 font-semibold underline ml-1" id="auth-toggle-btn">Create account</button>
         </p>
       </div>
       <button onclick="closeAuthModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition">
