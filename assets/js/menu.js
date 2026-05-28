@@ -23,6 +23,15 @@ let isLoginMode = true
 /* ---------- HELPERS ---------- */
 const $ = (id) => document.getElementById(id)
 
+// Was referenced in selectSection/selectSubCategory but never defined,
+// which threw a ReferenceError on every tab tap. Use native CSS.escape
+// with a safe fallback for older browsers.
+function escapeCSS(value) {
+  const str = String(value)
+  if (window.CSS && typeof CSS.escape === 'function') return CSS.escape(str)
+  return str.replace(/[^a-zA-Z0-9_-]/g, '\\$&')
+}
+
 function withTimeout(promise, ms = 8000) {
   return Promise.race([
     promise,
@@ -122,10 +131,10 @@ window.clearTableSession = function() {
 /* ---------- AUTH ---------- */
 async function initAuth() {
   if (!supabaseClient) return
-  const { data: { session } } = await supabaseClient.auth.getSession()
+  const { data: { session } } = await withTimeout(supabaseClient.auth.getSession(), 6000)
   if (session?.user) {
     currentUser = session.user
-    await loadCustomer()
+    await withTimeout(loadCustomer(), 6000)
   }
   updateAuthUI()
 }
@@ -380,7 +389,7 @@ $('search-input').addEventListener('input', (e) => {
     const query = e.target.value.toLowerCase().trim()
     if (!query) { renderMenu(); return }
     const filtered = allItems.filter(i =>
-      i.name.toLowerCase().includes(query) ||
+      (i.name || '').toLowerCase().includes(query) ||
       (i.description || '').toLowerCase().includes(query)
     )
     renderMenu(filtered)
@@ -444,15 +453,31 @@ async function boot() {
     setFatal('Supabase library failed to load. Check your network or CDN block.', true)
     return
   }
-  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-
-  supabaseClient.auth.onAuthStateChange(async (event, session) => {
-    currentUser = session?.user || null
-    if (currentUser) { await loadCustomer(); syncLocalCartToUser() }
-    else { currentCustomer = null; updateAuthUI() }
-  })
 
   try {
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    // NOTE: this callback is intentionally NOT async and never awaits a
+    // Supabase call directly. Awaiting inside onAuthStateChange can deadlock
+    // supabase-js's internal auth lock against getSession() — the main cause
+    // of the intermittent "spinner forever" hang. Defer the work instead.
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      currentUser = session?.user || null
+      if (currentUser) {
+        setTimeout(async () => {
+          try {
+            await withTimeout(loadCustomer(), 6000)
+            syncLocalCartToUser()
+          } catch (e) {
+            console.warn('Customer load (auth change) failed:', e?.message)
+          }
+        }, 0)
+      } else {
+        currentCustomer = null
+        updateAuthUI()
+      }
+    })
+
     // 1. Init table session FIRST (with short timeout, non-blocking)
     try {
       await Promise.race([
@@ -467,13 +492,18 @@ async function boot() {
     await retry(loadOutlets, 2, 1000)
     // 3. Load menu with retry
     await retry(loadMenuData, 2, 1000)
-    // 4. Render
-    await initAuth()
+
+    // 4. Render the menu and dismiss the loader IMMEDIATELY.
+    //    The menu does not depend on auth, so auth must never gate first paint.
     renderSectionTabs()
     renderSubCategories()
     renderMenu()
     updateCartBadge()
     $('loader').classList.add('hidden')
+
+    // 5. Auth runs fully in the background and isolated. A hang or failure
+    //    here can no longer keep the loader up or block the menu.
+    initAuth().catch(err => console.warn('Auth init failed (non-fatal):', err?.message))
   } catch (err) {
     console.error('Boot error:', err)
     $('loader').classList.add('hidden')
@@ -487,6 +517,16 @@ async function syncLocalCartToUser() {
 
 /* ---------- INIT ---------- */
 window.addEventListener('load', () => {
+  // Safety watchdog: as a last resort, never leave the user stuck on the
+  // spinner. If something unforeseen prevents boot from dismissing the
+  // loader, show a retry screen instead of an endless spin.
+  setTimeout(() => {
+    const loader = $('loader')
+    if (loader && !loader.classList.contains('hidden')) {
+      setFatal('This is taking longer than expected. Please check your connection and try again.', true)
+    }
+  }, 25000)
+
   setTimeout(boot, 300)
 })
 
