@@ -144,7 +144,7 @@
                 <span class="w-4 h-4 rounded-full border-2 border-cream-400 flex items-center justify-center">
                   <span class="w-2 h-2 rounded-full bg-orange-600 opacity-0 check-dot"></span>
                 </span>
-                <span class="text-sm font-medium">Walk In</span>
+               <span class="text-sm font-medium">Pick up</span>
               </div>
             </label>
             <label class="radio-card flex-1 border border-cream-300 rounded-lg px-4 py-3 cursor-pointer hover:bg-cream-50 transition">
@@ -352,7 +352,7 @@
       emptyState.classList.add('hidden')
       checkoutSection.classList.remove('hidden')
 
-      const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+      const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0)
       document.getElementById('cart-total').textContent = 'Nu. ' + total.toFixed(2)
 
       container.innerHTML = cart.map((item, index) => `
@@ -364,12 +364,12 @@
           <div class="flex-1 min-w-0">
             <div class="flex justify-between items-start mb-1">
               <h3 class="font-bold text-espresso-900 truncate">${item.name}</h3>
-              <span class="font-bold text-orange-600">Nu. ${(item.price * item.quantity).toFixed(2)}</span>
+              <span class="font-bold text-orange-600">Nu. ${(item.price * item.qty).toFixed(2)}</span>
             </div>
             <p class="text-cream-500 text-xs mb-2">Nu. ${item.price} each</p>
             <div class="flex items-center gap-2">
               <button onclick="updateQty(${index}, -1)" class="w-8 h-8 border border-cream-200 rounded-lg hover:bg-cream-50 flex items-center justify-center font-bold text-cream-600">-</button>
-              <span class="w-8 text-center font-medium">${item.quantity}</span>
+              <span class="w-8 text-center font-medium">${item.qty}</span>
               <button onclick="updateQty(${index}, 1)" class="w-8 h-8 border border-cream-200 rounded-lg hover:bg-cream-50 flex items-center justify-center font-bold text-cream-600">+</button>
               <button onclick="removeItem(${index})" class="ml-auto text-red-500 text-sm hover:text-red-700">Remove</button>
             </div>
@@ -380,7 +380,7 @@
 
     function updateQty(index, change) {
       let cart = getCart()
-      cart[index].quantity += change
+      cart[index].qty += change
       if (cart[index].quantity < 1) cart.splice(index, 1)
       saveCart(cart)
       renderCart()
@@ -665,7 +665,7 @@
           menu_item_id: i.id,
           item_name: i.name,
           price: i.price,
-          quantity: i.quantity
+          quantity: i.qty
         }))
         await supabaseClient.from('order_items').insert(orderItems)
 
@@ -691,7 +691,18 @@
       }
     }
 
-            function initTableCart() {
+    function configurePaymentOptions() {
+  const isTableOrder = !!(localStorage.getItem('table_session_id') || localStorage.getItem('table_number'))
+  const payAtCounterOption = document.querySelector('#payment-method option[value="pay-at-counter"]')
+  
+  if (payAtCounterOption && !isTableOrder) {
+    payAtCounterOption.remove()
+  }
+}
+
+configurePaymentOptions()
+
+      function initTableCart() {
       if (tableNumber) {
         document.getElementById('table-banner').classList.remove('hidden')
         document.getElementById('banner-table-num').textContent = tableNumber
