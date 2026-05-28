@@ -55,6 +55,7 @@
       color: #78716c; font-size: 0.75rem; text-align: center; padding: 0.5rem;
     }
   </style>
+<base target="_blank">
 </head>
 <body class="bg-cream-50 text-espresso-900 antialiased">
 
@@ -381,7 +382,7 @@
     function updateQty(index, change) {
       let cart = getCart()
       cart[index].qty += change
-      if (cart[index].quantity < 1) cart.splice(index, 1)
+      if (cart[index].qty < 1) cart.splice(index, 1)
       saveCart(cart)
       renderCart()
     }
@@ -487,7 +488,7 @@
 
  function openPaymentModal() {
   const cart = getCart()
-  const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
+  const subtotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0)
   const serviceCharge = subtotal * 0.05
   const gst = 0
   const discount = 0
@@ -524,54 +525,54 @@
     }
 
     async function confirmPaymentAndSubmit() {
-      if (!document.getElementById('payment-confirm-check').checked) {
-        alert('Please confirm that you have completed the payment.')
+  if (!document.getElementById('payment-confirm-check').checked) {
+    alert('Please confirm that you have completed the payment.')
+    return
+  }
+
+  const screenshotFile = document.getElementById('payment-screenshot').files[0]
+  if (!screenshotFile) {
+    alert('Please upload your payment screenshot.')
+    return
+  }
+
+  const fileExt = screenshotFile.name.split('.').pop()
+  const fileName = `payment-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`
+
+  try {
+    const { data: uploadData, error: uploadError } = await supabaseClient
+      .storage
+      .from('payment_screenshots')  // ← FIXED
+      .upload(fileName, screenshotFile, {
+        contentType: screenshotFile.type,
+        upsert: false
+      })
+
+    if (uploadError) {
+      console.error('Upload error details:', uploadError)
+      
+      if (uploadError.message && uploadError.message.includes('row-level security')) {
+        alert('Upload failed: Storage permissions not configured.\n\nPlease go to Supabase Dashboard → Storage → Buckets → payment_screenshots → Policies, and add an INSERT policy with definition: true\n\nOr disable RLS on the bucket for testing.')  // ← FIXED
         return
       }
-
-      const screenshotFile = document.getElementById('payment-screenshot').files[0]
-      if (!screenshotFile) {
-        alert('Please upload your payment screenshot.')
-        return
-      }
-
-      const fileExt = screenshotFile.name.split('.').pop()
-      const fileName = `payment-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`
-
-      try {
-        const { data: uploadData, error: uploadError } = await supabaseClient
-          .storage
-          .from('payment-screenshots')
-          .upload(fileName, screenshotFile, {
-            contentType: screenshotFile.type,
-            upsert: false
-          })
-
-        if (uploadError) {
-          console.error('Upload error details:', uploadError)
-          
-          if (uploadError.message && uploadError.message.includes('row-level security')) {
-            alert('Upload failed: Storage permissions not configured.\n\nPlease go to Supabase Dashboard → Storage → Buckets → payment-screenshots → Policies, and add an INSERT policy with definition: true\n\nOr disable RLS on the bucket for testing.')
-            return
-          }
-          
-          throw uploadError
-        }
-
-        const { data: urlData } = supabaseClient
-          .storage
-          .from('payment-screenshots')
-          .getPublicUrl(fileName)
-
-        paymentScreenshotUrl = urlData.publicUrl
-        closePaymentModal()
-        await submitOrder()
-
-      } catch (err) {
-        console.error('Screenshot upload failed:', err)
-        alert('Upload failed: ' + (err.message || 'Unknown error') + '\n\nPlease check Storage RLS policies in Supabase dashboard.')
-      }
+      
+      throw uploadError
     }
+
+    const { data: urlData } = supabaseClient
+      .storage
+      .from('payment_screenshots')  // ← FIXED
+      .getPublicUrl(fileName)
+
+    paymentScreenshotUrl = urlData.publicUrl
+    closePaymentModal()
+    await submitOrder()
+
+  } catch (err) {
+    console.error('Screenshot upload failed:', err)
+    alert('Upload failed: ' + (err.message || 'Unknown error') + '\n\nPlease check Storage RLS policies in Supabase dashboard.')
+  }
+}
 
     // Form submission handler
     document.getElementById('checkout-form').addEventListener('submit', async function(e) {
@@ -613,9 +614,16 @@
       const address = document.getElementById('delivery-address').value.trim()
       const paymentMethod = document.getElementById('payment-method').value
 
-      const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
+      const subtotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0)
       const serviceCharge = subtotal * 0.05
       const total = subtotal + serviceCharge
+
+      if (isNaN(total) || total <= 0) {
+        alert('Cart total could not be calculated. Please refresh and try again.')
+        btn.disabled = false
+        btn.textContent = originalText
+        return
+      }
 
            if (!tableSessionId && deliveryType === 'delivery' && !address) {
         alert('Please enter a delivery address.')
