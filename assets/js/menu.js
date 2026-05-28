@@ -10,7 +10,8 @@
   let currentCategory = 'all'
   let menuSections = []
   let menuSubCategories = []
-  let activeSection = 'all'
+    let activeSection = 'all'
+  let activeSubCategory = 'all'
   
   let cart = JSON.parse(localStorage.getItem('cart') || '[]')
   let selectedOutlet = localStorage.getItem('selected_outlet')
