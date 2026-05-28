@@ -1321,11 +1321,11 @@ function renderTables() {
     return
   }
 
-  const baseUrl = window.location.origin.replace(/\/admin$/, '').replace(/\/admin\/$/, '')
+  // Just use the current origin — your files are .html, not clean routes
+  const baseUrl = window.location.origin
   
   grid.innerHTML = allTables.map(t => {
-    // Build raw URL first, then escape only for display attributes
-    const rawQrUrl = `${baseUrl}/menu?table=${encodeURIComponent(t.number)}&outlet=${t.outlet_id}`
+    const rawQrUrl = `${baseUrl}/menu.html?table=${encodeURIComponent(t.number)}&outlet=${t.outlet_id}`
     
     return `
       <div class="border rounded-xl p-3 relative group hover:border-orange-300 transition">
