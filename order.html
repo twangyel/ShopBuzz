@@ -137,14 +137,15 @@
     }
     .outlet-closed .outlet-image img,
     .outlet-closed .p-5 {
-      filter: grayscale(0.4);
-      opacity: 0.6;
+      filter: grayscale(0.5);
+      opacity: 0.5;
     }
     .outlet-closed .outlet-overlay {
       display: none !important;
     }
     .closed-overlay {
       animation: fadeIn 0.3s ease-out;
+      pointer-events: none;
     }
 
     /* Status Badge */
@@ -413,7 +414,7 @@
     function getOutletImage(imageUrl, name) {
       if (imageUrl) {
         return `<div class="outlet-image relative h-48 overflow-hidden bg-cream-100">
-          <img src="${imageUrl}" alt="${name}" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.innerHTML=getImageFallback('${name.replace(/'/g, "\'")}')">
+          <img src="${imageUrl}" alt="${name}" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.innerHTML=getImageFallback('${name.replace(/'/g, "\\'")}')">
           <div class="outlet-overlay absolute inset-0 bg-gradient-to-t from-espresso-900/60 to-transparent flex items-end justify-end p-4">
             <span class="inline-flex items-center gap-1.5 text-white text-xs font-medium bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/30">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -439,49 +440,77 @@
     }
 
     // ===== REALTIME: UPDATE SINGLE CARD =====
-    function updateOutletCard(outlet) {
-      const card = document.querySelector(`[data-outlet-id="${outlet.id}"]`)
-      if (!card) return
+// ===== REALTIME: UPDATE SINGLE CARD =====
+function updateOutletCard(outlet) {
+  console.log('Updating outlet card:', outlet.id, 'new status:', outlet.status)
+  
+  const card = document.querySelector(`[data-outlet-id="${outlet.id}"]`)
+  if (!card) {
+    console.log('Card not found for outlet:', outlet.id)
+    return
+  }
 
-      const newStatus = outlet.status || 'open'
-      const isClosed = newStatus === 'closed'
-      const wasClosed = card.dataset.status === 'closed'
+  const newStatus = outlet.status || 'open'
+  const isClosed = newStatus === 'closed'
+  const wasClosed = card.dataset.status === 'closed'
+  
+  console.log('Card found. Was closed:', wasClosed, 'Is closed:', isClosed)
 
-      // Update data attribute
-      card.dataset.status = newStatus
+  // If status hasn't changed, do nothing
+  if (newStatus === card.dataset.status) {
+    console.log('Status unchanged, skipping')
+    return
+  }
 
-      // Update badge
-      const badgeContainer = card.querySelector('.status-badge-container')
-      if (badgeContainer) {
-        badgeContainer.innerHTML = getStatusBadge(newStatus)
-      }
+  // Update data attribute
+  card.dataset.status = newStatus
 
-      // Handle closed/open transitions
-      let overlay = card.querySelector('.closed-overlay')
+  // Update badge
+  const badgeContainer = card.querySelector('.status-badge-container')
+  if (badgeContainer) {
+    badgeContainer.innerHTML = getStatusBadge(newStatus)
+  }
 
-      if (isClosed) {
-        card.classList.add('outlet-closed')
-        card.removeAttribute('onclick')
-        if (!overlay) {
-          const newOverlay = document.createElement('div')
-          newOverlay.className = 'closed-overlay absolute inset-0 bg-white/70 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-2xl'
-          newOverlay.innerHTML = `<span class="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-bold border border-red-200 shadow-sm">Currently Unavailable</span>`
-          card.appendChild(newOverlay)
-        }
-        // Notify user if this just closed while they were browsing
-        if (!wasClosed) {
-          showToast(`${outlet.name} is now closed`, 5000)
-        }
-      } else {
-        card.classList.remove('outlet-closed')
-        card.setAttribute('onclick', `selectOutlet(${outlet.id})`)
-        if (overlay) overlay.remove()
-        // Notify user if this just opened while they were browsing
-        if (wasClosed) {
-          showToast(`${outlet.name} is now open!`, 5000)
-        }
-      }
+  // Handle closed state
+  if (isClosed) {
+    console.log('Closing outlet:', outlet.name)
+    
+    // Add closed class
+    card.classList.add('outlet-closed')
+    
+    // Remove click handler
+    card.removeAttribute('onclick')
+    
+    // Add overlay if not exists
+    let overlay = card.querySelector('.closed-overlay')
+    if (!overlay) {
+      overlay = document.createElement('div')
+      overlay.className = 'closed-overlay absolute inset-0 bg-white/70 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-2xl'
+      overlay.innerHTML = `<span class="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-bold border border-red-200 shadow-sm">Currently Unavailable</span>`
+      card.appendChild(overlay)
     }
+    
+    showToast(`${outlet.name} is now closed`, 5000)
+    
+  } else {
+    console.log('Opening outlet:', outlet.name)
+    
+    // Remove closed class
+    card.classList.remove('outlet-closed')
+    
+    // Restore click handler
+    card.setAttribute('onclick', `selectOutlet(${outlet.id})`)
+    
+    // Remove overlay
+    const overlay = card.querySelector('.closed-overlay')
+    if (overlay) {
+      overlay.remove()
+    }
+    
+    showToast(`${outlet.name} is now open!`, 5000)
+        }
+      }
+    
 
     // ===== LOAD OUTLETS =====
     async function loadOutlets() {
@@ -591,24 +620,31 @@
     }
 
     // ===== REALTIME SUBSCRIPTION =====
-    function subscribeToOutlets() {
-      console.log('Subscribing to outlet status updates...')
+function subscribeToOutlets() {
+  console.log('Subscribing to outlet status updates...')
 
-      supabaseClient
-        .channel('outlets-status')
-        .on('postgres_changes', { 
-          event: 'UPDATE', 
-          schema: 'public', 
-          table: 'outlets',
-          filter: 'is_active=eq.true'
-        }, payload => {
-          console.log('Realtime update received:', payload)
-          updateOutletCard(payload.new)
-        })
-        .subscribe((status) => {
-          console.log('Realtime subscription status:', status)
-        })
-    }
+  // Remove any existing channel first
+  supabaseClient.removeChannel(supabaseClient.channel('outlets-status-customer'))
+
+  supabaseClient
+    .channel('outlets-status-customer')
+    .on('postgres_changes', { 
+      event: '*', 
+      schema: 'public', 
+      table: 'outlets'
+    }, payload => {
+      console.log('Realtime update received:', payload)
+      if (payload.new && payload.new.is_active) {
+        updateOutletCard(payload.new)
+      }
+    })
+    .subscribe((status) => {
+      console.log('Realtime subscription status:', status)
+      if (status === 'SUBSCRIBED') {
+        console.log('Successfully subscribed to outlet updates')
+      }
+    })
+}
 
     // Load immediately
     loadOutlets()
