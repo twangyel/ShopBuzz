@@ -1000,8 +1000,21 @@ window.toggleReviewApproved = async function(id, approved) {
         payload.is_available = existing?.is_available !== false
         const { error: updateError } = await supabaseClient.from('menu_items').update(payload).eq('id', editingProductId)
         error = updateError
-      } else {
-        const { error: insertError } = await supabaseClient.from('menu_items').insert(payload)
+           } else {
+        const applyAll = document.getElementById('apply-all-outlets').checked
+        const outletIds = applyAll ? allOutlets.map(o => o.id) : [outlet_id]
+
+        const inserts = outletIds.map(oid => ({
+          outlet_id: oid,
+          category_id,
+          name,
+          description: description || null,
+          price,
+          image_url,
+          is_available: true
+        }))
+
+        const { error: insertError } = await supabaseClient.from('menu_items').insert(inserts)
         error = insertError
       }
 
@@ -1027,6 +1040,7 @@ window.toggleReviewApproved = async function(id, approved) {
       document.getElementById('product-price').value = p.price
       document.getElementById('product-description').value = p.description || ''
       document.getElementById('product-submit-btn').textContent = 'Update Product'
+      document.getElementById('all-outlets-wrapper').classList.add('hidden')
       document.getElementById('product-cancel-btn').classList.remove('hidden')
 
       if (p.image_url) {
@@ -1043,6 +1057,9 @@ window.toggleReviewApproved = async function(id, approved) {
       document.getElementById('product-form').reset()
       document.getElementById('product-form-title').textContent = 'Add New Product'
       document.getElementById('product-submit-btn').textContent = 'Save Product'
+            // Show "all outlets" option again for new products
+      document.getElementById('all-outlets-wrapper').classList.remove('hidden')
+      document.getElementById('apply-all-outlets').checked = false
       document.getElementById('product-cancel-btn').classList.add('hidden')
       document.getElementById('photo-preview').classList.add('hidden')
       document.getElementById('photo-preview').querySelector('img').src = ''
