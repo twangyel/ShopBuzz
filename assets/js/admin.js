@@ -14,6 +14,7 @@ let allTables = []
 let productCategories = []
 let currentProductFilter = 'all'
 let editingProductId = null
+let photoRemoved = false
 
 async function getUserProfile(userId) {
   const maxRetries = 3;
@@ -833,26 +834,24 @@ function populateCategorySelect() {
   const select = document.getElementById('product-category')
   const currentVal = select.value
   select.innerHTML = '<option value="">Select category...</option>'
+
   const sections = productCategories.filter(c => !c.parent_id).sort((a,b) => (a.sort_order||0) - (b.sort_order||0))
-  const subCategories = productCategories.filter(c => c.parent_id)
   sections.forEach(section => {
-    const children = subCategories.filter(c => c.parent_id === section.id).sort((a,b) => (a.sort_order||0) - (b.sort_order||0))
-    if (children.length === 0) {
+    // Parent section as selectable option
+    const optSection = document.createElement('option')
+    optSection.value = section.id
+    optSection.textContent = section.name
+    optSection.style.fontWeight = '600'
+    select.appendChild(optSection)
+
+    // Indented children
+    const children = productCategories.filter(c => c.parent_id === section.id).sort((a,b) => (a.sort_order||0) - (b.sort_order||0))
+    children.forEach(child => {
       const option = document.createElement('option')
-      option.value = section.id
-      option.textContent = section.name
+      option.value = child.id
+      option.textContent = '  — ' + child.name
       select.appendChild(option)
-    } else {
-      const optgroup = document.createElement('optgroup')
-      optgroup.label = section.name
-      children.forEach(child => {
-        const option = document.createElement('option')
-        option.value = child.id
-        option.textContent = '— ' + child.name
-        optgroup.appendChild(option)
-      })
-      select.appendChild(optgroup)
-    }
+    })
   })
   if (currentVal) select.value = currentVal
 }
@@ -897,12 +896,14 @@ function renderCategoryFilters() {
     } else {
       html += `<div class="relative inline-block group">
         <button class="px-3 py-1 rounded-lg text-xs font-medium bg-white border text-gray-700 hover:bg-gray-50">${escapeHtml(section.name)} ▾</button>
-        <div class="absolute left-0 top-full mt-1 hidden group-hover:flex flex-col bg-white border shadow-lg rounded-lg z-20 min-w-[140px]">
-          ${children.map(child => `
-            <button onclick="filterProducts('${escapeHtml(child.id)}')" class="text-left px-3 py-2 text-xs hover:bg-orange-50 text-gray-700 first:rounded-t-lg last:rounded-b-lg whitespace-nowrap">
-              ${escapeHtml(child.name)}
-            </button>
-          `).join('')}
+        <div class="absolute left-0 top-full hidden group-hover:block z-50 pt-1">
+          <div class="bg-white border shadow-lg rounded-lg min-w-[140px] overflow-hidden flex flex-col">
+            ${children.map(child => `
+              <button onclick="filterProducts('${escapeHtml(child.id)}')" class="w-full text-left px-3 py-2 text-xs hover:bg-orange-50 text-gray-700 whitespace-nowrap transition">
+                ${escapeHtml(child.name)}
+              </button>
+            `).join('')}
+          </div>
         </div>
       </div>`
     }
@@ -985,17 +986,41 @@ function renderProducts(productsToRender = null) {
 window.previewPhoto = function() {
   const file = document.getElementById('product-photo').files[0]
   const preview = document.getElementById('photo-preview')
+  const uploadArea = document.getElementById('photo-upload-area')
   const img = preview.querySelector('img')
   if (img.src && img.src.startsWith('blob:')) {
     URL.revokeObjectURL(img.src)
   }
   if (file) {
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size must be less than 2MB')
+      document.getElementById('product-photo').value = ''
+      return
+    }
+    photoRemoved = false
     img.src = URL.createObjectURL(file)
     preview.classList.remove('hidden')
+    uploadArea.classList.add('hidden')
   } else {
     preview.classList.add('hidden')
+    uploadArea.classList.remove('hidden')
     img.src = ''
   }
+}
+
+window.removePhoto = function() {
+  const input = document.getElementById('product-photo')
+  const preview = document.getElementById('photo-preview')
+  const uploadArea = document.getElementById('photo-upload-area')
+  const img = preview.querySelector('img')
+  if (img.src && img.src.startsWith('blob:')) {
+    URL.revokeObjectURL(img.src)
+  }
+  input.value = ''
+  img.src = ''
+  preview.classList.add('hidden')
+  uploadArea.classList.remove('hidden')
+  photoRemoved = true
 }
 
 window.addCategory = async function() {
@@ -1057,7 +1082,12 @@ window.handleProductSubmit = async function(e) {
 
   let image_url = null
   const existing = editingProductId ? allProducts.find(p => p.id === editingProductId) : null
-  image_url = existing?.image_url || null
+
+  if (photoRemoved) {
+    image_url = null
+  } else {
+    image_url = existing?.image_url || null
+  }
 
   if (file) {
     const ext = file.name.split('.').pop()
@@ -1116,6 +1146,7 @@ window.editProduct = function(id) {
   const p = allProducts.find(x => x.id === id)
   if (!p) return
   editingProductId = id
+  photoRemoved = false
   document.getElementById('product-form-title').textContent = 'Edit Product'
   document.getElementById('product-id').value = p.id
   document.getElementById('product-name').value = p.name
@@ -1126,25 +1157,52 @@ window.editProduct = function(id) {
   document.getElementById('product-submit-btn').textContent = 'Update Product'
   document.getElementById('all-outlets-wrapper').classList.add('hidden')
   document.getElementById('product-cancel-btn').classList.remove('hidden')
+
+  const preview = document.getElementById('photo-preview')
+  const uploadArea = document.getElementById('photo-upload-area')
+  const img = preview.querySelector('img')
+  if (img.src && img.src.startsWith('blob:')) URL.revokeObjectURL(img.src)
+
   if (p.image_url) {
-    const preview = document.getElementById('photo-preview')
-    preview.querySelector('img').src = p.image_url
+    img.src = p.image_url
     preview.classList.remove('hidden')
+    uploadArea.classList.add('hidden')
+  } else {
+    img.src = ''
+    preview.classList.add('hidden')
+    uploadArea.classList.remove('hidden')
   }
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 window.resetProductForm = function() {
   editingProductId = null
+  photoRemoved = false
   document.getElementById('product-form').reset()
   document.getElementById('product-form-title').textContent = 'Add New Product'
   document.getElementById('product-submit-btn').textContent = 'Save Product'
   document.getElementById('all-outlets-wrapper').classList.remove('hidden')
   document.getElementById('apply-all-outlets').checked = false
   document.getElementById('product-cancel-btn').classList.add('hidden')
-  document.getElementById('photo-preview').classList.add('hidden')
-  document.getElementById('photo-preview').querySelector('img').src = ''
+
+  // Reset photo area
+  const preview = document.getElementById('photo-preview')
+  const uploadArea = document.getElementById('photo-upload-area')
+  const img = preview.querySelector('img')
+  if (img.src && img.src.startsWith('blob:')) URL.revokeObjectURL(img.src)
+  img.src = ''
+  preview.classList.add('hidden')
+  uploadArea.classList.remove('hidden')
+
+  // Reset outlet select state (critical fix: re-enable after "all outlets" submit)
+  const outletSelect = document.getElementById('product-outlet')
+  const wrapper = outletSelect.closest('div')
+  outletSelect.disabled = false
+  outletSelect.required = true
+  wrapper.classList.remove('opacity-50', 'pointer-events-none')
+
   populateOutletSelect()
+  populateCategorySelect()
 }
 
 window.toggleOutletRequired = function() {
