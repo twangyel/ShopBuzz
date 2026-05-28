@@ -5,409 +5,489 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>BuzzCafe — Menu</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#f59e0b">
+  <meta name="theme-color" content="#FBF3E4">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="BuzzCafe">
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            accent: '#f59e0b',
-            accentHover: '#d97706',
-            dark: '#0f0f0f',
+            accent: '#DD6420',
+            accentHover: '#BE521A',
+            dark: '#2B2118',
+            cream: '#FBF3E4',
           }
         }
       }
     }
   </script>
   <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-    body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: linear-gradient(180deg, #FFFBF7 0%, #FFF5EB 100%);
-      background-attachment: fixed;
-      color: #2A1B14;
-      -webkit-font-smoothing: antialiased;
-      line-height: 1.4;
+    :root{
+      --cream:#FBF3E4;
+      --cream-deep:#F2E4CA;
+      --surface:#FFFDF8;
+      --ink:#2B2118;
+      --ink-soft:#7A6A58;
+      --ink-faint:#AC9C87;
+      --line:#ECDDC4;
+      --line-soft:#F2E8D7;
+      --orange:#DD6420;
+      --orange-deep:#BE521A;
+      --orange-soft:#FBEAD9;
+      --orange-tint:#F6DCC1;
+      --radius:20px;
     }
 
-    #loader {
-      position: fixed; inset: 0; z-index: 9999;
-      background: #FFFBF7;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      transition: opacity .4s ease;
-    }
-    #loader.hidden { opacity: 0; pointer-events: none; }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-    .hide-scroll::-webkit-scrollbar { display: none; }
-    .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    body{
+      font-family:'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background:var(--cream);
+      color:var(--ink);
+      line-height:1.45;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+      background-image:
+        radial-gradient(115% 75% at 50% -12%, rgba(221,100,32,.07), transparent 58%),
+        radial-gradient(90% 60% at 102% 2%, rgba(221,100,32,.05), transparent 52%);
+      background-attachment:fixed;
+      min-height:100vh;
+    }
+    /* faint paper grain */
+    body::before{
+      content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+    }
+    body > *{ position:relative; z-index:1; }
 
-    .cat-pill {
-      white-space: nowrap;
-      font-size: 13px;
-      font-weight: 600;
-      padding: 8px 18px;
-      border-radius: 24px;
-      border: 1.5px solid #ffedd5;
-      background: #fff;
-      color: #78716c;
-      cursor: pointer;
-      transition: all .25s cubic-bezier(.4,0,.2,1);
-      user-select: none;
-    }
-    .cat-pill.active {
-      background: #f59e0b;
-      color: #fff;
-      border-color: #f59e0b;
-      box-shadow: 0 4px 14px rgba(245,158,11,.25);
-    }
-    .cat-pill:not(.active):hover {
-      border-color: #f59e0b;
-      color: #f59e0b;
-      transform: translateY(-1px);
-    }
-    .cat-pill:active { transform: scale(.95); }
+    .font-display{ font-family:'Fraunces', Georgia, serif; font-optical-sizing:auto; }
 
-    .section-tab {
-      white-space: nowrap;
-      font-size: 13px;
-      font-weight: 600;
-      padding: 8px 18px;
-      border-radius: 24px;
-      border: 1.5px solid #ffedd5;
-      background: #fff;
-      color: #78716c;
-      cursor: pointer;
-      transition: all .25s cubic-bezier(.4,0,.2,1);
-      user-select: none;
-    }
-    .section-tab.active {
-      background: #f59e0b;
-      color: #fff;
-      border-color: #f59e0b;
-      box-shadow: 0 4px 14px rgba(245,158,11,.25);
-    }
-    .section-tab:not(.active):hover {
-      border-color: #f59e0b;
-      color: #f59e0b;
-      transform: translateY(-1px);
-    }
-    .section-tab:active { transform: scale(.95); }
+    .hide-scroll::-webkit-scrollbar{ display:none; }
+    .hide-scroll{ -ms-overflow-style:none; scrollbar-width:none; }
 
-    .menu-card {
-      background: #fff;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,.06);
-      transition: all .35s cubic-bezier(.4,0,.2,1);
-      display: flex;
-      flex-direction: column;
-      position: relative;
+    /* ---------- LOADER ---------- */
+    #loader{
+      position:fixed; inset:0; z-index:9999;
+      background:var(--cream);
+      display:flex; flex-direction:column; gap:20px;
+      align-items:center; justify-content:center;
+      transition:opacity .45s ease;
     }
-    .menu-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 28px rgba(0,0,0,.12);
+    #loader.hidden{ opacity:0; pointer-events:none; }
+    .loader-ring{
+      width:46px; height:46px; border-radius:50%;
+      border:3px solid var(--orange-tint);
+      border-top-color:var(--orange);
+      animation:spin .8s linear infinite;
     }
-    .menu-card:active { transform: scale(.98); }
+    .loader-word{ font-family:'Fraunces',serif; font-weight:600; font-size:19px; color:var(--ink); letter-spacing:.01em; }
+    .loader-word b{ color:var(--orange); font-weight:700; }
+    @keyframes spin{ to{ transform:rotate(360deg); } }
 
-    .card-img-wrap {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 4 / 3;
-      overflow: hidden;
-      background: #f3f4f6;
-    }
-    .card-img-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform .5s cubic-bezier(.4,0,.2,1);
-    }
-    .menu-card:hover .card-img-wrap img {
-      transform: scale(1.08);
-    }
+    /* ---------- TOP BAR (sticky) ---------- */
+    .topbar{ position:sticky; top:0; z-index:50; }
 
-    .card-body {
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
+    #main-header{
+      background:rgba(251,243,228,.82);
+      backdrop-filter:blur(16px) saturate(1.3);
+      -webkit-backdrop-filter:blur(16px) saturate(1.3);
+      border-bottom:1px solid var(--line-soft);
+      transition:box-shadow .3s ease, background .3s ease;
+    }
+    .header-scrolled{
+      box-shadow:0 10px 34px -16px rgba(43,33,24,.28) !important;
+      background:rgba(251,243,228,.95) !important;
+    }
+    .nav-inner{
+      width:100%; max-width:1180px; margin:0 auto;
+      padding:0 14px; display:flex; align-items:center;
+      justify-content:space-between; height:62px;
+    }
+    @media(min-width:768px){ .nav-inner{ padding:0 24px; } }
+
+    .brand-mark{
+      width:38px; height:38px; border-radius:12px;
+      background:linear-gradient(150deg, var(--orange), #C9551B);
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 6px 16px -5px rgba(221,100,32,.7);
+      flex:0 0 auto;
+    }
+    .brand-name{ font-family:'Fraunces',serif; font-weight:600; font-size:18px; color:var(--ink); line-height:1.05; letter-spacing:-.01em; }
+    .brand-sub{ font-size:11px; color:var(--ink-soft); font-weight:500; line-height:1.2; margin-top:1px; }
+
+    .icon-btn{
+      width:42px; height:42px; display:flex; align-items:center; justify-content:center;
+      border-radius:13px; color:var(--ink); background:transparent;
+      border:1px solid transparent; cursor:pointer; transition:all .2s;
+    }
+    .icon-btn:hover{ background:var(--orange-soft); color:var(--orange-deep); }
+    .icon-btn:active{ transform:scale(.93); }
+
+    .cart-btn{
+      position:relative; width:44px; height:44px; display:flex; align-items:center; justify-content:center;
+      border-radius:14px; background:var(--orange); color:#fff;
+      box-shadow:0 8px 18px -6px rgba(221,100,32,.7); cursor:pointer; transition:all .2s;
+    }
+    .cart-btn:hover{ background:var(--orange-deep); transform:translateY(-1px); }
+    .cart-btn:active{ transform:scale(.93); }
+    #cart-badge{
+      position:absolute; top:-5px; right:-5px; min-width:21px; height:21px; padding:0 5px;
+      background:var(--ink); color:#FFF6E9; font-size:10px; font-weight:800;
+      border-radius:999px; display:flex; align-items:center; justify-content:center;
+      border:2px solid var(--cream); line-height:1;
     }
 
-    .dish-name {
-      font-size: 15px;
-      font-weight: 700;
-      color: #451a03;
-      line-height: 1.25;
-      margin-bottom: 4px;
-      display: -webkit-box;
-      -webkit-line-clamp: 1;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+    /* ---------- FILTER BAR ---------- */
+    .filterbar{
+      background:rgba(251,243,228,.82);
+      backdrop-filter:blur(16px) saturate(1.3);
+      -webkit-backdrop-filter:blur(16px) saturate(1.3);
+      border-bottom:1px solid var(--line-soft);
     }
-    .dish-desc {
-      font-size: 12px;
-      color: #a8a29e;
-      line-height: 1.35;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      margin-bottom: 8px;
-      min-height: 28px;
+    .filter-inner{ width:100%; max-width:1180px; margin:0 auto; padding:11px 14px 12px; }
+    @media(min-width:768px){ .filter-inner{ padding:13px 24px 14px; } }
+
+    .search-wrap{ position:relative; }
+    .search-icon{ position:absolute; left:15px; top:50%; transform:translateY(-50%); width:18px; height:18px; color:var(--orange); }
+    .search-box{
+      width:100%; padding:13px 16px 13px 46px;
+      border:1px solid var(--line); border-radius:15px;
+      background:var(--surface); font-family:inherit; font-size:15px; color:var(--ink);
+      transition:all .22s; box-shadow:0 1px 2px rgba(43,33,24,.04);
     }
-    .dish-price {
-      font-size: 16px;
-      font-weight: 800;
-      color: #ea580c;
-      letter-spacing: -0.02em;
+    .search-box::placeholder{ color:var(--ink-faint); }
+    .search-box:focus{ outline:none; border-color:var(--orange); box-shadow:0 0 0 4px rgba(221,100,32,.13); }
+
+    .tab-row{ display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; }
+    #section-tabs{ margin-top:12px; }
+    #category-pills{ margin-top:10px; }
+
+    .section-tab, .cat-pill{
+      white-space:nowrap; font-family:inherit; font-weight:600;
+      border-radius:999px; cursor:pointer; user-select:none; flex:0 0 auto;
+      transition:all .25s cubic-bezier(.4,0,.2,1);
+    }
+    .section-tab{
+      font-size:13.5px; padding:9px 18px;
+      border:1px solid var(--line); background:var(--surface); color:var(--ink-soft);
+    }
+    .section-tab:hover:not(.active){ border-color:var(--orange); color:var(--orange-deep); transform:translateY(-1px); }
+    .section-tab.active{
+      background:var(--orange); color:#fff; border-color:var(--orange);
+      box-shadow:0 7px 18px -5px rgba(221,100,32,.6);
+    }
+    .section-tab:active{ transform:scale(.95); }
+
+    .cat-pill{
+      font-size:12.5px; padding:8px 15px;
+      border:1px solid var(--line); background:var(--surface); color:var(--ink-soft);
+    }
+    .cat-pill:hover:not(.active){ border-color:var(--ink); color:var(--ink); transform:translateY(-1px); }
+    .cat-pill.active{
+      background:var(--ink); color:#FFF6E9; border-color:var(--ink);
+      box-shadow:0 7px 18px -6px rgba(43,33,24,.4);
+    }
+    .cat-pill:active{ transform:scale(.95); }
+
+    /* ---------- LAYOUT ---------- */
+    main{ width:100%; max-width:1180px; margin:0 auto; padding:0 14px 120px; }
+    @media(min-width:768px){ main{ padding:0 24px 130px; } }
+
+    /* QR dine-in banner (hooks already supported by menu.js) */
+    #table-banner{
+      display:none; align-items:center; justify-content:space-between; gap:12px;
+      margin:18px 0 2px; padding:14px 16px; border-radius:18px;
+      background:linear-gradient(100deg, var(--orange-soft), #FFF4E8);
+      border:1px solid var(--orange-tint);
+      box-shadow:0 8px 24px -16px rgba(221,100,32,.7);
+    }
+    #table-banner:not(.hidden){ display:flex; }
+    .tb-left{ display:flex; align-items:center; gap:12px; }
+    .tb-dot{ width:10px; height:10px; border-radius:50%; background:var(--orange); box-shadow:0 0 0 4px rgba(221,100,32,.18); flex:0 0 auto; animation:pulseDot 2s ease-in-out infinite; }
+    @keyframes pulseDot{ 0%,100%{ box-shadow:0 0 0 4px rgba(221,100,32,.18);} 50%{ box-shadow:0 0 0 7px rgba(221,100,32,.06);} }
+    .tb-title{ font-family:'Fraunces',serif; font-weight:600; font-size:15px; color:var(--ink); }
+    .tb-title b{ color:var(--orange-deep); }
+    .tb-sub{ font-size:11.5px; color:var(--ink-soft); margin-top:1px; }
+    .tb-leave{
+      font-family:inherit; font-size:12px; font-weight:700; color:var(--orange-deep);
+      background:rgba(255,255,255,.7); border:1px solid var(--orange-tint);
+      padding:8px 14px; border-radius:999px; cursor:pointer; transition:all .2s; flex:0 0 auto;
+    }
+    .tb-leave:hover{ background:#fff; }
+    .tb-leave:active{ transform:scale(.95); }
+
+    .menu-head{ display:flex; align-items:center; gap:14px; margin:22px 2px 6px; }
+    .menu-title{ font-weight:600; font-size:22px; color:var(--ink); letter-spacing:-.01em; }
+    .menu-rule{ flex:1; height:1px; background:linear-gradient(90deg, var(--line), transparent); }
+
+    /* ---------- GRID ---------- */
+    .menu-grid{
+      display:grid; grid-template-columns:repeat(2,1fr); gap:13px;
+    }
+    @media(min-width:560px){ .menu-grid{ grid-template-columns:repeat(3,1fr); gap:16px; } }
+    @media(min-width:880px){ .menu-grid{ grid-template-columns:repeat(4,1fr); gap:18px; } }
+    @media(min-width:1180px){ .menu-grid{ grid-template-columns:repeat(5,1fr); gap:20px; } }
+
+    /* ---------- CARD ---------- */
+    .menu-card{
+      background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+      overflow:hidden; display:flex; flex-direction:column; position:relative;
+      box-shadow:0 2px 4px rgba(43,33,24,.04), 0 14px 30px -22px rgba(43,33,24,.4);
+      transition:transform .35s cubic-bezier(.4,0,.2,1), box-shadow .35s, border-color .35s;
+      animation:cardIn .55s cubic-bezier(.2,.7,.2,1) backwards;
+    }
+    .menu-card:hover{
+      transform:translateY(-5px);
+      box-shadow:0 16px 36px -16px rgba(221,100,32,.45);
+      border-color:var(--orange-tint);
+    }
+    .menu-card:active{ transform:scale(.985); }
+    @keyframes cardIn{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:translateY(0); } }
+    .menu-grid .menu-card:nth-child(1){animation-delay:.02s}
+    .menu-grid .menu-card:nth-child(2){animation-delay:.05s}
+    .menu-grid .menu-card:nth-child(3){animation-delay:.08s}
+    .menu-grid .menu-card:nth-child(4){animation-delay:.11s}
+    .menu-grid .menu-card:nth-child(5){animation-delay:.14s}
+    .menu-grid .menu-card:nth-child(6){animation-delay:.17s}
+    .menu-grid .menu-card:nth-child(7){animation-delay:.20s}
+    .menu-grid .menu-card:nth-child(8){animation-delay:.23s}
+    .menu-grid .menu-card:nth-child(9){animation-delay:.26s}
+    .menu-grid .menu-card:nth-child(10){animation-delay:.29s}
+    .menu-grid .menu-card:nth-child(11){animation-delay:.32s}
+    .menu-grid .menu-card:nth-child(12){animation-delay:.35s}
+
+    .card-img-wrap{
+      position:relative; width:100%; aspect-ratio:1/1; overflow:hidden;
+      background:linear-gradient(140deg, var(--cream-deep), var(--orange-soft));
+    }
+    .card-img-wrap img{
+      width:100%; height:100%; object-fit:cover;
+      transition:transform .55s cubic-bezier(.4,0,.2,1);
+    }
+    .menu-card:hover .card-img-wrap img{ transform:scale(1.07); }
+    /* fallback initial (menu.js injects an inline-styled div) — recolor to warm serif */
+    .card-img-wrap > div{ color:rgba(221,100,32,.5) !important; font-family:'Fraunces',serif !important; }
+
+    .card-body{ padding:13px 13px 14px; display:flex; flex-direction:column; flex:1; }
+
+    .dish-name{
+      font-size:15px; font-weight:700; color:var(--ink); line-height:1.25;
+      margin-bottom:4px; letter-spacing:-.01em;
+      display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;
+    }
+    .dish-desc{
+      font-size:12px; color:var(--ink-faint); line-height:1.4; margin-bottom:11px;
+      flex:1; min-height:33px;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+    }
+    .dish-price{
+      font-family:'Fraunces',serif; font-size:18px; font-weight:600;
+      color:var(--ink); letter-spacing:-.01em;
     }
 
-    .btn-add {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 8px 0;
-      width: 100%;
-      border: none;
-      border-radius: 10px;
-      background: #f59e0b;
-      color: #fff;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all .25s cubic-bezier(.4,0,.2,1);
-      box-shadow: 0 4px 12px rgba(245,158,11,.25);
+    .btn-add{
+      display:inline-flex; align-items:center; justify-content:center; gap:7px;
+      width:100%; padding:11px 0; border:none; border-radius:13px;
+      background:var(--orange); color:#fff; font-family:inherit; font-size:13px;
+      font-weight:700; letter-spacing:.06em; cursor:pointer;
+      box-shadow:0 7px 16px -7px rgba(221,100,32,.8);
+      transition:all .25s cubic-bezier(.4,0,.2,1);
     }
-    .btn-add:hover {
-      background: #d97706;
-      color: #fff;
-      box-shadow: 0 6px 20px rgba(245,158,11,.40);
-      transform: translateY(-1px);
-    }
-    .btn-add:active {
-      transform: scale(.95);
-    }
+    .btn-add:hover{ background:var(--orange-deep); transform:translateY(-1px); box-shadow:0 11px 22px -7px rgba(221,100,32,.85); }
+    .btn-add:active{ transform:scale(.95); }
 
-    .stepper {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-radius: 10px;
-      overflow: hidden;
-      background: #fff7ed;
-      height: 36px;
+    .stepper{
+      display:flex; align-items:center; justify-content:space-between;
+      border-radius:13px; overflow:hidden; height:44px;
+      background:var(--orange-soft); border:1px solid var(--orange-tint);
     }
-    .stepper button {
-      width: 36px;
-      height: 100%;
-      border: none;
-      background: transparent;
-      font-size: 18px;
-      font-weight: 700;
-      color: #451a03;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all .2s;
+    .stepper button{
+      width:46px; height:100%; border:none; background:transparent;
+      font-size:21px; font-weight:700; color:var(--orange-deep); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; transition:background .18s;
     }
-    .stepper button:hover { background: #ffedd5; color: #d97706; }
-    .stepper button:active { background: #fed7aa; }
-    .stepper .qty {
-      font-size: 14px;
-      font-weight: 800;
-      color: #451a03;
-      min-width: 28px;
-      text-align: center;
-    }
+    .stepper button:hover{ background:var(--orange-tint); }
+    .stepper button:active{ background:#F1CFAE; }
+    .stepper .qty{ font-family:'Fraunces',serif; font-size:16px; font-weight:600; color:var(--ink); min-width:28px; text-align:center; }
 
-    .search-box {
-      width: 100%;
-      padding: 12px 16px 12px 44px;
-      border: 1.5px solid #ffedd5;
-      border-radius: 14px;
-      background: #fff;
-      font-size: 15px;
-      color: #451a03;
-      transition: all .25s;
-      box-shadow: 0 2px 12px rgba(245,158,11,0.06);
+    /* ---------- SKELETON ---------- */
+    .skel{
+      background:linear-gradient(100deg, var(--cream-deep) 28%, #FDEFD9 50%, var(--cream-deep) 72%);
+      background-size:200% 100%; animation:shimmer 1.3s ease-in-out infinite;
     }
-    .search-box:focus {
-      outline: none;
-      border-color: #f59e0b;
-      background: #fff;
-      box-shadow: 0 0 0 3px rgba(245,158,11,.12), 0 4px 16px rgba(245,158,11,.08);
-    }
-    .search-box::placeholder { color: #d6d3d1; }
+    @keyframes shimmer{ to{ background-position:-200% 0; } }
 
-    #toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(140%);
-      background: #451a03;
-      color: #fff;
-      padding: 14px 24px;
-      border-radius: 14px;
-      font-size: 14px;
-      font-weight: 600;
-      z-index: 9999;
-      opacity: 0;
-      transition: all .4s cubic-bezier(.34,1.56,.64,1);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 16px 48px rgba(0,0,0,.25);
-      white-space: nowrap;
+    /* ---------- EMPTY / NO RESULTS ---------- */
+    .empty-icon{
+      width:78px; height:78px; border-radius:50%; background:var(--orange-soft);
+      border:1px solid var(--orange-tint);
+      display:flex; align-items:center; justify-content:center; font-size:34px; margin:0 auto 18px;
     }
-    #toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
+    .empty-title{ font-family:'Fraunces',serif; font-size:19px; font-weight:600; color:var(--ink); }
+    .empty-sub{ font-size:14px; color:var(--ink-soft); margin-top:4px; }
 
-    .empty-icon {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      background: #ffedd5;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-      margin: 0 auto 16px;
+    /* ---------- TOAST ---------- */
+    #toast{
+      position:fixed; bottom:24px; left:50%;
+      transform:translateX(-50%) translateY(170%);
+      background:var(--ink); color:#FFF6E9;
+      padding:14px 22px; border-radius:16px; font-family:inherit; font-size:14px; font-weight:600;
+      z-index:9999; opacity:0; display:flex; align-items:center; gap:10px; white-space:nowrap;
+      box-shadow:0 20px 44px -14px rgba(43,33,24,.55);
+      transition:all .45s cubic-bezier(.34,1.56,.64,1);
     }
+    #toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
-    .header-scrolled { box-shadow: 0 4px 20px rgba(245,158,11,.08) !important; }
+    /* ---------- AUTH MODAL ---------- */
+    .auth-sheet{ background:var(--surface); box-shadow:0 -24px 70px -24px rgba(43,33,24,.5); }
+    @media(min-width:768px){ .auth-sheet{ box-shadow:0 30px 80px -28px rgba(43,33,24,.6); } }
+    .auth-grabber{ width:44px; height:4px; background:var(--line); border-radius:999px; margin:0 auto 18px; }
+    .field-label{ display:block; font-size:13px; font-weight:600; color:var(--ink); margin-bottom:6px; }
+    .field-label .req{ color:var(--orange); }
+    .field-hint{ font-size:11.5px; color:var(--ink-faint); margin-top:5px; }
+    .field{
+      width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:12px;
+      background:var(--surface); font-family:inherit; font-size:15px; color:var(--ink); transition:all .2s;
+    }
+    .field::placeholder{ color:var(--ink-faint); }
+    .field:focus{ outline:none; border-color:var(--orange); box-shadow:0 0 0 4px rgba(221,100,32,.13); }
+    .field-prefix{
+      display:inline-flex; align-items:center; padding:0 13px;
+      border:1px solid var(--line); border-right:0; border-radius:12px 0 0 12px;
+      background:var(--cream); color:var(--ink-soft); font-size:14px; font-weight:600;
+    }
+    .field-joined{ border-radius:0 12px 12px 0; }
+    .btn-primary{
+      width:100%; padding:14px; border:none; border-radius:14px;
+      background:var(--orange); color:#fff; font-family:inherit; font-weight:700; font-size:15px;
+      cursor:pointer; transition:all .2s; box-shadow:0 11px 26px -9px rgba(221,100,32,.8);
+    }
+    .btn-primary:hover{ background:var(--orange-deep); }
+    .btn-primary:active{ transform:scale(.985); }
+    .modal-close{
+      position:absolute; top:16px; right:16px; width:34px; height:34px;
+      display:flex; align-items:center; justify-content:center; border-radius:10px;
+      color:var(--ink-soft); background:transparent; cursor:pointer; transition:all .2s;
+    }
+    .modal-close:hover{ background:var(--cream-deep); color:var(--ink); }
 
-    .menu-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+    @media(prefers-reduced-motion:reduce){
+      *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
     }
-    @media (min-width: 480px) {
-      .menu-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
-    }
-    @media (min-width: 640px) {
-      .menu-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    }
-    @media (min-width: 1024px) {
-      .menu-grid { grid-template-columns: repeat(4, 1fr); gap: 18px; }
-    }
-    @media (min-width: 1280px) {
-      .menu-grid { grid-template-columns: repeat(5, 1fr); gap: 20px; }
-    }
-
-    .nav-inner {
-      width: 100%;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 64px;
-    }
-    @media (min-width: 768px) {
-      .nav-inner { padding: 0 24px; }
-    }
-
-    /* Auth modal */
-    #auth-modal .backdrop { transition: opacity .3s; }
-    #auth-sheet { transition: transform .3s cubic-bezier(.4,0,.2,1); }
   </style>
 </head>
 <body>
 
   <!-- Loader -->
   <div id="loader">
-    <div class="w-10 h-10 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
+    <div class="loader-ring"></div>
+    <div class="loader-word">Buzz<b>Cafe</b></div>
   </div>
 
-  <!-- Header -->
-  <header id="main-header" class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-orange-100 transition-shadow duration-300">
-    <div class="nav-inner">
-      <!-- Left: back + brand -->
-      <div class="flex items-center gap-4">
-        <a href="order.html" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-orange-50 transition">
-          <svg class="w-5 h-5 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-          </svg>
-        </a>
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 bg-accent rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
-            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+  <!-- Sticky top -->
+  <div class="topbar">
+    <!-- Header -->
+    <header id="main-header">
+      <div class="nav-inner">
+        <div class="flex items-center" style="gap:10px;">
+          <a href="order.html" class="icon-btn" aria-label="Back to ordering">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
             </svg>
-          </div>
-          <div>
-            <h1 class="text-base font-bold text-gray-900 leading-tight tracking-tight" id="outlet-name">BuzzCafe</h1>
-            <p class="text-[11px] text-gray-500 font-medium leading-tight" id="outlet-info">Select outlet</p>
+          </a>
+          <div class="flex items-center" style="gap:11px;">
+            <div class="brand-mark">
+              <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 9h12v6a4 4 0 01-4 4H8a4 4 0 01-4-4V9z"/>
+                <path d="M16 10h2.5a2.5 2.5 0 010 5H16"/>
+                <path d="M7.5 5.2c.4-.5.4-1.1 0-1.7M11 5.2c.4-.5.4-1.1 0-1.7"/>
+              </svg>
+            </div>
+            <div>
+              <h1 class="brand-name" id="outlet-name">BuzzCafe</h1>
+              <p class="brand-sub" id="outlet-info">Select outlet</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Right: profile + cart -->
-      <div class="flex items-center gap-3">
-        <button id="auth-btn" class="relative w-11 h-11 flex items-center justify-center rounded-full bg-orange-500 text-white shadow-lg shadow-orange-500/30 hover:bg-orange-600 transition active:scale-95" title="Login">
-          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        <div class="flex items-center" style="gap:8px;">
+          <button id="auth-btn" class="icon-btn" title="Login">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+          </button>
+
+          <a href="cart.html" class="cart-btn" aria-label="View cart">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+            </svg>
+            <span id="cart-badge" class="hidden scale-0 transition-transform duration-300">0</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Search & Categories -->
+    <div class="filterbar">
+      <div class="filter-inner">
+        <div class="search-wrap">
+          <svg class="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
-        </button>
+          <input type="text" id="search-input" placeholder="Search dishes, cuisines…" class="search-box">
+        </div>
 
-        <a href="cart.html" class="relative w-11 h-11 flex items-center justify-center rounded-full bg-orange-500 text-white shadow-lg shadow-orange-500/30 hover:bg-orange-600 transition active:scale-95">
-          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-          </svg>
-          <span id="cart-badge" class="absolute -top-0.5 -right-0.5 w-5 h-5 bg-gray-900 text-white text-[10px] font-bold rounded-full flex items-center justify-center hidden shadow-md scale-0 transition-transform duration-300">0</span>
-        </a>
-      </div>
-    </div>
-  </header>
+        <div id="section-tabs" class="tab-row hide-scroll">
+          <button class="section-tab active" data-section="all">All</button>
+        </div>
 
-  <!-- Search & Categories -->
-  <div class="fixed top-16 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-orange-100">
-    <div class="w-full max-w-[1400px] mx-auto px-4 py-3 md:px-6">
-      <div class="relative">
-        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-orange-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-        <input type="text" id="search-input" placeholder="Search dishes, cuisines..." class="search-box">
-      </div>
-    </div>
-    <div class="w-full max-w-[1400px] mx-auto px-4 md:px-6 pb-1">
-      <div id="section-tabs" class="flex gap-2 overflow-x-auto hide-scroll pb-1">
-        <button class="section-tab active" data-section="all">All</button>
-      </div>
-    </div>
-    <div class="w-full max-w-[1400px] mx-auto px-4 md:px-6 pb-3">
-      <div id="category-pills" class="flex gap-2 overflow-x-auto hide-scroll pb-1 hidden">
-        <!-- sub-categories injected here -->
+        <div id="category-pills" class="tab-row hide-scroll hidden">
+          <!-- sub-categories injected here -->
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Menu -->
-  <main class="w-full max-w-[1400px] mx-auto px-4 md:px-6 pt-[164px] pb-24">
+  <main>
+    <!-- QR dine-in banner (shown by menu.js when a table session is active) -->
+    <div id="table-banner" class="hidden">
+      <div class="tb-left">
+        <span class="tb-dot"></span>
+        <div>
+          <p class="tb-title">Dine-in · Table <b id="banner-table-num">–</b></p>
+          <p class="tb-sub">Your order goes straight to this table</p>
+        </div>
+      </div>
+      <button onclick="clearTableSession()" class="tb-leave">Leave</button>
+    </div>
+
+    <div class="menu-head">
+      <h2 class="font-display menu-title">Menu</h2>
+      <div class="menu-rule"></div>
+    </div>
+
     <div id="menu-container">
-      <div class="menu-grid pt-6">
-        <div class="menu-card animate-pulse"><div class="card-img-wrap bg-gray-200"></div><div class="card-body"><div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div><div class="h-3 bg-gray-200 rounded w-full mb-4"></div><div class="h-10 bg-gray-200 rounded-lg"></div></div></div>
-        <div class="menu-card animate-pulse"><div class="card-img-wrap bg-gray-200"></div><div class="card-body"><div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div><div class="h-3 bg-gray-200 rounded w-full mb-4"></div><div class="h-10 bg-gray-200 rounded-lg"></div></div></div>
-        <div class="menu-card animate-pulse"><div class="card-img-wrap bg-gray-200"></div><div class="card-body"><div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div><div class="h-3 bg-gray-200 rounded w-full mb-4"></div><div class="h-10 bg-gray-200 rounded-lg"></div></div></div>
-        <div class="menu-card animate-pulse"><div class="card-img-wrap bg-gray-200"></div><div class="card-body"><div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div><div class="h-3 bg-gray-200 rounded w-full mb-4"></div><div class="h-10 bg-gray-200 rounded-lg"></div></div></div>
-        <div class="menu-card animate-pulse"><div class="card-img-wrap bg-gray-200"></div><div class="card-body"><div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div><div class="h-3 bg-gray-200 rounded w-full mb-4"></div><div class="h-10 bg-gray-200 rounded-lg"></div></div></div>
-        <div class="menu-card animate-pulse"><div class="card-img-wrap bg-gray-200"></div><div class="card-body"><div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div><div class="h-3 bg-gray-200 rounded w-full mb-4"></div><div class="h-10 bg-gray-200 rounded-lg"></div></div></div>
+      <div class="menu-grid">
+        <div class="menu-card"><div class="card-img-wrap skel"></div><div class="card-body"><div class="skel" style="height:14px;width:72%;border-radius:6px;margin-bottom:9px"></div><div class="skel" style="height:11px;width:100%;border-radius:6px;margin-bottom:16px"></div><div class="skel" style="height:42px;width:100%;border-radius:12px;margin-top:auto"></div></div></div>
+        <div class="menu-card"><div class="card-img-wrap skel"></div><div class="card-body"><div class="skel" style="height:14px;width:72%;border-radius:6px;margin-bottom:9px"></div><div class="skel" style="height:11px;width:100%;border-radius:6px;margin-bottom:16px"></div><div class="skel" style="height:42px;width:100%;border-radius:12px;margin-top:auto"></div></div></div>
+        <div class="menu-card"><div class="card-img-wrap skel"></div><div class="card-body"><div class="skel" style="height:14px;width:72%;border-radius:6px;margin-bottom:9px"></div><div class="skel" style="height:11px;width:100%;border-radius:6px;margin-bottom:16px"></div><div class="skel" style="height:42px;width:100%;border-radius:12px;margin-top:auto"></div></div></div>
+        <div class="menu-card"><div class="card-img-wrap skel"></div><div class="card-body"><div class="skel" style="height:14px;width:72%;border-radius:6px;margin-bottom:9px"></div><div class="skel" style="height:11px;width:100%;border-radius:6px;margin-bottom:16px"></div><div class="skel" style="height:42px;width:100%;border-radius:12px;margin-top:auto"></div></div></div>
+        <div class="menu-card"><div class="card-img-wrap skel"></div><div class="card-body"><div class="skel" style="height:14px;width:72%;border-radius:6px;margin-bottom:9px"></div><div class="skel" style="height:11px;width:100%;border-radius:6px;margin-bottom:16px"></div><div class="skel" style="height:42px;width:100%;border-radius:12px;margin-top:auto"></div></div></div>
+        <div class="menu-card"><div class="card-img-wrap skel"></div><div class="card-body"><div class="skel" style="height:14px;width:72%;border-radius:6px;margin-bottom:9px"></div><div class="skel" style="height:11px;width:100%;border-radius:6px;margin-bottom:16px"></div><div class="skel" style="height:42px;width:100%;border-radius:12px;margin-top:auto"></div></div></div>
       </div>
     </div>
-    
-    <div id="no-results" class="hidden text-center py-24">
+
+    <div id="no-results" class="hidden text-center" style="padding:90px 0;">
       <div class="empty-icon">🔍</div>
-      <p class="text-lg font-bold text-gray-900">No dishes found</p>
-      <p class="text-sm text-gray-500 mt-1">Try a different search term or category</p>
+      <p class="empty-title">No dishes found</p>
+      <p class="empty-sub">Try a different search term or category</p>
     </div>
   </main>
 
@@ -421,46 +501,46 @@
 
   <!-- Auth Modal -->
   <div id="auth-modal" class="fixed inset-0 z-[60] hidden flex items-end md:items-center justify-center">
-    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeAuthModal()"></div>
-    <div id="auth-sheet" class="relative w-full md:w-[420px] bg-white rounded-t-2xl md:rounded-2xl p-6 shadow-2xl transform transition-transform duration-300 translate-y-full">
-      <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6 md:hidden"></div>
-      <h2 class="text-xl font-bold text-gray-900 mb-1" id="auth-title">Welcome</h2>
-      <p class="text-sm text-gray-500 mb-6">Enter your phone to save details & see orders.</p>
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeAuthModal()"></div>
+    <div id="auth-sheet" class="auth-sheet relative w-full md:w-[420px] rounded-t-2xl md:rounded-2xl p-6 transform transition-transform duration-300 translate-y-full">
+      <div class="auth-grabber md:hidden"></div>
+      <h2 class="font-display" id="auth-title" style="font-size:23px;font-weight:600;color:var(--ink);margin-bottom:4px;">Welcome</h2>
+      <p style="font-size:14px;color:var(--ink-soft);margin-bottom:22px;">Enter your phone to save details &amp; see orders.</p>
       <form id="auth-form" onsubmit="handleAuth(event)">
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number <span class="text-red-500">*</span></label>
+            <label class="field-label">Phone Number <span class="req">*</span></label>
             <div class="flex">
-              <span class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-medium">+975</span>
-              <input type="tel" id="auth-phone" required pattern="[0-9]{8}" maxlength="8" class="w-full px-4 py-3 rounded-r-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition" placeholder="17XXXXXX">
+              <span class="field-prefix">+975</span>
+              <input type="tel" id="auth-phone" required pattern="[0-9]{8}" maxlength="8" class="field field-joined" placeholder="17XXXXXX">
             </div>
-            <p class="text-xs text-gray-400 mt-1">8 digits, no country code</p>
+            <p class="field-hint">8 digits, no country code</p>
           </div>
           <div id="name-field" class="hidden">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Full Name <span class="text-red-500">*</span></label>
-            <input type="text" id="auth-name" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition" placeholder="Your name">
+            <label class="field-label">Full Name <span class="req">*</span></label>
+            <input type="text" id="auth-name" class="field" placeholder="Your name">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-gray-400 font-normal">(optional)</span></label>
-            <input type="email" id="auth-email" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition" placeholder="For receipts (optional)">
+            <label class="field-label">Email <span style="color:var(--ink-faint);font-weight:400;">(optional)</span></label>
+            <input type="email" id="auth-email" class="field" placeholder="For receipts (optional)">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Password <span class="text-red-500">*</span></label>
-            <input type="password" id="auth-password" required minlength="6" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition" placeholder="Min 6 characters">
+            <label class="field-label">Password <span class="req">*</span></label>
+            <input type="password" id="auth-password" required minlength="6" class="field" placeholder="Min 6 characters">
           </div>
         </div>
-        <button type="submit" class="w-full mt-6 bg-orange-500 text-white font-bold py-3.5 rounded-xl hover:bg-orange-600 active:scale-[0.98] transition-all">
+        <button type="submit" class="btn-primary" style="margin-top:24px;">
           <span id="auth-btn-text">Continue</span>
         </button>
       </form>
-      <div class="mt-6 text-center">
-        <p class="text-sm text-gray-500">
+      <div style="margin-top:22px;text-align:center;">
+        <p style="font-size:14px;color:var(--ink-soft);">
           <span id="auth-toggle-label">New here?</span>
-          <button onclick="toggleAuthMode()" class="text-orange-600 font-semibold underline ml-1" id="auth-toggle-btn">Create account</button>
+          <button onclick="toggleAuthMode()" id="auth-toggle-btn" style="color:var(--orange-deep);font-weight:700;margin-left:5px;">Create account</button>
         </p>
       </div>
-      <button onclick="closeAuthModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition">
-        <svg class="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      <button onclick="closeAuthModal()" class="modal-close" aria-label="Close">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
   </div>
