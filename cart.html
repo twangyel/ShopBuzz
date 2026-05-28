@@ -75,6 +75,15 @@
     </div>
   </header>
 
+    <!-- Table Order Banner -->
+  <div id="table-banner" class="hidden bg-gradient-to-r from-orange-500 to-amber-500 text-white text-center py-2.5 text-sm font-semibold sticky top-[53px] z-30">
+    <div class="max-w-2xl mx-auto px-4 flex items-center justify-center gap-2">
+      <span>🪑</span>
+      <span>Table Order — Table <span id="banner-table-num" class="font-bold text-base"></span></span>
+      <button onclick="clearTableSession()" class="ml-2 text-xs bg-white text-orange-600 px-2 py-0.5 rounded font-bold hover:bg-gray-100 transition">End</button>
+    </div>
+  </div>
+
   <main class="max-w-2xl mx-auto px-4 py-6 pb-32">
     
     <!-- Cart Items -->
@@ -394,6 +403,10 @@
       return data
     }
 
+        let tableSessionId = localStorage.getItem('table_session_id')
+    let tableId = localStorage.getItem('table_id')
+    let tableNumber = localStorage.getItem('table_number')
+
     let customerChecked = false
     document.getElementById('customer-phone').addEventListener('blur', async function() {
       const phone = this.value.trim()
@@ -598,13 +611,12 @@
       const serviceCharge = subtotal * 0.05
       const total = subtotal + serviceCharge
 
-      if (deliveryType === 'delivery' && !address) {
+           if (!tableSessionId && deliveryType === 'delivery' && !address) {
         alert('Please enter a delivery address.')
         btn.disabled = false
         btn.textContent = originalText
         return
       }
-
       try {
         let customerId = null
         const existingCustomer = await checkCustomer(phone)
@@ -621,6 +633,8 @@
           customerId = newCustomer.id
         }
 
+               const isTableOrder = !!tableSessionId
+        
         const { data: order, error: orderError } = await supabaseClient.from('orders').insert({
           outlet_id: outletId,
           customer_id: customerId,
@@ -630,8 +644,11 @@
           total_amount: total,
           status: 'pending',
           special_instructions: notes || null,
-          delivery_type: deliveryType,
-          address: address || null
+          delivery_type: isTableOrder ? null : deliveryType,
+          address: isTableOrder ? null : (address || null),
+          order_type: isTableOrder ? 'table' : 'online',
+          table_session_id: tableSessionId || null,
+          table_id: tableId || null
         }).select().single()
 
         if (orderError) throw new Error(`Order failed: ${orderError.message}`)
@@ -665,7 +682,43 @@
       }
     }
 
+        function initTableCart() {
+      if (tableNumber) {
+        document.getElementById('table-banner').classList.remove('hidden')
+        document.getElementById('banner-table-num').textContent = tableNumber
+        
+        // For table orders, auto-select walk-in and hide delivery toggle
+        const walkInRadio = document.querySelector('input[name="delivery-type"][value="walk-in"]')
+        if (walkInRadio) {
+          walkInRadio.checked = true
+          walkInRadio.closest('.radio-card').querySelector('.check-dot').style.opacity = '1'
+          // Hide delivery option entirely for table orders
+          document.querySelector('input[name="delivery-type"][value="delivery"]').closest('.radio-card').style.display = 'none'
+        }
+        document.getElementById('address-section').classList.remove('show')
+        document.getElementById('delivery-address').required = false
+      }
+    }
+
+    window.clearTableSession = function() {
+      localStorage.removeItem('table_session_id')
+      localStorage.removeItem('table_id')
+      localStorage.removeItem('table_number')
+      localStorage.removeItem('table_outlet_id')
+      window.location.href = 'menu.html'
+    }
+
+    initTableCart()
+
     renderCart()
+
+        // Auto-fill customer details if available from auth
+    const savedName = localStorage.getItem('customer_name')
+    const savedPhone = localStorage.getItem('customer_phone')
+    const savedEmail = localStorage.getItem('customer_email')
+    if (savedName) document.getElementById('customer-name').value = savedName
+    if (savedPhone) document.getElementById('customer-phone').value = savedPhone
+    if (savedEmail) document.getElementById('customer-email').value = savedEmail
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js')
