@@ -1,4 +1,4 @@
-    const SUPABASE_URL = 'https://mzkbjfcdagomqirfsjld.supabase.co'
+const SUPABASE_URL = 'https://mzkbjfcdagomqirfsjld.supabase.co'
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16a2JqZmNkYWdvbXFpcmZzamxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4NTQ0MzcsImV4cCI6MjA5NTQzMDQzN30.H05EbXCSUYADZWlgOU1_rtxcYLFpjpg7W7Iaytc0OS4'
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
@@ -213,7 +213,8 @@
       `).join('')
     }
 
-    function toggleNotifDropdown() {
+    function toggleNotifDropdown(event) {
+      if (event) event.stopPropagation()
       const dropdown = document.getElementById('notif-dropdown')
       dropdown.classList.toggle('show')
       

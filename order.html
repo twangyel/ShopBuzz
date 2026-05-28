@@ -620,13 +620,17 @@ function updateOutletCard(outlet) {
     }
 
     // ===== REALTIME SUBSCRIPTION =====
+let outletChannel = null
+
 function subscribeToOutlets() {
   console.log('Subscribing to outlet status updates...')
 
-  // Remove any existing channel first
-  supabaseClient.removeChannel(supabaseClient.channel('outlets-status-customer'))
+  // Remove existing channel to avoid duplicates
+  if (outletChannel) {
+    supabaseClient.removeChannel(outletChannel)
+  }
 
-  supabaseClient
+  outletChannel = supabaseClient
     .channel('outlets-status-customer')
     .on('postgres_changes', { 
       event: '*', 
@@ -634,7 +638,9 @@ function subscribeToOutlets() {
       table: 'outlets'
     }, payload => {
       console.log('Realtime update received:', payload)
-      if (payload.new && payload.new.is_active) {
+      // FIX: removed `payload.new.is_active` guard — it blocked updates for
+      // outlets being toggled closed (is_active may be true; status changes)
+      if (payload.new) {
         updateOutletCard(payload.new)
       }
     })
