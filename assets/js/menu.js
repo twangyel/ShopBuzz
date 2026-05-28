@@ -127,6 +127,7 @@
   }
 
   function renderSectionTabs() {
+    try {
     const container = $('section-tabs')
     let html = `<button onclick="selectSection('all')" class="section-tab ${activeSection === 'all' ? 'active' : ''}" data-section="all">All</button>`
     menuSections.forEach(sec => {
@@ -142,6 +143,7 @@
       }
     })
     container.innerHTML = html
+    } catch (e) { console.error('Tab render error:', e) }
   }
 
   window.selectSection = function(secId) {
@@ -150,13 +152,14 @@
     document.querySelectorAll('.section-tab').forEach(tab => {
       tab.classList.toggle('active', String(tab.dataset.section) === activeSection)
     })
-    const activeTab = document.querySelector(`.section-tab[data-section="${CSS.escape(activeSection)}"]`)
+    const activeTab = document.querySelector(`.section-tab[data-section="${escapeCSS(activeSection)}"]`)
     if (activeTab) activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
     renderSubCategories()
     renderMenu()
   }
 
   function renderSubCategories() {
+    try {
     const container = $('category-pills')
     if (activeSection === 'all') {
       container.classList.add('hidden')
@@ -177,6 +180,7 @@
       }
     })
     container.innerHTML = html
+    } catch (e) { console.error('Subcategory render error:', e) }
   }
 
   window.selectSubCategory = function(subId) {
@@ -184,12 +188,13 @@
     document.querySelectorAll('.cat-pill').forEach(pill => {
       pill.classList.toggle('active', String(pill.dataset.cat) === activeSubCategory)
     })
-    const activePill = document.querySelector(`.cat-pill[data-cat="${CSS.escape(activeSubCategory)}"]`)
+    const activePill = document.querySelector(`.cat-pill[data-cat="${escapeCSS(activeSubCategory)}"]`)
     if (activePill) activePill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
     renderMenu()
   }
 
   function renderMenu(itemsToRender = null) {
+    try {
     const container = $('menu-container')
     let items = itemsToRender || allItems
 
@@ -214,14 +219,18 @@
     $('no-results').classList.add('hidden')
 
     container.innerHTML = `<div class="menu-grid pt-2">${items.map(renderDishCard).join('')}</div>`
+    } catch (e) {
+      console.error('Render error:', e)
+      container.innerHTML = `<div class="text-center py-12"><p class="text-red-500">Error displaying menu. Please refresh.</p></div>`
+    }
   }
 
   function renderDishCard(item) {
     const cartItem = cart.find(c => String(c.id) === String(item.id))
     const qty = cartItem ? cartItem.qty : 0
     const imgHtml = item.image_url
-      ? `<img src="${item.image_url}" alt="${item.name}" loading="lazy" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#d1d5db;font-size:40px;font-weight:800\\'>${item.name.charAt(0)}</div>'">`
-      : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#d1d5db;font-size:40px;font-weight:800">${item.name.charAt(0)}</div>`
+      ? `<img src="${item.image_url}" alt="${item.name || 'Menu item'}" loading="lazy" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#d1d5db;font-size:40px;font-weight:800&quot;>${(item.name || '?').charAt(0)}</div>'">`
+      : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#d1d5db;font-size:40px;font-weight:800">${(item.name || '?').charAt(0)}</div>`
 
     return `
       <div class="menu-card">
@@ -230,7 +239,7 @@
           <h3 class="dish-name">${item.name}</h3>
           <p class="dish-desc">${item.description || 'Delicious freshly prepared item'}</p>
           <div class="flex items-center justify-between mt-auto gap-2">
-            <span class="dish-price">Nu ${parseFloat(item.price).toFixed(0)}</span>
+            <span class="dish-price">Nu ${item.price != null ? parseFloat(item.price).toFixed(0) : "--"}</span>
           </div>
           <div class="mt-3">
             ${qty > 0
@@ -391,6 +400,7 @@
       $('loader').classList.add('hidden')
     } catch (err) {
       console.error('Boot error:', err)
+      $('loader').classList.add('hidden')
       setFatal(err.message || 'Failed to load menu. Please check your connection.', true)
     }
   }

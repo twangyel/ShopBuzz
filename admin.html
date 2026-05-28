@@ -106,6 +106,7 @@
           <button onclick="switchMainTab('products')" class="main-tab px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="products">
             🛍️ Products
           </button>
+          <button onclick="switchMainTab('tables')" class="main-tab px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="tables">🪑 Tables</button>
         </nav>
       </div>
     </div>
@@ -163,6 +164,7 @@
             <button onclick="filterOrders('preparing')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-white border text-gray-700" data-filter="preparing">Preparing</button>
             <button onclick="filterOrders('ready')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-white border text-gray-700" data-filter="ready">Ready</button>
             <button onclick="filterOrders('completed')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-white border text-gray-700" data-filter="completed">Completed</button>
+            <button onclick="filterOrders('table')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-white border text-gray-700" data-filter="table">Table Orders</button>
           </div>
 
           <!-- Orders Table -->
@@ -450,7 +452,51 @@
 
     </main>
   </div>
+      <!-- ========== TABLES TAB ========== -->
+      <div id="tab-tables" class="tab-content">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <!-- Add Table Form -->
+          <div class="lg:col-span-1 bg-white rounded-xl border shadow-sm p-4 h-fit">
+            <h3 class="font-semibold text-gray-900 mb-3 text-sm">Add Table</h3>
+            <form onsubmit="handleTableSubmit(event)" class="space-y-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Table Number *</label>
+                <input type="text" id="table-number" required placeholder="e.g. 12, A-5" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Section</label>
+                <input type="text" id="table-section" placeholder="e.g. Patio, Main Floor" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Outlet *</label>
+                <select id="table-outlet" required class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none">
+                  <option value="">Select outlet...</option>
+                </select>
+              </div>
+              <button type="submit" class="w-full bg-gray-900 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-800 transition">Add Table</button>
+            </form>
+          </div>
 
+          <!-- Tables List -->
+          <div class="lg:col-span-2 bg-white rounded-xl border shadow-sm p-4">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-semibold text-gray-900 text-sm">All Tables</h3>
+              <span class="text-xs text-gray-400" id="tables-count">0 tables</span>
+            </div>
+            <div id="tables-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              <p class="text-gray-400 text-sm col-span-full">Loading tables...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Sessions -->
+        <div class="mt-4 bg-white rounded-xl border shadow-sm p-4">
+          <h3 class="font-semibold text-gray-900 mb-3 text-sm">Active Table Sessions</h3>
+          <div id="active-sessions-list" class="space-y-2">
+            <p class="text-gray-400 text-sm">No active sessions</p>
+          </div>
+        </div>
+      </div>
   <!-- Order Detail Modal -->
   <div id="order-modal" class="modal-overlay" onclick="if(event.target===this)closeOrderModal()">
     <div class="modal-box">

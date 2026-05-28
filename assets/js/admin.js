@@ -11,6 +11,7 @@ const SUPABASE_URL = 'https://mzkbjfcdagomqirfsjld.supabase.co'
 
     // Products state
     let allProducts = []
+    let allTables = []
     let productCategories = []
     let currentProductFilter = 'all'
     let editingProductId = null
@@ -77,6 +78,7 @@ const SUPABASE_URL = 'https://mzkbjfcdagomqirfsjld.supabase.co'
       loadAnalytics()
       loadProducts()
       setupRealtimeSubscriptions()
+      loadTables()
     }
 
     // ========== OUTLETS & STORE CONTROL ==========
@@ -323,7 +325,16 @@ const SUPABASE_URL = 'https://mzkbjfcdagomqirfsjld.supabase.co'
 
     function renderOrders(ordersToRender = null) {
       const tbody = document.getElementById('orders-table')
-      let filtered = ordersToRender || (currentFilter === 'all' ? allOrders : allOrders.filter(o => o.status === currentFilter))
+      let filtered = ordersToRender || allOrders
+if (!ordersToRender) {
+  if (currentFilter === 'all') {
+    filtered = allOrders
+  } else if (currentFilter === 'table') {
+    filtered = allOrders.filter(o => o.order_type === 'table')
+  } else {
+    filtered = allOrders.filter(o => o.status === currentFilter)
+  }
+}
 
       if (filtered.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No orders found</td></tr>'
@@ -348,6 +359,7 @@ const SUPABASE_URL = 'https://mzkbjfcdagomqirfsjld.supabase.co'
             <td class="px-3 py-2 font-mono text-xs text-gray-500">#${escapeHtml(order.order_number || order.id.slice(0,8).toUpperCase())}</td>
             <td class="px-3 py-2">
               <div class="font-medium text-gray-900 text-sm">${escapeHtml(order.customer_name)}</div>
+                ${order.order_type === 'table' ? `<div class="text-[10px] inline-flex items-center gap-1 text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded mt-0.5"><span>🪑</span> Table ${escapeHtml(order.table_id ? allTables.find(t => t.id === order.table_id)?.number || '' : '')}</div>` : ''}
               <div class="text-gray-500 text-xs">${escapeHtml(order.customer_phone)}</div>
             </td>
             <td class="px-3 py-2 text-gray-600 text-sm">${itemCount} items</td>
@@ -1205,6 +1217,13 @@ window.toggleReviewApproved = async function(id, approved) {
         })
         .subscribe()
 
+        supabaseClient
+  .channel('admin-tables')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'table_sessions' }, () => {
+    loadActiveSessions()
+  })
+  .subscribe()
+
       supabaseClient
         .channel('admin-payments')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, payload => {
@@ -1265,9 +1284,173 @@ window.toggleReviewApproved = async function(id, approved) {
         setTimeout(() => toast.remove(), 300)
       }, 4000)
     }
+
+
+    // ========== TABLES ==========
+async function loadTables() {
+  const { data: tables } = await supabaseClient
+    .from('tables')
+    .select('*, outlets(name)')
+    .order('number')
+  allTables = tables || []
+  renderTables()
+  populateTableOutletSelect()
+  loadActiveSessions()
+}
+
+function populateTableOutletSelect() {
+  const select = document.getElementById('table-outlet')
+  if (!select) return
+  select.innerHTML = '<option value="">Select outlet...</option>'
+  allOutlets.forEach(o => {
+    const option = document.createElement('option')
+    option.value = o.id
+    option.textContent = o.name
+    select.appendChild(option)
+  })
+}
+
+function renderTables() {
+  const grid = document.getElementById('tables-grid')
+  const count = document.getElementById('tables-count')
+  if (!grid) return
+  count.textContent = `${allTables.length} tables`
+  
+  if (allTables.length === 0) {
+    grid.innerHTML = '<p class="text-gray-400 text-sm col-span-full">No tables added yet</p>'
+    return
+  }
+
+  const baseUrl = window.location.origin.replace(/\/admin$/, '').replace(/\/admin\/$/, '')
+  
+  grid.innerHTML = allTables.map(t => {
+    const qrUrl = `${baseUrl}/menu?table=${encodeURIComponent(t.number)}&outlet=${t.outlet_id}`
+    return `
+      <div class="border rounded-xl p-3 relative group hover:border-orange-300 transition">
+        <div class="flex justify-between items-start mb-2">
+          <div>
+            <div class="text-lg font-bold text-gray-900">#${escapeHtml(t.number)}</div>
+            <div class="text-xs text-gray-500">${escapeHtml(t.section || 'No section')}</div>
+            <div class="text-[10px] text-gray-400 mt-0.5">${escapeHtml(t.outlets?.name || '')}</div>
+          </div>
+          <button onclick="deleteTable('${t.id}')" class="text-red-400 hover:text-red-600 p-1" title="Delete">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-2 flex justify-center mb-2">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrUrl)}" alt="QR" class="w-20 h-20">
+        </div>
+        <div class="flex gap-1.5">
+          <a href="${escapeHtml(qrUrl)}" target="_blank" class="flex-1 text-center text-[10px] bg-orange-50 text-orange-700 py-1.5 rounded font-medium hover:bg-orange-100">Preview</a>
+          <button onclick="printQR('${t.number}', '${escapeHtml(qrUrl)}')" class="flex-1 text-center text-[10px] bg-gray-100 text-gray-700 py-1.5 rounded font-medium hover:bg-gray-200">Print</button>
+        </div>
+      </div>
+    `
+  }).join('')
+}
+
+window.handleTableSubmit = async function(e) {
+  e.preventDefault()
+  const number = document.getElementById('table-number').value.trim()
+  const section = document.getElementById('table-section').value.trim()
+  const outlet_id = document.getElementById('table-outlet').value
+  if (!number || !outlet_id) return
+
+  const { error } = await supabaseClient.from('tables').insert({
+    number, section: section || null, outlet_id
+  })
+  if (error) {
+    showToast(error.message, 'error')
+  } else {
+    showToast('Table added', 'order')
+    e.target.reset()
+    loadTables()
+  }
+}
+
+window.deleteTable = async function(id) {
+  if (!confirm('Delete this table?')) return
+  const { error } = await supabaseClient.from('tables').delete().eq('id', id)
+  if (!error) {
+    showToast('Table deleted', 'order')
+    loadTables()
+  }
+}
+
+window.printQR = function(tableNumber, url) {
+  const w = window.open('', '_blank')
+  w.document.write(`
+    <html><head><title>Table ${tableNumber} QR</title></head>
+    <body style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;margin:0;">
+      <h2 style="margin-bottom:8px;">Table ${tableNumber}</h2>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}" style="width:300px;height:300px;">
+      <p style="color:#666;font-size:14px;margin-top:12px;">Scan to order</p>
+      <script>window.onload = () => setTimeout(() => window.print(), 300)<\/script>
+    </body></html>
+  `)
+  w.document.close()
+}
+
+// ========== ACTIVE SESSIONS ==========
+async function loadActiveSessions() {
+  const { data: sessions } = await supabaseClient
+    .from('table_sessions')
+    .select('*, tables(number, section), orders(id, total_amount, status)')
+    .eq('status', 'active')
+    .order('started_at', { ascending: false })
+
+  const container = document.getElementById('active-sessions-list')
+  if (!container) return
+
+  if (!sessions || sessions.length === 0) {
+    container.innerHTML = '<p class="text-gray-400 text-sm">No active sessions</p>'
+    return
+  }
+
+  container.innerHTML = sessions.map(s => {
+    const orderCount = s.orders?.length || 0
+    const total = s.orders?.reduce((sum, o) => sum + (parseFloat(o.total_amount) || 0), 0) || 0
+    return `
+      <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center font-bold text-sm">
+            ${escapeHtml(s.tables?.number || '?')}
+          </div>
+          <div>
+            <div class="text-sm font-medium text-gray-900">Table ${escapeHtml(s.tables?.number || '')}</div>
+            <div class="text-xs text-gray-500">${escapeHtml(s.tables?.section || '')} • ${orderCount} orders</div>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-sm font-semibold text-gray-900">Nu. ${total.toFixed(2)}</div>
+          <button onclick="closeTableSession('${s.id}')" class="text-xs text-red-600 hover:underline mt-0.5">Close Session</button>
+        </div>
+      </div>
+    `
+  }).join('')
+}
+
+window.closeTableSession = async function(sessionId) {
+  if (!confirm('Close this table session?')) return
+  const { error } = await supabaseClient
+    .from('table_sessions')
+    .update({ status: 'closed', closed_at: new Date().toISOString() })
+    .eq('id', sessionId)
+  if (!error) {
+    showToast('Session closed', 'order')
+    loadActiveSessions()
+    loadOrders()
+  }
+}
+
     // ========== WINDOW EXPORTS ==========
     // Required because this file is loaded as type="module" — plain function
     // declarations are module-scoped and invisible to HTML onclick="..." attributes.
+
+    window.handleTableSubmit = handleTableSubmit
+window.deleteTable = deleteTable
+window.printQR = printQR
+window.closeTableSession = closeTableSession
     window.logout = logout
     window.toggleNotifDropdown = toggleNotifDropdown
     window.clearAllNotifications = clearAllNotifications
