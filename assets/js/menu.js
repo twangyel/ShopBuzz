@@ -1,4 +1,4 @@
-  /* ---------- CONFIG ---------- */
+/* ---------- CONFIG ---------- */
   const SUPABASE_URL = 'https://mzkbjfcdagomqirfsjld.supabase.co'
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16a2JqZmNkYWdvbXFpcmZzamxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4NTQ0MzcsImV4cCI6MjA5NTQzMDQzN30.H05EbXCSUYADZWlgOU1_rtxcYLFpjpg7W7Iaytc0OS4'
 
@@ -10,7 +10,7 @@
   let currentCategory = 'all'
   let menuSections = []
   let menuSubCategories = []
-    let activeSection = 'all'
+  let activeSection = 'all'
   let activeSubCategory = 'all'
   
   let cart = JSON.parse(localStorage.getItem('cart') || '[]')
@@ -130,24 +130,27 @@
     const container = $('section-tabs')
     let html = `<button onclick="selectSection('all')" class="section-tab ${activeSection === 'all' ? 'active' : ''}" data-section="all">All</button>`
     menuSections.forEach(sec => {
-      const subIds = menuSubCategories.filter(sc => sc.parent_id === sec.id).map(sc => sc.id)
+      const secId = String(sec.id)
+      const subIds = menuSubCategories
+        .filter(sc => String(sc.parent_id) === secId)
+        .map(sc => String(sc.id))
       const hasItems = subIds.length 
-        ? allItems.some(i => subIds.includes(i.category_id))
-        : allItems.some(i => i.category_id === sec.id)
+        ? allItems.some(i => subIds.includes(String(i.category_id)))
+        : allItems.some(i => String(i.category_id) === secId)
       if (hasItems) {
-        html += `<button onclick="selectSection('${sec.id}')" class="section-tab ${activeSection === sec.id ? 'active' : ''}" data-section="${sec.id}">${sec.name}</button>`
+        html += `<button onclick="selectSection('${secId}')" class="section-tab ${activeSection === secId ? 'active' : ''}" data-section="${secId}">${sec.name}</button>`
       }
     })
     container.innerHTML = html
   }
 
   window.selectSection = function(secId) {
-    activeSection = secId
+    activeSection = String(secId)
     activeSubCategory = 'all'
     document.querySelectorAll('.section-tab').forEach(tab => {
-      tab.classList.toggle('active', tab.dataset.section === secId)
+      tab.classList.toggle('active', String(tab.dataset.section) === activeSection)
     })
-    const activeTab = document.querySelector(`.section-tab[data-section="${secId}"]`)
+    const activeTab = document.querySelector(`.section-tab[data-section="${CSS.escape(activeSection)}"]`)
     if (activeTab) activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
     renderSubCategories()
     renderMenu()
@@ -159,27 +162,29 @@
       container.classList.add('hidden')
       return
     }
-    const children = menuSubCategories.filter(c => c.parent_id === activeSection)
+    const children = menuSubCategories.filter(c => String(c.parent_id) === activeSection)
     if (children.length === 0) {
       container.classList.add('hidden')
       return
     }
     container.classList.remove('hidden')
-    let html = `<button onclick="selectSubCategory('all')" class="cat-pill ${activeSubCategory === 'all' ? 'active' : ''}" data-cat="all">All ${menuSections.find(s=>s.id===activeSection)?.name || ''}</button>`
+    const sectionName = menuSections.find(s => String(s.id) === activeSection)?.name || ''
+    let html = `<button onclick="selectSubCategory('all')" class="cat-pill ${activeSubCategory === 'all' ? 'active' : ''}" data-cat="all">All ${sectionName}</button>`
     children.forEach(sub => {
-      if (allItems.some(i => i.category_id === sub.id)) {
-        html += `<button onclick="selectSubCategory('${sub.id}')" class="cat-pill ${activeSubCategory === sub.id ? 'active' : ''}" data-cat="${sub.id}">${sub.name}</button>`
+      const subId = String(sub.id)
+      if (allItems.some(i => String(i.category_id) === subId)) {
+        html += `<button onclick="selectSubCategory('${subId}')" class="cat-pill ${activeSubCategory === subId ? 'active' : ''}" data-cat="${subId}">${sub.name}</button>`
       }
     })
     container.innerHTML = html
   }
 
   window.selectSubCategory = function(subId) {
-    activeSubCategory = subId
+    activeSubCategory = String(subId)
     document.querySelectorAll('.cat-pill').forEach(pill => {
-      pill.classList.toggle('active', pill.dataset.cat === subId)
+      pill.classList.toggle('active', String(pill.dataset.cat) === activeSubCategory)
     })
-    const activePill = document.querySelector(`.cat-pill[data-cat="${subId}"]`)
+    const activePill = document.querySelector(`.cat-pill[data-cat="${CSS.escape(activeSubCategory)}"]`)
     if (activePill) activePill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
     renderMenu()
   }
@@ -189,13 +194,15 @@
     let items = itemsToRender || allItems
 
     if (activeSection !== 'all') {
-      const childIds = menuSubCategories.filter(c => c.parent_id === activeSection).map(c => c.id)
+      const childIds = menuSubCategories
+        .filter(c => String(c.parent_id) === activeSection)
+        .map(c => String(c.id))
       if (activeSubCategory !== 'all') {
-        items = items.filter(i => i.category_id === activeSubCategory)
+        items = items.filter(i => String(i.category_id) === activeSubCategory)
       } else if (childIds.length > 0) {
-        items = items.filter(i => childIds.includes(i.category_id))
+        items = items.filter(i => childIds.includes(String(i.category_id)))
       } else {
-        items = items.filter(i => i.category_id === activeSection)
+        items = items.filter(i => String(i.category_id) === activeSection)
       }
     }
 
@@ -208,6 +215,7 @@
 
     container.innerHTML = `<div class="menu-grid pt-2">${items.map(renderDishCard).join('')}</div>`
   }
+
   function renderDishCard(item) {
     const cartItem = cart.find(c => String(c.id) === String(item.id))
     const qty = cartItem ? cartItem.qty : 0
@@ -376,7 +384,8 @@
       await retry(loadMenuData, 2, 1000)
       // 5. Render
       await initAuth()
-          renderSectionTabs()
+      renderSectionTabs()
+      renderSubCategories()   // <-- ensure pills render if activeSection !== 'all'
       renderMenu()
       updateCartBadge()
       $('loader').classList.add('hidden')
