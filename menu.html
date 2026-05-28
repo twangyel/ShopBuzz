@@ -13,8 +13,8 @@
       theme: {
         extend: {
           colors: {
-            accent: '#f59e0b', // amber-500
-            accentHover: '#d97706', // amber-600
+            accent: '#f59e0b',
+            accentHover: '#d97706',
             dark: '#0f0f0f',
           }
         }
@@ -32,7 +32,6 @@
       line-height: 1.4;
     }
 
-    /* Loader */
     #loader {
       position: fixed; inset: 0; z-index: 9999;
       background: #fff;
@@ -42,11 +41,9 @@
     }
     #loader.hidden { opacity: 0; pointer-events: none; }
 
-    /* Scrollbar hide for pills */
     .hide-scroll::-webkit-scrollbar { display: none; }
     .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Category pills */
     .cat-pill {
       white-space: nowrap;
       font-size: 13px;
@@ -73,7 +70,6 @@
     }
     .cat-pill:active { transform: scale(.95); }
 
-    /* Square Menu Card */
     .menu-card {
       background: #fff;
       border-radius: 16px;
@@ -144,7 +140,6 @@
       letter-spacing: -0.02em;
     }
 
-    /* CTA Add Button */
     .btn-add {
       display: inline-flex;
       align-items: center;
@@ -172,7 +167,6 @@
       transform: scale(.95);
     }
 
-    /* Stepper */
     .stepper {
       display: flex;
       align-items: center;
@@ -206,7 +200,6 @@
       text-align: center;
     }
 
-    /* Search */
     .search-box {
       width: 100%;
       padding: 12px 16px 12px 44px;
@@ -224,7 +217,6 @@
     }
     .search-box::placeholder { color: #9ca3af; }
 
-    /* Toast */
     #toast {
       position: fixed;
       bottom: 24px;
@@ -250,7 +242,6 @@
       transform: translateX(-50%) translateY(0);
     }
 
-    /* Empty state */
     .empty-icon {
       width: 72px;
       height: 72px;
@@ -263,10 +254,8 @@
       margin: 0 auto 16px;
     }
 
-    /* Sticky header shadow on scroll */
     .header-scrolled { box-shadow: 0 4px 20px rgba(0,0,0,.15) !important; }
 
-    /* Grid density */
     .menu-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -285,7 +274,6 @@
       .menu-grid { grid-template-columns: repeat(5, 1fr); gap: 20px; }
     }
 
-    /* Nav stretched */
     .nav-inner {
       width: 100%;
       max-width: 1400px;
@@ -299,6 +287,10 @@
     @media (min-width: 768px) {
       .nav-inner { padding: 0 24px; }
     }
+
+    /* Auth modal transitions */
+    #auth-modal .backdrop { transition: opacity .3s; }
+    #auth-sheet { transition: transform .3s cubic-bezier(.4,0,.2,1); }
   </style>
 </head>
 <body>
@@ -311,6 +303,7 @@
   <!-- Header -->
   <header id="main-header" class="fixed top-0 left-0 right-0 z-50 bg-dark transition-shadow duration-300">
     <div class="nav-inner">
+      <!-- Left: back + brand -->
       <div class="flex items-center gap-4">
         <a href="order.html" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition">
           <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -318,7 +311,6 @@
           </svg>
         </a>
         <div class="flex items-center gap-3">
-          <!-- Logo placeholder -->
           <div class="w-9 h-9 bg-accent rounded-lg flex items-center justify-center shadow-lg">
             <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
@@ -330,19 +322,27 @@
           </div>
         </div>
       </div>
-      
-      <a href="cart.html" class="relative w-11 h-11 flex items-center justify-center rounded-full hover:bg-white/10 transition active:scale-95">
-        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-        </svg>
-        <span id="cart-badge" class="absolute -top-0.5 -right-0.5 w-5 h-5 bg-accent text-white text-[10px] font-bold rounded-full flex items-center justify-center hidden shadow-md scale-0 transition-transform duration-300">0</span>
-      </a>
+
+      <!-- Right: profile + cart (grouped user actions) -->
+      <div class="flex items-center gap-1">
+        <button id="auth-btn" class="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition active:scale-95" title="Login">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+        </button>
+
+        <a href="cart.html" class="relative w-11 h-11 flex items-center justify-center rounded-full hover:bg-white/10 transition active:scale-95">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+          </svg>
+          <span id="cart-badge" class="absolute -top-0.5 -right-0.5 w-5 h-5 bg-accent text-white text-[10px] font-bold rounded-full flex items-center justify-center hidden shadow-md scale-0 transition-transform duration-300">0</span>
+        </a>
+      </div>
     </div>
   </header>
 
   <!-- Search & Categories -->
   <div class="fixed top-16 left-0 right-0 z-40 bg-white border-b border-gray-100">
-    <!-- Search -->
     <div class="w-full max-w-[1400px] mx-auto px-4 py-3 md:px-6">
       <div class="relative">
         <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -351,7 +351,6 @@
         <input type="text" id="search-input" placeholder="Search dishes, cuisines..." class="search-box">
       </div>
     </div>
-    <!-- Categories -->
     <div class="w-full max-w-[1400px] mx-auto px-4 md:px-6 pb-3">
       <div id="category-pills" class="flex gap-2 overflow-x-auto hide-scroll pb-1">
         <button class="cat-pill active" data-cat="all">All</button>
@@ -363,7 +362,6 @@
   <main class="w-full max-w-[1400px] mx-auto px-4 md:px-6 pt-[164px] pb-24">
     <div id="menu-container">
       <div class="menu-grid pt-6">
-        <!-- Skeleton loaders -->
         <div class="menu-card animate-pulse"><div class="card-img-wrap bg-gray-200"></div><div class="card-body"><div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div><div class="h-3 bg-gray-200 rounded w-full mb-4"></div><div class="h-10 bg-gray-200 rounded-lg"></div></div></div>
         <div class="menu-card animate-pulse"><div class="card-img-wrap bg-gray-200"></div><div class="card-body"><div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div><div class="h-3 bg-gray-200 rounded w-full mb-4"></div><div class="h-10 bg-gray-200 rounded-lg"></div></div></div>
         <div class="menu-card animate-pulse"><div class="card-img-wrap bg-gray-200"></div><div class="card-body"><div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div><div class="h-3 bg-gray-200 rounded w-full mb-4"></div><div class="h-10 bg-gray-200 rounded-lg"></div></div></div>
@@ -388,6 +386,52 @@
     <span id="toast-msg">Added to cart</span>
   </div>
 
+  <!-- Auth Modal -->
+  <div id="auth-modal" class="fixed inset-0 z-[60] hidden">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeAuthModal()"></div>
+    <div class="absolute bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:bottom-auto md:-translate-x-1/2 md:-translate-y-1/2 md:w-[420px] md:rounded-2xl bg-white rounded-t-2xl p-6 transform transition-transform duration-300 translate-y-full md:translate-y-0" id="auth-sheet">
+      <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6 md:hidden"></div>
+      <h2 class="text-xl font-bold text-gray-900 mb-1" id="auth-title">Welcome</h2>
+      <p class="text-sm text-gray-500 mb-6">Enter your phone to save details & see orders.</p>
+      <form id="auth-form" onsubmit="handleAuth(event)">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number <span class="text-red-500">*</span></label>
+            <div class="flex">
+              <span class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-medium">+975</span>
+              <input type="tel" id="auth-phone" required pattern="[0-9]{8}" maxlength="8" class="w-full px-4 py-3 rounded-r-xl border border-gray-200 focus:border-black focus:ring-2 focus:ring-black/5 outline-none transition" placeholder="17XXXXXX">
+            </div>
+            <p class="text-xs text-gray-400 mt-1">8 digits, no country code</p>
+          </div>
+          <div id="name-field" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Full Name <span class="text-red-500">*</span></label>
+            <input type="text" id="auth-name" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-2 focus:ring-black/5 outline-none transition" placeholder="Your name">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-gray-400 font-normal">(optional)</span></label>
+            <input type="email" id="auth-email" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-2 focus:ring-black/5 outline-none transition" placeholder="For receipts (optional)">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Password <span class="text-red-500">*</span></label>
+            <input type="password" id="auth-password" required minlength="6" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-2 focus:ring-black/5 outline-none transition" placeholder="Min 6 characters">
+          </div>
+        </div>
+        <button type="submit" class="w-full mt-6 bg-black text-white font-bold py-3.5 rounded-xl hover:bg-gray-800 active:scale-[0.98] transition-all">
+          <span id="auth-btn-text">Continue</span>
+        </button>
+      </form>
+      <div class="mt-6 text-center">
+        <p class="text-sm text-gray-500">
+          <span id="auth-toggle-label">New here?</span>
+          <button onclick="toggleAuthMode()" class="text-black font-semibold underline ml-1" id="auth-toggle-btn">Create account</button>
+        </p>
+      </div>
+      <button onclick="closeAuthModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition">
+        <svg class="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = 'https://mzkbjfcdagomqirfsjld.supabase.co'
@@ -401,129 +445,217 @@
     let cart = JSON.parse(localStorage.getItem('cart') || '[]')
     let selectedOutlet = localStorage.getItem('selected_outlet')
 
+    // Auth state
+    let currentUser = null
+    let currentCustomer = null
+    let isLoginMode = true
+
     window.addEventListener('load', () => {
       setTimeout(() => document.getElementById('loader').classList.add('hidden'), 400)
       init()
     })
 
-    // Header shadow on scroll
     window.addEventListener('scroll', () => {
       const header = document.getElementById('main-header')
       if (window.scrollY > 10) header.classList.add('header-scrolled')
       else header.classList.remove('header-scrolled')
     })
 
-    // Auth state
-let currentUser = null
-let currentCustomer = null
+    // Auth listeners
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+      currentUser = session?.user || null
+      if (currentUser) {
+        await loadCustomer()
+        syncLocalCartToUser()
+      } else {
+        currentCustomer = null
+        updateAuthUI()
+      }
+    })
 
-// Listen for login/logout
-supabaseClient.auth.onAuthStateChange(async (event, session) => {
-  currentUser = session?.user || null
-  if (currentUser) {
-    await loadCustomer()
-    syncLocalCartToUser()
-  } else {
-    currentCustomer = null
-    updateAuthUI()
-  }
-})
+    async function loadCustomer() {
+      const { data, error } = await supabaseClient
+        .from('customers')
+        .select('*')
+        .eq('auth_user_id', currentUser.id)
+        .single()
+      
+      if (data) {
+        currentCustomer = data
+        localStorage.setItem('customer_name', data.name || '')
+        localStorage.setItem('customer_phone', data.phone || '')
+        localStorage.setItem('customer_email', data.email || '')
+        updateAuthUI()
+      }
+    }
 
-// Fetch customer row by auth_user_id
-async function loadCustomer() {
-  const { data, error } = await supabaseClient
-    .from('customers')
-    .select('*')
-    .eq('auth_user_id', currentUser.id)
-    .single()
-  
-  if (data) {
-    currentCustomer = data
-    // Pre-fill localStorage for checkout autofill
-    localStorage.setItem('customer_name', data.name || '')
-    localStorage.setItem('customer_phone', data.phone || '')
-    localStorage.setItem('customer_email', data.email || '')
-    updateAuthUI()
-  }
-}
+    function updateAuthUI() {
+      const btn = document.getElementById('auth-btn')
+      if (!btn) return
+      
+      if (currentCustomer) {
+        const initial = (currentCustomer.name || currentCustomer.email || '?').charAt(0).toUpperCase()
+        btn.innerHTML = `<div class="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center text-sm font-bold border-2 border-white/20 shadow-lg">${initial}</div>`
+        btn.onclick = () => location.href = 'profile.html'
+        btn.title = `Hi, ${currentCustomer.name || 'there'}`
+      } else {
+        btn.innerHTML = `<svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`
+        btn.onclick = openAuthModal
+        btn.title = 'Login'
+      }
+    }
 
-function autofillCustomerDetails() {
-  if (currentCustomer) {
-    document.getElementById('checkout-name').value = currentCustomer.name || ''
-    document.getElementById('checkout-phone').value = currentCustomer.phone || ''
-    document.getElementById('checkout-email').value = currentCustomer.email || ''
-    // Optional: show a "Welcome back, [name]" banner
-  } else {
-    // Fallback to localStorage (guest mode)
-    document.getElementById('checkout-name').value = localStorage.getItem('customer_name') || ''
-    document.getElementById('checkout-phone').value = localStorage.getItem('customer_phone') || ''
-  }
-}
+    async function initAuth() {
+      const { data: { session } } = await supabaseClient.auth.getSession()
+      if (session?.user) {
+        currentUser = session.user
+        await loadCustomer()
+      }
+      updateAuthUI()
+    }
 
+    function openAuthModal() {
+      document.getElementById('auth-modal').classList.remove('hidden')
+      setTimeout(() => document.getElementById('auth-sheet').classList.remove('translate-y-full'), 10)
+    }
 
+    function closeAuthModal() {
+      document.getElementById('auth-sheet').classList.add('translate-y-full')
+      setTimeout(() => document.getElementById('auth-modal').classList.add('hidden'), 300)
+    }
 
-function updateAuthUI() {
-  const btn = document.getElementById('auth-btn')
-  if (!btn) return
-  
-  if (currentCustomer) {
-    const initial = (currentCustomer.name || currentCustomer.email || '?').charAt(0).toUpperCase()
-    btn.innerHTML = `
-      <div class="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center text-sm font-bold border-2 border-white/20">
-        ${initial}
-      </div>`
-    btn.onclick = () => location.href = 'profile.html'
-    btn.title = `Hi, ${currentCustomer.name || 'there'}`
-  } else {
-    btn.innerHTML = `
-      <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-      </svg>`
-    btn.onclick = openAuthModal
-    btn.title = 'Login'
-  }
-}
+    function toggleAuthMode() {
+      isLoginMode = !isLoginMode
+      document.getElementById('auth-title').textContent = isLoginMode ? 'Welcome back' : 'Create account'
+      document.getElementById('auth-btn-text').textContent = isLoginMode ? 'Login' : 'Create Account'
+      document.getElementById('auth-toggle-label').textContent = isLoginMode ? "Don't have an account?" : 'Already have an account?'
+      document.getElementById('auth-toggle-btn').textContent = isLoginMode ? 'Create account' : 'Login'
+      
+      const nameField = document.getElementById('name-field')
+      const nameInput = document.getElementById('auth-name')
+      if (isLoginMode) {
+        nameField.classList.add('hidden')
+        nameInput.removeAttribute('required')
+      } else {
+        nameField.classList.remove('hidden')
+        nameInput.setAttribute('required', 'true')
+      }
+    }
 
-// Call once on page load to check existing session
-async function initAuth() {
-  const { data: { session } } = await supabaseClient.auth.getSession()
-  if (session?.user) {
-    currentUser = session.user
-    await loadCustomer()
-  }
-  updateAuthUI()
-}
+    async function handleAuth(e) {
+      e.preventDefault()
+      const phone = document.getElementById('auth-phone').value.trim().replace(/\D/g, '')
+      const name = document.getElementById('auth-name').value.trim()
+      const emailInput = document.getElementById('auth-email').value.trim()
+      const password = document.getElementById('auth-password').value
+      
+      const authEmail = emailInput || `${phone}@buzzcafe.local`
+      
+      if (isLoginMode) {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ 
+          email: authEmail, 
+          password 
+        })
+        if (error) {
+          showToast('Invalid phone or password')
+          return
+        }
+        closeAuthModal()
+        showToast('Welcome back!')
+      } else {
+        if (phone.length !== 8) {
+          showToast('Please enter a valid 8-digit phone number')
+          return
+        }
+        
+        const { data, error } = await supabaseClient.auth.signUp({ 
+          email: authEmail, 
+          password,
+          options: { 
+            data: { 
+              phone: phone, 
+              name: name || null 
+            } 
+          }
+        })
+        
+        if (error) {
+          showToast(error.message)
+          return
+        }
+        
+        closeAuthModal()
+        showToast('Account created! You can now login.')
+      }
+    }
 
-// Run after your existing init()
-initAuth()
+    async function syncLocalCartToUser() {
+      if (!currentUser || cart.length === 0) return
+      // Optional: sync localStorage cart to DB here later
+    }
 
     async function init() {
-      const { data: outlets } = await supabaseClient.from('outlets').select('*').eq('is_active', true).order('name')
-      allOutlets = outlets || []
-      
-      const active = allOutlets.find(o => o.id == selectedOutlet) || allOutlets[0]
-      if (active) {
+      try {
+        const { data: outlets, error: outletError } = await supabaseClient.from('outlets').select('*').eq('is_active', true).order('name')
+        if (outletError) throw outletError
+        
+        allOutlets = outlets || []
+        
+        if (allOutlets.length === 0) {
+          document.getElementById('outlet-info').textContent = 'No outlets available'
+          document.getElementById('menu-container').innerHTML = `
+            <div class="text-center py-24">
+              <div class="empty-icon">🏪</div>
+              <p class="text-lg font-bold text-gray-900">No outlets available</p>
+              <p class="text-sm text-gray-500 mt-1">Please check back later</p>
+            </div>`
+          return
+        }
+        
+        const active = allOutlets.find(o => o.id == selectedOutlet) || allOutlets[0]
         selectedOutlet = active.id
         localStorage.setItem('selected_outlet', selectedOutlet)
         document.getElementById('outlet-name').textContent = active.name
         document.getElementById('outlet-info').textContent = active.location || 'Open now • Delivery available'
+        
+        await initAuth()
+        await loadMenu()
+      } catch (err) {
+        console.error('Init error:', err)
+        document.getElementById('menu-container').innerHTML = `
+          <div class="text-center py-24">
+            <div class="empty-icon">⚠️</div>
+            <p class="text-lg font-bold text-gray-900">Something went wrong</p>
+            <p class="text-sm text-gray-500 mt-1">${err.message || 'Failed to load menu'}</p>
+          </div>`
       }
-      
-      loadMenu()
     }
 
     async function loadMenu() {
-      const [{ data: categories }, { data: items }] = await Promise.all([
-        supabaseClient.from('categories').select('*').order('sort_order'),
-        supabaseClient.from('menu_items').select('*').eq('outlet_id', selectedOutlet).eq('is_available', true).order('name')
-      ])
-      
-      allCategories = categories || []
-      allItems = items || []
-      
-      renderCategoryPills()
-      renderMenu()
-      updateCartBadge()
+      try {
+        const [{ data: categories, error: catError }, { data: items, error: itemError }] = await Promise.all([
+          supabaseClient.from('categories').select('*').order('sort_order'),
+          supabaseClient.from('menu_items').select('*').eq('outlet_id', selectedOutlet).eq('is_available', true).order('name')
+        ])
+        
+        if (catError) throw catError
+        if (itemError) throw itemError
+        
+        allCategories = categories || []
+        allItems = items || []
+        
+        renderCategoryPills()
+        renderMenu()
+        updateCartBadge()
+      } catch (err) {
+        console.error('Menu load error:', err)
+        document.getElementById('menu-container').innerHTML = `
+          <div class="text-center py-24">
+            <div class="empty-icon">🍽️</div>
+            <p class="text-lg font-bold text-gray-900">Menu unavailable</p>
+            <p class="text-sm text-gray-500 mt-1">${err.message || 'Could not load dishes'}</p>
+          </div>`
+      }
     }
 
     function renderCategoryPills() {
@@ -546,7 +678,6 @@ initAuth()
         const isActive = pill.dataset.cat === catId
         pill.classList.toggle('active', isActive)
       })
-      // Scroll active pill into view
       const activePill = document.querySelector(`.cat-pill[data-cat="${catId}"]`)
       if (activePill) activePill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
       renderMenu()
@@ -568,7 +699,6 @@ initAuth()
       
       document.getElementById('no-results').classList.add('hidden')
       
-      // Flat grid — no vertical category sections
       let html = `<div class="menu-grid pt-2">`
       html += items.map(item => renderDishCard(item)).join('')
       html += `</div>`
@@ -655,7 +785,6 @@ initAuth()
       if (total > 0) {
         badge.textContent = total > 99 ? '99+' : total
         badge.classList.remove('hidden')
-        // Small pop animation
         requestAnimationFrame(() => {
           badge.classList.remove('scale-0')
           badge.classList.add('scale-110')
