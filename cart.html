@@ -173,6 +173,7 @@
             <option value="half-payment">Half Payment</option>
             <option value="full-payment">Full Payment</option>
             <option value="cash-on-delivery">Cash on Delivery</option>
+                        <option value="pay-at-counter">Pay at Counter</option>
           </select>
         </div>
 
@@ -441,10 +442,12 @@
     const paymentMethodSelect = document.getElementById('payment-method')
     const placeOrderBtn = document.getElementById('place-order-btn')
 
-    paymentMethodSelect.addEventListener('change', function() {
+     paymentMethodSelect.addEventListener('change', function() {
       const method = this.value
       if (method === 'half-payment' || method === 'full-payment') {
         placeOrderBtn.textContent = 'Payment Confirmation'
+      } else if (method === 'pay-at-counter') {
+        placeOrderBtn.textContent = 'Place Order (Pay at Counter)'
       } else {
         placeOrderBtn.textContent = 'Place Order'
       }
@@ -582,8 +585,11 @@
         return
       }
 
-      if (method === 'half-payment' || method === 'full-payment') {
+       if (method === 'half-payment' || method === 'full-payment') {
         openPaymentModal()
+      } else if (method === 'pay-at-counter') {
+        paymentScreenshotUrl = null
+        await submitOrder()
       } else {
         paymentScreenshotUrl = null
         await submitOrder()
@@ -663,11 +669,14 @@
         }))
         await supabaseClient.from('order_items').insert(orderItems)
 
+              const paymentAmount = paymentMethod === 'half-payment' ? total / 2 : 
+                              paymentMethod === 'pay-at-counter' ? 0 : total
+        
         await supabaseClient.from('payments').insert({
           order_id: order.id,
-          amount: paymentMethod === 'half-payment' ? total / 2 : total,
+          amount: paymentAmount,
           method: paymentMethod,
-          status: 'pending',
+          status: paymentMethod === 'pay-at-counter' ? 'pending' : 'pending',
           screenshot_url: paymentScreenshotUrl || null
         })
 
@@ -682,21 +691,28 @@
       }
     }
 
-        function initTableCart() {
+            function initTableCart() {
       if (tableNumber) {
         document.getElementById('table-banner').classList.remove('hidden')
         document.getElementById('banner-table-num').textContent = tableNumber
         
-        // For table orders, auto-select walk-in and hide delivery toggle
+        // Auto-select walk-in and hide delivery option
         const walkInRadio = document.querySelector('input[name="delivery-type"][value="walk-in"]')
         if (walkInRadio) {
           walkInRadio.checked = true
           walkInRadio.closest('.radio-card').querySelector('.check-dot').style.opacity = '1'
-          // Hide delivery option entirely for table orders
           document.querySelector('input[name="delivery-type"][value="delivery"]').closest('.radio-card').style.display = 'none'
         }
         document.getElementById('address-section').classList.remove('show')
         document.getElementById('delivery-address').required = false
+        
+        // NEW: Auto-select Pay at Counter for table orders
+        const paymentSelect = document.getElementById('payment-method')
+        if (paymentSelect) {
+          paymentSelect.value = 'pay-at-counter'
+          // Trigger change to update button text
+          paymentSelect.dispatchEvent(new Event('change'))
+        }
       }
     }
 

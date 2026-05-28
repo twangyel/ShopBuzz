@@ -1324,7 +1324,9 @@ function renderTables() {
   const baseUrl = window.location.origin.replace(/\/admin$/, '').replace(/\/admin\/$/, '')
   
   grid.innerHTML = allTables.map(t => {
-    const qrUrl = `${baseUrl}/menu?table=${encodeURIComponent(t.number)}&outlet=${t.outlet_id}`
+    // Build raw URL first, then escape only for display attributes
+    const rawQrUrl = `${baseUrl}/menu?table=${encodeURIComponent(t.number)}&outlet=${t.outlet_id}`
+    
     return `
       <div class="border rounded-xl p-3 relative group hover:border-orange-300 transition">
         <div class="flex justify-between items-start mb-2">
@@ -1338,11 +1340,11 @@ function renderTables() {
           </button>
         </div>
         <div class="bg-gray-50 rounded-lg p-2 flex justify-center mb-2">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrUrl)}" alt="QR" class="w-20 h-20">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(rawQrUrl)}" alt="QR" class="w-20 h-20">
         </div>
         <div class="flex gap-1.5">
-          <a href="${escapeHtml(qrUrl)}" target="_blank" class="flex-1 text-center text-[10px] bg-orange-50 text-orange-700 py-1.5 rounded font-medium hover:bg-orange-100">Preview</a>
-          <button onclick="printQR('${t.number}', '${escapeHtml(qrUrl)}')" class="flex-1 text-center text-[10px] bg-gray-100 text-gray-700 py-1.5 rounded font-medium hover:bg-gray-200">Print</button>
+          <a href="${rawQrUrl}" target="_blank" rel="noopener noreferrer" class="flex-1 text-center text-[10px] bg-orange-50 text-orange-700 py-1.5 rounded font-medium hover:bg-orange-100">Preview</a>
+          <button onclick="printQR('${escapeHtml(t.number)}', '${rawQrUrl}')" class="flex-1 text-center text-[10px] bg-gray-100 text-gray-700 py-1.5 rounded font-medium hover:bg-gray-200">Print</button>
         </div>
       </div>
     `
