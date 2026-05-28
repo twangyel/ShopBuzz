@@ -40,6 +40,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body class="bg-cream-50 text-espresso-900 antialiased">
 
@@ -213,33 +214,77 @@
     </div>
   </section>
 
-  <!-- Gallery -->
-  <section id="gallery" class="py-24 bg-cream-50">
-    <div class="max-w-7xl mx-auto px-6">
-      <div class="text-center mb-16">
-        <p class="text-cream-600 text-sm tracking-[0.2em] uppercase font-medium mb-3">Visual Feast</p>
-        <h2 class="font-display text-4xl md:text-5xl text-espresso-900 font-medium">A Glimpse of <span class="italic text-cream-600">Goodness</span></h2>
-      </div>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="space-y-4">
-          <div class="aspect-[3/4] rounded-xl overflow-hidden"><img src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&q=80" alt="Latte art" class="w-full h-full object-cover hover:scale-110 transition duration-700"></div>
-          <div class="aspect-square rounded-xl overflow-hidden"><img src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&q=80" alt="Smoothie" class="w-full h-full object-cover hover:scale-110 transition duration-700"></div>
-        </div>
-        <div class="space-y-4 pt-8">
-          <div class="aspect-square rounded-xl overflow-hidden"><img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80" alt="Pancakes" class="w-full h-full object-cover hover:scale-110 transition duration-700"></div>
-          <div class="aspect-[3/4] rounded-xl overflow-hidden"><img src="https://images.unsplash.com/photo-1550617931-e17a7b70dce2?w=600&q=80" alt="Coffee beans" class="w-full h-full object-cover hover:scale-110 transition duration-700"></div>
-        </div>
-        <div class="space-y-4">
-          <div class="aspect-[3/4] rounded-xl overflow-hidden"><img src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=600&q=80" alt="Cake slice" class="w-full h-full object-cover hover:scale-110 transition duration-700"></div>
-          <div class="aspect-square rounded-xl overflow-hidden"><img src="https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&q=80" alt="Breakfast" class="w-full h-full object-cover hover:scale-110 transition duration-700"></div>
-        </div>
-        <div class="space-y-4 pt-8">
-          <div class="aspect-square rounded-xl overflow-hidden"><img src="https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=600&q=80" alt="Toast" class="w-full h-full object-cover hover:scale-110 transition duration-700"></div>
-          <div class="aspect-[3/4] rounded-xl overflow-hidden"><img src="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&q=80" alt="Iced coffee" class="w-full h-full object-cover hover:scale-110 transition duration-700"></div>
-        </div>
+<!-- Reviews -->
+<section id="reviews" class="py-24 bg-cream-50">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <p class="text-cream-600 text-sm tracking-[0.2em] uppercase font-medium mb-3">Testimonials</p>
+      <h2 class="font-display text-4xl md:text-5xl text-espresso-900 font-medium">What Our <span class="italic text-cream-600">Guests</span> Say</h2>
+    </div>
+
+    <!-- Write Review Button -->
+    <div class="text-center mb-10">
+      <button id="open-review-modal" class="inline-flex items-center gap-2 bg-orange-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-orange-700 transition shadow-md text-sm tracking-wide">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+        Write a Review
+      </button>
+    </div>
+
+    <!-- Reviews Grid -->
+    <div id="reviews-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="col-span-full text-center py-12">
+        <div class="inline-block w-8 h-8 border-2 border-cream-400 border-t-orange-600 rounded-full animate-spin"></div>
+        <p class="text-cream-600 mt-4 text-sm">Loading reviews...</p>
       </div>
     </div>
-  </section>
+  </div>
+
+  <!-- Review Modal -->
+  <div id="review-modal" class="fixed inset-0 z-[60] hidden">
+    <div class="absolute inset-0 bg-espresso-900/60 backdrop-blur-sm" id="review-modal-overlay"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative animate-[fadeIn_0.2s_ease-out]">
+        <button id="close-review-modal" class="absolute top-4 right-4 text-cream-500 hover:text-espresso-900 transition">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        <h3 class="font-display text-2xl text-espresso-900 mb-1">Write a Review</h3>
+        <p class="text-cream-600 text-sm mb-6">Share your Buzz Cafe experience</p>
+        
+        <form id="review-form" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-espresso-800 mb-1">Your Name</label>
+            <input type="text" id="review-name" required class="w-full px-4 py-2.5 rounded-xl border border-cream-300 focus:border-orange-600 focus:ring-2 focus:ring-orange-600/20 outline-none transition bg-cream-50" placeholder="John Doe">
+            <div>
+  <label class="block text-sm font-medium text-espresso-800 mb-1">Order Number <span class="text-cream-500 font-normal">(optional — for verified badge)</span></label>
+  <input type="text" id="review-order-id" class="w-full px-4 py-2.5 rounded-xl border border-cream-300 focus:border-orange-600 focus:ring-2 focus:ring-orange-600/20 outline-none transition bg-cream-50 font-mono text-sm" placeholder="e.g., a7f3d2e9">
+  <p class="text-cream-500 text-xs mt-1">Find this on your receipt. Leave blank to submit as guest.</p>
+</div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-espresso-800 mb-1">Rating</label>
+            <div class="flex gap-2" id="star-rating">
+              <button type="button" data-value="1" class="star-btn text-cream-300 hover:text-orange-500 transition text-2xl">★</button>
+              <button type="button" data-value="2" class="star-btn text-cream-300 hover:text-orange-500 transition text-2xl">★</button>
+              <button type="button" data-value="3" class="star-btn text-cream-300 hover:text-orange-500 transition text-2xl">★</button>
+              <button type="button" data-value="4" class="star-btn text-cream-300 hover:text-orange-500 transition text-2xl">★</button>
+              <button type="button" data-value="5" class="star-btn text-cream-300 hover:text-orange-500 transition text-2xl">★</button>
+            </div>
+            <input type="hidden" id="review-rating" value="5" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-espresso-800 mb-1">Your Review</label>
+            <textarea id="review-comment" rows="4" required class="w-full px-4 py-2.5 rounded-xl border border-cream-300 focus:border-orange-600 focus:ring-2 focus:ring-orange-600/20 outline-none transition bg-cream-50 resize-none" placeholder="Tell us about your visit..."></textarea>
+          </div>
+          <button type="submit" id="review-submit-btn" class="w-full bg-orange-600 text-white py-3 rounded-xl font-semibold hover:bg-orange-700 transition shadow-md flex items-center justify-center gap-2">
+            <span>Submit Review</span>
+            <svg id="review-spinner" class="w-4 h-4 animate-spin hidden" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          </button>
+          <p id="review-error" class="text-red-600 text-sm hidden text-center"></p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
 
   <!-- Locations -->
   <section id="locations" class="py-24 bg-cream-100">
@@ -252,7 +297,7 @@
         <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-cream-200">
           <div class="aspect-video bg-gray-200"><img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=80" alt="Downtown location" class="w-full h-full object-cover"></div>
           <div class="p-8">
-            <h3 class="font-display text-2xl text-espresso-900 mb-2">Downtown Cafe</h3>
+            <h3 class="font-display text-2xl text-espresso-900 mb-2">Buzz Cafe Outlet - 1</h3>
             <p class="text-cream-600 mb-4">123 Main Street, City Center</p>
             <div class="flex items-center gap-6 text-sm text-espresso-700">
               <span class="flex items-center gap-2"><svg class="w-4 h-4 text-cream-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>7AM — 10PM</span>
@@ -264,7 +309,7 @@
           <div class="aspect-video bg-gray-200"><img src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=800&q=80" alt="Mall location" class="w-full h-full object-cover"></div>
           <div class="p-8">
             <h3 class="font-display text-2xl text-espresso-900 mb-2">Mall Branch</h3>
-            <p class="text-cream-600 mb-4">City Center Mall, 2nd Floor</p>
+            <p class="text-cream-600 mb-4">Buzz Cafe Outlet - 2</p>
             <div class="flex items-center gap-6 text-sm text-espresso-700">
               <span class="flex items-center gap-2"><svg class="w-4 h-4 text-cream-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>8AM — 11PM</span>
               <span class="flex items-center gap-2"><svg class="w-4 h-4 text-cream-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>555-0102</span>

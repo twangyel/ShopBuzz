@@ -9,13 +9,44 @@
   <style>
     body { font-family: 'Inter', sans-serif; }
     
-    /* Toggle Switch */
-    .toggle-checkbox:checked {
-      right: 0;
-      border-color: #16a34a;
+    /* Toggle Switch — clean implementation that doesn't conflict */
+    .outlet-toggle {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 24px;
     }
-    .toggle-checkbox:checked + .toggle-label {
-      background-color: #16a34a;
+    .outlet-toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+    .outlet-toggle-track {
+      position: absolute;
+      inset: 0;
+      border-radius: 9999px;
+      background: #d1d5db;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .outlet-toggle input:checked + .outlet-toggle-track {
+      background: #16a34a;
+    }
+    .outlet-toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .outlet-toggle input:checked + .outlet-toggle-track::after {
+      transform: translateX(24px);
     }
     
     /* Tab transitions */
@@ -154,7 +185,7 @@
     /* Sticky sub-nav */
     .sticky-sub {
       position: sticky;
-      top: 48px;
+      top: 41px;
       z-index: 30;
       background: #f9fafb;
     }
@@ -381,34 +412,58 @@
       </div>
 
       <!-- ========== REVIEWS TAB ========== -->
-      <div id="tab-reviews" class="tab-content">
-        <div class="mb-3">
-          <div class="relative max-w-sm">
-            <svg class="absolute left-3 top-2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="reviews-search" oninput="searchReviews()" placeholder="Search reviews..." class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none">
-          </div>
-        </div>
+<div id="tab-reviews" class="tab-content">
+  
+  <!-- Stats Row -->
+  <div class="grid grid-cols-3 gap-3 mb-4">
+    <div class="bg-white p-3 rounded-lg border shadow-sm">
+      <p class="text-gray-400 text-[10px] uppercase font-semibold">Total Reviews</p>
+      <p id="stat-total-reviews" class="text-xl font-bold">0</p>
+    </div>
+    <div class="bg-white p-3 rounded-lg border shadow-sm">
+      <p class="text-gray-400 text-[10px] uppercase font-semibold">Pending Approval</p>
+      <p id="stat-pending-reviews" class="text-xl font-bold text-orange-600">0</p>
+    </div>
+    <div class="bg-white p-3 rounded-lg border shadow-sm">
+      <p class="text-gray-400 text-[10px] uppercase font-semibold">Avg Rating</p>
+      <p id="stat-avg-rating" class="text-xl font-bold text-amber-500">0.0</p>
+    </div>
+  </div>
 
-        <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left">
-              <thead class="bg-gray-50 border-b text-xs uppercase text-gray-500 font-medium">
-                <tr>
-                  <th class="px-3 py-2">Customer</th>
-                  <th class="px-3 py-2">Rating</th>
-                  <th class="px-3 py-2">Comment</th>
-                  <th class="px-3 py-2">Order</th>
-                  <th class="px-3 py-2">Date</th>
-                </tr>
-              </thead>
-              <tbody id="reviews-table" class="divide-y divide-gray-100">
-                <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">Loading reviews...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+  <div class="mb-3">
+    <div class="relative max-w-sm">
+      <svg class="absolute left-3 top-2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="reviews-search" oninput="searchReviews()" placeholder="Search reviews..." class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none">
+    </div>
+  </div>
 
+  <!-- Filter Tabs -->
+  <div class="flex gap-2 mb-3 border-b border-gray-200 pb-2">
+    <button onclick="filterReviews('all')" class="review-filter active px-3 py-1.5 text-sm font-medium rounded-lg bg-orange-100 text-orange-700" data-filter="all">All</button>
+    <button onclick="filterReviews('pending')" class="review-filter px-3 py-1.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100" data-filter="pending">Pending</button>
+    <button onclick="filterReviews('approved')" class="review-filter px-3 py-1.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100" data-filter="approved">Approved</button>
+  </div>
+
+  <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left">
+        <thead class="bg-gray-50 border-b text-xs uppercase text-gray-500 font-medium">
+          <tr>
+            <th class="px-3 py-2">Reviewer</th>
+            <th class="px-3 py-2">Rating</th>
+            <th class="px-3 py-2">Comment</th>
+            <th class="px-3 py-2">Submitted</th>
+            <th class="px-3 py-2">Status</th>
+            <th class="px-3 py-2 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody id="reviews-table" class="divide-y divide-gray-100">
+          <tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">Loading reviews...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
       <!-- ========== ANALYTICS TAB ========== -->
       <div id="tab-analytics" class="tab-content">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
@@ -417,7 +472,7 @@
             <p id="analytics-orders" class="text-2xl font-bold mt-1">0</p>
           </div>
           <div class="bg-white p-4 rounded-xl border shadow-sm">
-            <p class="text-gray-400 text-[10px] uppercase font-semibold">Total Revenue</p>
+            <p class="text-gray-400 text-[10px] uppercase font-semibold">Revenue (This Month)</p>
             <p id="analytics-revenue" class="text-2xl font-bold mt-1 text-green-600">Nu. 0</p>
           </div>
           <div class="bg-white p-4 rounded-xl border shadow-sm">
@@ -616,8 +671,20 @@
     let editingProductId = null
 
     // ========== AUTH ==========
-    supabaseClient.auth.getSession().then(({ data: { session } }) => {
-      if (session) showDashboard(session.user.email)
+    // FIX #5: Check role on session restore too
+    supabaseClient.auth.getSession().then(async ({ data: { session } }) => {
+      if (session) {
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single()
+        if (profile && ['admin', 'staff'].includes(profile.role)) {
+          showDashboard(session.user.email)
+        } else {
+          await supabaseClient.auth.signOut()
+        }
+      }
     })
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -630,6 +697,19 @@
         document.getElementById('login-error').textContent = error.message
         document.getElementById('login-error').classList.remove('hidden')
       } else {
+        // FIX #5: Verify user has admin/staff role before granting access
+        const { data: profile, error: profileError } = await supabaseClient
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single()
+
+        if (profileError || !profile || !['admin', 'staff'].includes(profile.role)) {
+          await supabaseClient.auth.signOut()
+          document.getElementById('login-error').textContent = 'Access denied. Staff accounts only.'
+          document.getElementById('login-error').classList.remove('hidden')
+          return
+        }
         showDashboard(data.user.email)
       }
     })
@@ -675,21 +755,19 @@
         return `
           <div class="bg-white rounded-xl border shadow-sm p-4 flex items-center justify-between">
             <div>
-              <h4 class="font-semibold text-gray-900 text-sm">${outlet.name}</h4>
-              <p class="text-xs text-gray-500 mt-0.5">${outlet.location || 'No location'}</p>
+              <h4 class="font-semibold text-gray-900 text-sm">${escapeHtml(outlet.name)}</h4>
+              <p class="text-xs text-gray-500 mt-0.5">${escapeHtml(outlet.location || 'No location')}</p>
               <span class="inline-flex items-center gap-1 text-xs mt-1 ${isOpen ? 'text-green-600' : 'text-red-600'}">
                 <span class="w-1.5 h-1.5 rounded-full ${isOpen ? 'bg-green-500' : 'bg-red-500'}"></span>
                 ${isOpen ? 'Open' : 'Closed'}
               </span>
             </div>
-            <div class="relative inline-block w-12 h-6 align-middle select-none">
+            <label class="outlet-toggle">
               <input type="checkbox" 
                 onchange="toggleOutletStatus(${outlet.id}, this.checked)" 
-                ${isOpen ? 'checked' : ''}
-                class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 ${isOpen ? 'border-green-500 right-0' : 'border-gray-300 left-0'} appearance-none cursor-pointer transition-all duration-200 ease-in-out" 
-                style="top:0;">
-              <label class="toggle-label block overflow-hidden h-6 rounded-full ${isOpen ? 'bg-green-500' : 'bg-gray-300'} cursor-pointer transition-colors duration-200 ease-in-out"></label>
-            </div>
+                ${isOpen ? 'checked' : ''}>
+              <span class="outlet-toggle-track"></span>
+            </label>
           </div>
         `
       }).join('')
@@ -719,25 +797,27 @@
         return
       }
       
-      const outlet = allOutlets[0]
-      document.getElementById('portal-outlet-info').innerHTML = `
-        <div class="flex justify-between py-1.5 border-b border-gray-50">
-          <span class="text-gray-400">Name</span>
-          <span class="font-medium text-gray-900">${outlet.name}</span>
+      // FIX #8: Show all outlets, not just allOutlets[0]
+      document.getElementById('portal-outlet-info').innerHTML = allOutlets.map(outlet => `
+        <div class="mb-3 pb-3 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
+          <div class="flex justify-between py-1">
+            <span class="text-gray-400">Name</span>
+            <span class="font-medium text-gray-900">${escapeHtml(outlet.name)}</span>
+          </div>
+          <div class="flex justify-between py-1">
+            <span class="text-gray-400">Location</span>
+            <span class="text-gray-700">${escapeHtml(outlet.location || 'N/A')}</span>
+          </div>
+          <div class="flex justify-between py-1">
+            <span class="text-gray-400">Phone</span>
+            <span class="text-gray-700">${escapeHtml(outlet.phone || 'N/A')}</span>
+          </div>
+          <div class="flex justify-between py-1">
+            <span class="text-gray-400">Status</span>
+            <span class="${outlet.status === 'open' ? 'text-green-600' : 'text-red-600'} font-medium">${escapeHtml(outlet.status || 'open')}</span>
+          </div>
         </div>
-        <div class="flex justify-between py-1.5 border-b border-gray-50">
-          <span class="text-gray-400">Location</span>
-          <span class="text-gray-700">${outlet.location || 'N/A'}</span>
-        </div>
-        <div class="flex justify-between py-1.5 border-b border-gray-50">
-          <span class="text-gray-400">Phone</span>
-          <span class="text-gray-700">${outlet.phone || 'N/A'}</span>
-        </div>
-        <div class="flex justify-between py-1.5">
-          <span class="text-gray-400">Status</span>
-          <span class="${outlet.status === 'open' ? 'text-green-600' : 'text-red-600'} font-medium">${outlet.status || 'open'}</span>
-        </div>
-      `
+      `).join('')
     }
 
     // ========== NOTIFICATIONS ==========
@@ -886,7 +966,13 @@
         btn.classList.toggle('bg-white', !isActive)
         btn.classList.toggle('text-gray-700', !isActive)
       })
-      renderOrders()
+      // FIX #11: Re-apply any active search query when changing filter
+      const query = document.getElementById('orders-search').value.toLowerCase().trim()
+      if (query) {
+        searchOrders()
+      } else {
+        renderOrders()
+      }
     }
 
     function renderOrders(ordersToRender = null) {
@@ -913,10 +999,10 @@
 
         return `
           <tr class="hover:bg-gray-50 transition">
-            <td class="px-3 py-2 font-mono text-xs text-gray-500">#${order.order_number || order.id.slice(0,8).toUpperCase()}</td>
+            <td class="px-3 py-2 font-mono text-xs text-gray-500">#${escapeHtml(order.order_number || order.id.slice(0,8).toUpperCase())}</td>
             <td class="px-3 py-2">
-              <div class="font-medium text-gray-900 text-sm">${order.customer_name}</div>
-              <div class="text-gray-500 text-xs">${order.customer_phone}</div>
+              <div class="font-medium text-gray-900 text-sm">${escapeHtml(order.customer_name)}</div>
+              <div class="text-gray-500 text-xs">${escapeHtml(order.customer_phone)}</div>
             </td>
             <td class="px-3 py-2 text-gray-600 text-sm">${itemCount} items</td>
             <td class="px-3 py-2 font-semibold text-sm">Nu. ${parseFloat(order.total_amount).toFixed(2)}</td>
@@ -970,33 +1056,33 @@
         <div class="bg-gray-50 rounded-lg p-3 space-y-1">
           <div class="flex justify-between">
             <span class="text-xs text-gray-500">Customer</span>
-            <span class="text-sm font-medium text-gray-900">${order.customer_name}</span>
+            <span class="text-sm font-medium text-gray-900">${escapeHtml(order.customer_name)}</span>
           </div>
           <div class="flex justify-between">
             <span class="text-xs text-gray-500">Phone</span>
-            <span class="text-sm text-gray-700">${order.customer_phone}</span>
+            <span class="text-sm text-gray-700">${escapeHtml(order.customer_phone)}</span>
           </div>
           ${order.customer_email ? `
           <div class="flex justify-between">
             <span class="text-xs text-gray-500">Email</span>
-            <span class="text-sm text-gray-700">${order.customer_email}</span>
+            <span class="text-sm text-gray-700">${escapeHtml(order.customer_email)}</span>
           </div>` : ''}
           ${order.delivery_type ? `
           <div class="flex justify-between">
             <span class="text-xs text-gray-500">Type</span>
-            <span class="text-sm text-gray-700 capitalize">${order.delivery_type}</span>
+            <span class="text-sm text-gray-700 capitalize">${escapeHtml(order.delivery_type)}</span>
           </div>` : ''}
           ${order.address ? `
           <div class="flex justify-between">
             <span class="text-xs text-gray-500">Address</span>
-            <span class="text-sm text-gray-700">${order.address}</span>
+            <span class="text-sm text-gray-700">${escapeHtml(order.address)}</span>
           </div>` : ''}
         </div>
 
         <!-- Status -->
         <div class="flex items-center justify-between">
           <span class="text-sm text-gray-500">Status</span>
-          <span class="text-xs font-medium px-3 py-1 rounded-full ${statusColors[order.status] || 'bg-gray-100'}">${order.status}</span>
+          <span class="text-xs font-medium px-3 py-1 rounded-full ${statusColors[order.status] || 'bg-gray-100'}">${escapeHtml(order.status)}</span>
         </div>
 
         <!-- Items -->
@@ -1007,7 +1093,7 @@
               <div class="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
                 <div class="flex items-center gap-2">
                   <span class="w-6 h-6 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center text-xs font-bold">${item.quantity}</span>
-                  <span class="text-sm text-gray-700">${item.item_name}</span>
+                  <span class="text-sm text-gray-700">${escapeHtml(item.item_name)}</span>
                 </div>
                 <span class="text-sm font-medium text-gray-900">Nu. ${(item.price * item.quantity).toFixed(2)}</span>
               </div>
@@ -1024,18 +1110,18 @@
           ${payment.method ? `
           <div class="flex justify-between text-sm">
             <span class="text-gray-500">Payment</span>
-            <span class="text-xs font-medium px-2 py-0.5 rounded-full ${payment.method === 'cash-on-delivery' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">${payment.method.replace(/-/g, ' ')}</span>
+            <span class="text-xs font-medium px-2 py-0.5 rounded-full ${payment.method === 'cash-on-delivery' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">${escapeHtml(payment.method.replace(/-/g, ' '))}</span>
           </div>
           ${payment.screenshot_url ? `
           <div class="flex justify-between text-sm items-center">
             <span class="text-gray-500">Proof</span>
-            <a href="${payment.screenshot_url}" target="_blank" class="text-xs text-blue-600 hover:underline">View Screenshot</a>
+            <a href="${escapeHtml(payment.screenshot_url)}" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-600 hover:underline">View Screenshot</a>
           </div>` : ''}
           ` : ''}
           ${order.special_instructions ? `
           <div class="mt-2 p-2 bg-amber-50 rounded-lg border border-amber-100">
             <p class="text-xs text-amber-700 font-medium">Special Instructions:</p>
-            <p class="text-xs text-amber-600 mt-0.5">${order.special_instructions}</p>
+            <p class="text-xs text-amber-600 mt-0.5">${escapeHtml(order.special_instructions)}</p>
           </div>
           ` : ''}
         </div>
@@ -1055,7 +1141,9 @@
         return
       }
 
-      const filtered = allOrders.filter(o => 
+      // FIX #11: Apply search within the currently active status filter
+      const baseList = currentFilter === 'all' ? allOrders : allOrders.filter(o => o.status === currentFilter)
+      const filtered = baseList.filter(o => 
         (o.customer_name || '').toLowerCase().includes(query) ||
         (o.customer_phone || '').toLowerCase().includes(query) ||
         (o.order_number || '').toLowerCase().includes(query) ||
@@ -1106,21 +1194,21 @@
         
         return `
           <tr class="hover:bg-gray-50 transition">
-            <td class="px-3 py-2 font-mono text-xs text-gray-500">#${order.order_number || p.order_id?.slice(0,8).toUpperCase()}</td>
+            <td class="px-3 py-2 font-mono text-xs text-gray-500">#${escapeHtml(order.order_number || p.order_id?.slice(0,8).toUpperCase() || '')}</td>
             <td class="px-3 py-2">
-              <div class="font-medium text-gray-900 text-sm">${order.customer_name || 'N/A'}</div>
-              <div class="text-gray-500 text-xs">${order.customer_phone || ''}</div>
+              <div class="font-medium text-gray-900 text-sm">${escapeHtml(order.customer_name || 'N/A')}</div>
+              <div class="text-gray-500 text-xs">${escapeHtml(order.customer_phone || '')}</div>
             </td>
             <td class="px-3 py-2 font-semibold text-sm">Nu. ${parseFloat(p.amount).toFixed(2)}</td>
             <td class="px-3 py-2">
-              <span class="text-xs font-medium px-2 py-0.5 rounded-full ${methodColors[p.method] || 'bg-gray-100'}">${p.method?.replace(/-/g, ' ')}</span>
+              <span class="text-xs font-medium px-2 py-0.5 rounded-full ${methodColors[p.method] || 'bg-gray-100'}">${escapeHtml(p.method?.replace(/-/g, ' ') || '')}</span>
             </td>
             <td class="px-3 py-2">
-              <span class="text-xs font-medium px-2 py-0.5 rounded-full ${p.status === 'verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${p.status}</span>
+              <span class="text-xs font-medium px-2 py-0.5 rounded-full ${p.status === 'verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${escapeHtml(p.status || '')}</span>
             </td>
             <td class="px-3 py-2">
               ${p.screenshot_url 
-                ? `<a href="${p.screenshot_url}" target="_blank" class="text-blue-600 hover:underline text-xs">View</a>` 
+                ? `<a href="${escapeHtml(p.screenshot_url)}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline text-xs">View</a>` 
                 : '<span class="text-gray-400 text-xs">—</span>'}
             </td>
             <td class="px-3 py-2 text-gray-500 text-xs">${time}</td>
@@ -1147,62 +1235,152 @@
       })
       renderPayments(filtered)
     }
+// ========== REVIEWS ==========
+let currentReviewFilter = 'all'
 
-    // ========== REVIEWS ==========
-    async function loadReviews() {
-      const { data: reviews } = await supabaseClient
-        .from('reviews')
-        .select('*, orders(customer_name, order_number)')
-        .order('created_at', { ascending: false })
-        .limit(200)
+async function loadReviews() {
+  // Fetch ALL reviews (admin sees everything, not just approved)
+  const { data: reviews, error } = await supabaseClient
+    .from('reviews')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(200)
 
-      allReviews = reviews || []
-      renderReviews()
-    }
+  if (error) {
+    console.error('Reviews load error:', error)
+    document.getElementById('reviews-table').innerHTML = 
+      '<tr><td colspan="6" class="px-4 py-8 text-center text-red-500">Error loading reviews: ' + error.message + '</td></tr>'
+    return
+  }
 
-    function renderReviews(reviewsToRender = null) {
-      const tbody = document.getElementById('reviews-table')
-      const filtered = reviewsToRender || allReviews
+  allReviews = reviews || []
+  updateReviewStats()
+  renderReviews()
+}
 
-      if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">No reviews yet</td></tr>'
-        return
-      }
+function updateReviewStats() {
+  const total = allReviews.length
+  const pending = allReviews.filter(r => !r.approved).length
+  const avg = total > 0 
+    ? (allReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / total).toFixed(1)
+    : '0.0'
 
-      tbody.innerHTML = filtered.map(r => {
-        const order = r.orders || {}
-        const date = new Date(r.created_at).toLocaleDateString()
-        const stars = '★'.repeat(r.rating || 0) + '☆'.repeat(5 - (r.rating || 0))
-        
-        return `
-          <tr class="hover:bg-gray-50 transition">
-            <td class="px-3 py-2 font-medium text-gray-900 text-sm">${order.customer_name || 'Anonymous'}</td>
-            <td class="px-3 py-2 text-amber-500 text-sm tracking-wider">${stars}</td>
-            <td class="px-3 py-2 text-gray-600 max-w-xs truncate text-sm">${r.comment || 'No comment'}</td>
-            <td class="px-3 py-2 font-mono text-xs text-gray-500">#${order.order_number || r.order_id?.slice(0,8).toUpperCase()}</td>
-            <td class="px-3 py-2 text-gray-500 text-xs">${date}</td>
-          </tr>
-        `
-      }).join('')
-    }
+  document.getElementById('stat-total-reviews').textContent = total
+  document.getElementById('stat-pending-reviews').textContent = pending
+  document.getElementById('stat-avg-rating').textContent = avg
+}
 
-    window.searchReviews = function() {
-      const query = document.getElementById('reviews-search').value.toLowerCase().trim()
-      if (!query) {
-        renderReviews()
-        return
-      }
+window.filterReviews = function(filter) {
+  currentReviewFilter = filter
+  document.querySelectorAll('.review-filter').forEach(btn => {
+    const isActive = btn.dataset.filter === filter
+    btn.classList.toggle('bg-orange-100', isActive)
+    btn.classList.toggle('text-orange-700', isActive)
+    btn.classList.toggle('text-gray-600', !isActive)
+    btn.classList.toggle('hover:bg-gray-100', !isActive)
+  })
+  renderReviews()
+}
 
-      const filtered = allReviews.filter(r => {
-        const order = r.orders || {}
-        return (
-          (order.customer_name || '').toLowerCase().includes(query) ||
-          (r.comment || '').toLowerCase().includes(query) ||
-          (r.rating?.toString() || '').includes(query)
-        )
-      })
-      renderReviews(filtered)
-    }
+// Helper: escape HTML to prevent XSS
+function escapeHtml(text) {
+  if (!text) return ''
+  const div = document.createElement('div')
+  div.textContent = text
+  return div.innerHTML
+}
+
+function renderReviews(reviewsToRender = null) {
+  const tbody = document.getElementById('reviews-table')
+  let filtered = reviewsToRender || allReviews
+
+  // Apply status filter (FIX #3: use 'approved' consistently)
+  if (currentReviewFilter === 'pending') {
+    filtered = filtered.filter(r => !r.approved)
+  } else if (currentReviewFilter === 'approved') {
+    filtered = filtered.filter(r => r.approved)
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">No reviews found</td></tr>'
+    return
+  }
+
+  tbody.innerHTML = filtered.map(r => {
+    const date = new Date(r.created_at).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric'
+    })
+    const time = new Date(r.created_at).toLocaleTimeString('en-US', {
+      hour: '2-digit', minute: '2-digit'
+    })
+    const stars = '★'.repeat(r.rating || 0) + '☆'.repeat(5 - (r.rating || 0))
+
+    return `
+      <tr class="hover:bg-gray-50 transition">
+        <td class="px-3 py-2">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-xs">
+              ${escapeHtml((r.name || 'G').charAt(0).toUpperCase())}
+            </div>
+            <div>
+              <div class="font-medium text-gray-900 text-sm">${escapeHtml(r.name || 'Anonymous')}</div>
+              ${r.order_id ? `<div class="text-gray-400 text-[10px] font-mono">Order: ${escapeHtml(r.order_id.slice(0, 8))}</div>` : ''}
+            </div>
+          </div>
+        </td>
+        <td class="px-3 py-2">
+          <span class="text-amber-500 text-sm">${stars}</span>
+          <span class="text-xs text-gray-500 ml-1">${r.rating || 0}/5</span>
+        </td>
+        <td class="px-3 py-2 text-sm text-gray-600 max-w-[200px] truncate">${escapeHtml(r.comment || '—')}</td>
+        <td class="px-3 py-2 text-xs text-gray-500">${date}<br>${time}</td>
+        <td class="px-3 py-2">
+          <span class="text-xs font-medium px-2 py-0.5 rounded-full ${r.approved ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-700'}">
+            ${r.approved ? 'Approved' : 'Pending'}
+          </span>
+        </td>
+        <td class="px-3 py-2 text-right">
+          ${r.approved
+            ? `<button onclick="toggleReviewApproved('${r.id}', false)" class="text-xs text-red-600 hover:underline">Reject</button>`
+            : `<button onclick="toggleReviewApproved('${r.id}', true)" class="text-xs text-green-600 hover:underline font-medium">Approve</button>`
+          }
+        </td>
+      </tr>
+    `
+  }).join('')
+}
+
+// FIX #2: Single correct searchReviews (removed duplicate that used r.orders which was never joined)
+window.searchReviews = function() {
+  const query = document.getElementById('reviews-search').value.toLowerCase().trim()
+  if (!query) {
+    renderReviews()
+    return
+  }
+  const filtered = allReviews.filter(r =>
+    (r.name || '').toLowerCase().includes(query) ||
+    (r.comment || '').toLowerCase().includes(query) ||
+    (r.rating?.toString() || '').includes(query) ||
+    (r.order_id || '').toLowerCase().includes(query)
+  )
+  renderReviews(filtered)
+}
+
+// FIX #3: toggleReviewApproved uses 'approved' column only (removed conflicting toggleReviewVerified)
+window.toggleReviewApproved = async function(id, approved) {
+  const { error } = await supabaseClient
+    .from('reviews')
+    .update({ approved })
+    .eq('id', id)
+
+  if (error) {
+    showToast('Failed to update review: ' + error.message, 'error')
+    console.error(error)
+  } else {
+    showToast(`Review ${approved ? 'approved' : 'rejected'}`, 'review')
+    loadReviews()
+  }
+}
 
     // ========== ANALYTICS ==========
     async function loadAnalytics() {
@@ -1314,7 +1492,7 @@
       const container = document.getElementById('category-filters')
       let html = `<button onclick="filterProducts('all')" class="cat-filter active px-3 py-1 rounded-lg text-xs font-medium bg-gray-900 text-white" data-cat="all">All</button>`
       productCategories.forEach(cat => {
-        html += `<button onclick="filterProducts('${cat.id}')" class="cat-filter px-3 py-1 rounded-lg text-xs font-medium bg-white border text-gray-700" data-cat="${cat.id}">${cat.name}</button>`
+        html += `<button onclick="filterProducts('${escapeHtml(cat.id)}')" class="cat-filter px-3 py-1 rounded-lg text-xs font-medium bg-white border text-gray-700" data-cat="${escapeHtml(cat.id)}">${escapeHtml(cat.name)}</button>`
       })
       container.innerHTML = html
     }
@@ -1345,14 +1523,14 @@
         return `
           <tr class="hover:bg-gray-50 transition">
             <td class="px-3 py-2">
-              ${p.image_url ? `<img src="${p.image_url}" alt="" class="product-photo-thumb">` : `<div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs">No img</div>`}
+              ${p.image_url ? `<img src="${escapeHtml(p.image_url)}" alt="" class="product-photo-thumb">` : `<div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs">No img</div>`}
             </td>
             <td class="px-3 py-2">
-              <div class="font-medium text-gray-900 text-sm">${p.name}</div>
-              <div class="text-gray-500 text-xs truncate max-w-[200px]">${p.description || ''}</div>
+              <div class="font-medium text-gray-900 text-sm">${escapeHtml(p.name)}</div>
+              <div class="text-gray-500 text-xs truncate max-w-[200px]">${escapeHtml(p.description || '')}</div>
             </td>
             <td class="px-3 py-2">
-              <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-50 text-orange-700">${p.category_name || 'Uncategorized'}</span>
+              <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-50 text-orange-700">${escapeHtml(p.category_name || 'Uncategorized')}</span>
             </td>
             <td class="px-3 py-2 font-semibold text-sm">Nu. ${parseFloat(p.price).toFixed(2)}</td>
             <td class="px-3 py-2">
@@ -1380,6 +1558,10 @@
       const file = document.getElementById('product-photo').files[0]
       const preview = document.getElementById('photo-preview')
       const img = preview.querySelector('img')
+      // FIX #12: Revoke previous object URL to avoid memory leak
+      if (img.src && img.src.startsWith('blob:')) {
+        URL.revokeObjectURL(img.src)
+      }
       if (file) {
         img.src = URL.createObjectURL(file)
         preview.classList.remove('hidden')
@@ -1402,7 +1584,14 @@
         return
       }
 
-      const { data, error } = await supabaseClient.from('categories').insert({ name, sort_order: productCategories.length + 1 }).select()
+      const { data: sortData } = await supabaseClient
+        .from('categories')
+        .select('sort_order')
+        .order('sort_order', { ascending: false })
+        .limit(1)
+      // FIX #13: Use MAX existing sort_order + 1 to avoid collisions after deletions
+      const nextSortOrder = sortData?.[0]?.sort_order != null ? sortData[0].sort_order + 1 : 1
+      const { data, error } = await supabaseClient.from('categories').insert({ name, sort_order: nextSortOrder }).select()
       if (error) {
         showToast('Failed to add category', 'error')
         return
@@ -1548,12 +1737,13 @@
 
     // ========== REALTIME SUBSCRIPTIONS ==========
     function setupRealtimeSubscriptions() {
+      // FIX #7: Use event: 'INSERT' so status updates don't show "New order!" toast
       supabaseClient
         .channel('admin-orders')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
-          console.log('Order change:', payload)
-          showToast(`New order! #${payload.new.order_number || payload.new.id.slice(0,8)}`, 'order')
-          addNotification(`New order received #${payload.new.order_number || payload.new.id.slice(0,8)}`, 'order')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
+          const orderRef = escapeHtml(payload.new.order_number || payload.new.id.slice(0,8))
+          showToast(`New order! #${orderRef}`, 'order')
+          addNotification(`New order received #${orderRef}`, 'order')
           loadOrders()
         })
         .subscribe()
@@ -1561,8 +1751,10 @@
       supabaseClient
         .channel('admin-payments')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, payload => {
+          const status = escapeHtml(payload.new.status || '')
+          const orderId = escapeHtml(payload.new.order_id?.slice(0,8) || '')
           showToast('Payment updated', 'payment')
-          addNotification(`Payment ${payload.new.status} for order #${payload.new.order_id?.slice(0,8)}`, 'payment')
+          addNotification(`Payment ${status} for order #${orderId}`, 'payment')
           loadPayments()
         })
         .subscribe()
@@ -1570,8 +1762,9 @@
       supabaseClient
         .channel('admin-reviews')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reviews' }, payload => {
+          const rating = parseInt(payload.new.rating) || 0
           showToast('New review received!', 'review')
-          addNotification(`New ${payload.new.rating}★ review received`, 'review')
+          addNotification(`New ${rating}★ review received`, 'review')
           loadReviews()
         })
         .subscribe()
@@ -1579,7 +1772,8 @@
       supabaseClient
         .channel('admin-outlets')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'outlets' }, payload => {
-          showToast(`Store status: ${payload.new.status}`, 'outlet')
+          const status = escapeHtml(payload.new.status || '')
+          showToast(`Store status: ${status}`, 'outlet')
           loadOutlets()
         })
         .subscribe()
