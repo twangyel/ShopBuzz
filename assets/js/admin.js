@@ -1154,3 +1154,11 @@ window.toggleReviewApproved = async function(id, approved) {
         setTimeout(() => toast.remove(), 300)
       }, 4000)
     }
+    // ========== WINDOW EXPORTS ==========
+    // Required because this file is loaded as type="module" — plain function
+    // declarations are module-scoped and invisible to HTML onclick="..." attributes.
+    window.logout = logout
+    window.toggleNotifDropdown = toggleNotifDropdown
+    window.clearAllNotifications = clearAllNotifications
+    window.markNotifRead = markNotifRead
+    window.toggleOutletStatus = toggleOutletStatus
