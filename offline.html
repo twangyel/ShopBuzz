@@ -3,19 +3,114 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Offline — Your Cafe</title>
+  <title>You're Offline | Buzz Cafe</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>body{font-family:'Inter',sans-serif;}</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: { 50: '#FDFCF8', 100: '#FAF7F0', 200: '#F5F0E4', 300: '#EDE5D3', 400: '#E0D4BC', 500: '#C4A77D', 600: '#A68B5B', 700: '#8B7348', 800: '#6B5A3A', 900: '#4A3D28' },
+            espresso: { 50: '#F5F0EB', 100: '#E8DDD3', 200: '#D4C4B0', 300: '#BFA68A', 400: '#A88B6A', 500: '#8B6F4E', 600: '#6B5238', 700: '#4A3826', 800: '#332618', 900: '#1A130C' }
+          },
+          fontFamily: { display: ['"Playfair Display"', 'serif'], body: ['"Inter"', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    .pulse { animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  </style>
+<base target="_blank">
 </head>
-<body class="bg-cream-50 min-h-screen flex items-center justify-center p-4">
-  <div class="text-center max-w-md">
-    <div class="w-20 h-20 bg-cream-200 rounded-full flex items-center justify-center text-3xl mx-auto mb-6">📡</div>
-    <h1 class="text-2xl font-bold text-espresso-900 mb-2">You're Offline</h1>
-    <p class="text-cream-600 mb-6">Please check your internet connection and try again.</p>
-    <button onclick="location.reload()" class="bg-espresso-800 text-white px-6 py-3 rounded-lg font-medium hover:bg-espresso-700 transition">
-      Try Again
-    </button>
-  </div>
+<body class="bg-cream-50 text-espresso-900 antialiased min-h-screen flex flex-col">
+
+  <!-- Simple Header -->
+  <nav class="bg-white/95 backdrop-blur-md shadow-sm border-b border-cream-200">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-center">
+      <a href="/index.html" class="flex items-center gap-3">
+        <img src="/image/logo.svg" alt="Buzz Cafe" class="h-10 w-auto" onerror="this.style.display='none'">
+        <span class="font-display text-2xl text-espresso-900">Buzz Cafe</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Offline Content -->
+  <main class="flex-1 flex items-center justify-center px-6 py-20">
+    <div class="text-center max-w-md mx-auto">
+      <!-- Offline Icon -->
+      <div class="w-20 h-20 mx-auto mb-8 rounded-full bg-cream-200 flex items-center justify-center">
+        <svg class="w-10 h-10 text-cream-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414"/>
+        </svg>
+      </div>
+
+      <h1 class="font-display text-4xl md:text-5xl text-espresso-900 mb-4">You're Offline</h1>
+      <p class="text-cream-600 text-lg mb-2 leading-relaxed">
+        It looks like you've lost your connection.
+      </p>
+      <p class="text-cream-500 text-sm mb-10">
+        Don't worry — some pages you've visited before are still available.
+      </p>
+
+      <!-- Cached Pages -->
+      <div class="bg-white rounded-2xl border border-cream-200 p-6 shadow-sm mb-8">
+        <p class="text-espresso-800 font-semibold text-sm mb-4">Available Offline:</p>
+        <div class="space-y-2">
+          <a href="/index.html" class="flex items-center gap-3 p-3 rounded-xl bg-cream-50 hover:bg-cream-100 transition text-espresso-700 text-sm font-medium">
+            <svg class="w-5 h-5 text-cream-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            Home Page
+          </a>
+          <a href="/menu.html" class="flex items-center gap-3 p-3 rounded-xl bg-cream-50 hover:bg-cream-100 transition text-espresso-700 text-sm font-medium">
+            <svg class="w-5 h-5 text-cream-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+            Menu
+          </a>
+          <a href="/order.html" class="flex items-center gap-3 p-3 rounded-xl bg-cream-50 hover:bg-cream-100 transition text-espresso-700 text-sm font-medium">
+            <svg class="w-5 h-5 text-cream-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+            Order Online
+          </a>
+        </div>
+      </div>
+
+      <!-- Retry Button -->
+      <button onclick="window.location.reload()" class="inline-flex items-center gap-2 bg-orange-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-orange-700 transition shadow-md text-sm tracking-wide">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        Try Again
+      </button>
+
+      <!-- Connection Status -->
+      <p id="status" class="text-cream-500 text-xs mt-6 pulse">Checking connection...</p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-espresso-900 text-cream-400 py-6 text-center text-sm">
+    <p>© 2026 Buzz Cafe. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Auto-reload when connection comes back
+    function checkOnline() {
+      const status = document.getElementById('status');
+      if (navigator.onLine) {
+        status.textContent = 'Connection restored! Reloading...';
+        status.classList.remove('pulse');
+        status.classList.add('text-green-600');
+        setTimeout(() => window.location.reload(), 1500);
+      }
+    }
+
+    window.addEventListener('online', checkOnline);
+    window.addEventListener('offline', () => {
+      document.getElementById('status').textContent = 'Waiting for connection...';
+    });
+
+    // Initial check
+    if (navigator.onLine) checkOnline();
+  </script>
 </body>
 </html>

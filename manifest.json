@@ -1,79 +1,90 @@
 {
-  "name": "Your Cafe — Artisan Coffee & Kitchen",
-  "short_name": "Your Cafe",
-  "description": "Order fresh coffee, smoothies, pizza, burgers and custom cakes. Track your order in real-time.",
-  "start_url": "/",
+  "name": "Buzz Cafe and Bakery",
+  "short_name": "Buzz Cafe",
+  "description": "Handcrafted coffee, fresh smoothies, custom cakes & warm meals. Order online or find our two locations in Phuentsholing.",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#FDFCF8",
   "theme_color": "#C4A77D",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "scope": "/",
+  "id": "/index.html",
   "lang": "en",
+  "dir": "ltr",
+  "categories": [
+    "food",
+    "restaurant",
+    "coffee",
+    "shopping"
+  ],
   "icons": [
     {
-      "src": "/logo-72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/logo-96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/logo-128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/logo-144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/logo-152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/logo-192.png",
+      "src": "/image/logo-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/logo-384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/logo-512.png",
+      "src": "/image/logo-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  "categories": ["food", "shopping", "lifestyle"],
+  "screenshots": [
+    {
+      "src": "/image/screenshot-wide.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Buzz Cafe Homepage"
+    },
+    {
+      "src": "/image/screenshot-narrow.jpg",
+      "sizes": "750x1334",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Buzz Cafe Mobile View"
+    }
+  ],
   "shortcuts": [
     {
-      "name": "Order Now",
+      "name": "Order Online",
       "short_name": "Order",
-      "description": "Place a new order",
+      "description": "Place an order for pickup or delivery",
       "url": "/order.html",
-      "icons": [{ "src": "/logo-96.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/image/shortcut-order.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "View Menu",
+      "short_name": "Menu",
+      "description": "Browse our full menu",
+      "url": "/menu.html",
+      "icons": [
+        {
+          "src": "/image/shortcut-menu.png",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "Track Order",
       "short_name": "Track",
-      "description": "Check your order status",
+      "description": "Track your current order status",
       "url": "/track.html",
-      "icons": [{ "src": "/logo-96.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/image/shortcut-track.png",
+          "sizes": "96x96"
+        }
+      ]
     }
-  ]
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
 }
