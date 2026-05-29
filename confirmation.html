@@ -3,297 +3,484 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Order Confirmed · Bean & Bond</title>
+  <title>Order Confirmed · Your Cafe</title>
 
-  <!-- Tailwind CSS + Google Fonts -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root{
+      --dom-blue:#0078AC;
+      --dom-blue-dark:#005a82;
+      --dom-blue-light:#E6F2F8;
+      --dom-red:#D2112C;
+      --dom-red-dark:#A50D22;
+      --dom-red-light:#FDE8EB;
+      --dom-orange:#FF6B00;
+      --dom-orange-dark:#E55A00;
+      --dom-dark:#1A1A1A;
+      --dom-gray:#6B7280;
+      --dom-gray-light:#F3F4F6;
+      --dom-line:#E5E7EB;
+      --dom-white:#FFFFFF;
+      --radius:12px;
+      --radius-lg:16px;
+      --radius-xl:24px;
     }
 
-    body {
-      font-family: 'Inter', sans-serif;
+    *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    body{
+      font-family:'Inter', system-ui, -apple-system, sans-serif;
+      background:var(--dom-gray-light);
+      color:var(--dom-dark);
+      line-height:1.4;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+      min-height:100vh;
+      display:flex; align-items:center; justify-content:center;
+      padding:16px;
     }
 
-    /* smooth fade-up animation */
-    .fade-up {
-      animation: fadeUp 0.55s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+    /* Success Checkmark Animation */
+    @keyframes checkStroke{
+      0%{ stroke-dashoffset:48; }
+      100%{ stroke-dashoffset:0; }
+    }
+    @keyframes checkScale{
+      0%,50%{ transform:scale(0); opacity:0; }
+      70%{ transform:scale(1.15); opacity:1; }
+      100%{ transform:scale(1); opacity:1; }
+    }
+    @keyframes checkRing{
+      0%{ transform:scale(0.8); opacity:0; }
+      100%{ transform:scale(1); opacity:1; }
     }
 
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .check-wrap{
+      width:48px; height:48px;
+      position:absolute;
+      bottom:-8px; right:-8px;
+    }
+    .check-ring{
+      position:absolute; inset:0;
+      border-radius:50%;
+      background:var(--dom-blue-light);
+      border:2.5px solid var(--dom-blue);
+      animation:checkRing 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.4s both;
+    }
+    .check-icon{
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      animation:checkScale 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.6s both;
+    }
+    .check-icon svg{
+      width:20px; height:20px;
+      color:var(--dom-blue);
+    }
+    .check-icon svg path{
+      stroke-dasharray:48;
+      stroke-dashoffset:48;
+      animation:checkStroke 0.4s ease 0.9s forwards;
     }
 
-    /* modern pulse for status */
-    @keyframes modernPulse {
-      0% { opacity: 1; transform: scale(1); background-color: #10b981; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-      70% { opacity: 0.9; transform: scale(1.1); background-color: #34d399; box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-      100% { opacity: 1; transform: scale(1); background-color: #10b981; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    /* Staggered fade-up */
+    @keyframes fadeUp{
+      from{ opacity:0; transform:translateY(12px); }
+      to{ opacity:1; transform:translateY(0); }
     }
-    .pulse-modern {
-      animation: modernPulse 1.6s infinite ease;
+    .fade-up{ animation:fadeUp 0.5s ease both; }
+    .delay-1{ animation-delay:0.1s; }
+    .delay-2{ animation-delay:0.2s; }
+    .delay-3{ animation-delay:0.3s; }
+    .delay-4{ animation-delay:0.4s; }
+    .delay-5{ animation-delay:0.5s; }
+
+    /* Pulse dot */
+    @keyframes pulseDot{
+      0%,100%{ box-shadow:0 0 0 3px rgba(0,120,172,0.2); }
+      50%{ box-shadow:0 0 0 8px rgba(0,120,172,0.05); }
+    }
+    .pulse-dot{
+      width:10px; height:10px; border-radius:50%; background:var(--dom-blue);
+      animation:pulseDot 2s ease-in-out infinite;
     }
 
-    /* custom focus ring */
-    .focus-ring-custom:focus {
-      outline: none;
-      ring: 2px solid #2c7a7b;
-      ring-offset: 2px;
+    /* Card */
+    .card{
+      background:var(--dom-white);
+      border:2px solid var(--dom-line);
+      border-radius:var(--radius-xl);
+      width:100%; max-width:420px;
+      overflow:hidden;
     }
-    
-    /* subtle floating shadow on hover for buttons */
-    .btn-lift {
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    /* Logo Space — Large Circle with overlapping checkmark */
+    .logo-wrap{
+      position:relative;
+      width:fit-content;
+      margin:0 auto;
     }
-    .btn-lift:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 20px -12px rgba(0, 0, 0, 0.2);
+    .logo-space{
+      width:100px; height:100px;
+      border-radius:50%;
+      background:var(--dom-dark);
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 8px 32px rgba(0,0,0,0.12);
+      overflow:hidden;
     }
-    .btn-lift:active {
-      transform: translateY(1px);
+    .logo-space img{
+      width:85%; height:85%;
+      object-fit:contain;
+    }
+
+    /* Typography */
+    .heading{
+      font-weight:800; font-size:22px;
+      color:var(--dom-dark); letter-spacing:-0.02em;
+      text-align:center;
+    }
+    .subtext{
+      font-size:14px; color:var(--dom-gray);
+      font-weight:500; text-align:center;
+      line-height:1.5;
+    }
+
+    /* Order ID */
+    .order-box{
+      background:var(--dom-gray-light);
+      border:2px solid var(--dom-line);
+      border-radius:var(--radius-lg);
+      padding:20px;
+      text-align:center;
+      position:relative;
+    }
+    .order-label{
+      font-size:11px; font-weight:700;
+      text-transform:uppercase; letter-spacing:0.08em;
+      color:var(--dom-gray); margin-bottom:8px;
+    }
+    .order-id{
+      font-family:'SF Mono', Monaco, monospace;
+      font-weight:800; font-size:32px;
+      color:var(--dom-orange); letter-spacing:-0.02em;
+    }
+    .copy-btn{
+      position:absolute; right:12px; top:50%; transform:translateY(-50%);
+      width:36px; height:36px;
+      border-radius:var(--radius);
+      border:2px solid var(--dom-line);
+      background:var(--dom-white);
+      color:var(--dom-blue);
+      cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:all 0.2s;
+    }
+    .copy-btn:hover{ background:var(--dom-blue-light); border-color:var(--dom-blue); }
+    .copy-btn:active{ transform:translateY(-50%) scale(0.93); }
+    .copy-btn.copied{
+      background:var(--dom-blue); color:#fff; border-color:var(--dom-blue);
+    }
+
+    /* Status Row */
+    .status-row{
+      display:flex; align-items:center; justify-content:space-between;
+      flex-wrap:wrap; gap:8px;
+    }
+    .status-badge{
+      display:flex; align-items:center; gap:8px;
+      background:var(--dom-blue-light);
+      border:2px solid rgba(0,120,172,0.15);
+      padding:8px 16px; border-radius:999px;
+    }
+    .status-text{
+      font-size:14px; font-weight:700; color:var(--dom-dark);
+    }
+    .time-badge{
+      display:flex; align-items:center; gap:6px;
+      background:var(--dom-white);
+      border:2px solid var(--dom-line);
+      padding:8px 14px; border-radius:999px;
+      font-size:13px; font-weight:600; color:var(--dom-gray);
+    }
+
+    /* Info Grid */
+    .info-grid{
+      display:grid; grid-template-columns:1fr 1fr; gap:12px;
+    }
+    .info-cell{
+      background:var(--dom-gray-light);
+      border:2px solid var(--dom-line);
+      border-radius:var(--radius);
+      padding:14px;
+    }
+    .info-label{
+      font-size:11px; font-weight:700;
+      text-transform:uppercase; letter-spacing:0.06em;
+      color:var(--dom-gray); margin-bottom:6px;
+      display:flex; align-items:center; gap:6px;
+    }
+    .info-label svg{ width:14px; height:14px; color:var(--dom-blue); }
+    .info-value{
+      font-size:15px; font-weight:700; color:var(--dom-dark);
+    }
+
+    /* Buttons */
+    .btn-primary{
+      display:block; width:100%;
+      padding:14px; border:none; border-radius:var(--radius);
+      background:var(--dom-red); color:#fff;
+      font-family:inherit; font-weight:700; font-size:15px;
+      text-align:center; text-decoration:none;
+      cursor:pointer; transition:all 0.2s;
+    }
+    .btn-primary:hover{ background:var(--dom-red-dark); }
+    .btn-primary:active{ transform:scale(0.985); }
+
+    .btn-secondary{
+      display:block; width:100%;
+      padding:12px; border:2px solid var(--dom-line); border-radius:var(--radius);
+      background:var(--dom-white); color:var(--dom-dark);
+      font-family:inherit; font-weight:700; font-size:14px;
+      text-align:center; text-decoration:none;
+      cursor:pointer; transition:all 0.2s;
+    }
+    .btn-secondary:hover{ background:var(--dom-gray-light); border-color:var(--dom-gray); }
+
+    .btn-ghost{
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:13px; font-weight:600; color:var(--dom-gray);
+      text-decoration:none; transition:color 0.2s;
+    }
+    .btn-ghost:hover{ color:var(--dom-blue); }
+
+    /* Toast */
+    #toast{
+      position:fixed; bottom:24px; left:50%;
+      transform:translateX(-50%) translateY(200%);
+      background:var(--dom-dark); color:#fff;
+      padding:12px 20px; border-radius:var(--radius-lg);
+      font-size:14px; font-weight:600;
+      z-index:9999;
+      display:flex; align-items:center; gap:8px;
+      box-shadow:0 20px 44px -14px rgba(0,0,0,0.35);
+      transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    #toast.show{ transform:translateX(-50%) translateY(0); }
+
+    /* Spacing utilities */
+    .p-5{ padding:28px 20px 20px; }
+    .space-y-2 > * + *{ margin-top:8px; }
+    .space-y-3 > * + *{ margin-top:12px; }
+    .space-y-4 > * + *{ margin-top:16px; }
+    .text-center{ text-align:center; }
+
+    @media(min-width:640px){
+      body{ padding:24px; }
+      .heading{ font-size:24px; }
+      .logo-space{ width:110px; height:110px; }
+      .order-id{ font-size:36px; }
+    }
+
+    @media(prefers-reduced-motion:reduce){
+      *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
     }
   </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-[#EFF6F5] via-[#E4ECEF] to-[#D9E2E8] flex items-center justify-center px-4 py-8">
+<body>
 
-  <div class="w-full max-w-md fade-up">
+  <div class="card">
     
-    <!-- main card – fresh theme: deep teal / gold accents -->
-    <div class="bg-white rounded-3xl shadow-2xl shadow-teal-900/5 border border-white/60 overflow-hidden transition-all duration-300">
-      
-      <!-- top accent bar – modern teal to warm gold gradient -->
-      <div class="h-1.5 bg-gradient-to-r from-[#1F5E6E] via-[#378F8F] to-[#EBB26A]"></div>
+    <!-- Top accent bar -->
+    <div style="height:4px; background:linear-gradient(90deg, var(--dom-blue) 0%, var(--dom-red) 100%);"></div>
 
-      <!-- main content -->
-      <div class="p-6 sm:p-8">
-        
-        <!-- modern logo area: stylized cup + brand hint -->
-        <div class="flex justify-center mb-5">
-          <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#1F5E6E] to-[#2D828F] flex items-center justify-center shadow-md shadow-teal-500/20">
-            <!-- clean coffee bean + cup combined icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FEF9F0" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 8h1a4 4 0 0 1 0 8h-1" />
-              <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
-              <path d="M8 2v3" />
-              <path d="M12 2v3" />
-              <path d="M16 2v3" />
-            </svg>
+    <div class="p-5 space-y-4">
+
+      <!-- Logo + Overlapping Checkmark -->
+      <div class="fade-up delay-1 text-center">
+        <div class="logo-wrap">
+          <div class="logo-space">
+            <img src="image/logo.svg" alt="Buzz Cafe">
           </div>
-        </div>
-
-        <!-- success badge + heading (modernized) -->
-        <div class="text-center space-y-1.5">
-          <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-50 shadow-sm ring-1 ring-emerald-100 mb-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-emerald-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h1 class="font-extrabold text-3xl tracking-tight text-gray-800">Order confirmed</h1>
-          <p class="text-gray-500 text-sm max-w-[260px] mx-auto">
-            Your order is locked in — we’re brewing perfection.
-          </p>
-        </div>
-
-        <!-- Order card with copy & sleek border -->
-        <div class="mt-6 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 transition-all hover:shadow-md">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div class="text-center sm:text-left">
-              <p class="text-[11px] font-semibold uppercase tracking-wider text-teal-600">Order reference</p>
-              <div class="flex items-center gap-2 justify-center sm:justify-start mt-1">
-                <span id="order-number" class="text-3xl sm:text-4xl font-mono font-bold tracking-wide text-[#1F5E6E]">#----</span>
-                <button id="copy-order-btn" class="p-1.5 rounded-full bg-gray-50 border border-gray-200 hover:bg-teal-50 hover:border-teal-200 transition-all focus:outline-none focus:ring-2 focus:ring-teal-300" aria-label="Copy order number">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-teal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <!-- toast message container (inline) -->
-            <div id="copy-toast" class="text-xs text-teal-800 bg-teal-50 px-3 py-1.5 rounded-full hidden transition-all text-center sm:text-left"></div>
-          </div>
-        </div>
-
-        <!-- dynamic order status + timeline (fresh modern) -->
-        <div class="mt-5 space-y-3">
-          <div class="flex items-center justify-between flex-wrap gap-2">
-            <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full py-1.5 px-4">
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-modern"></span>
-              <span class="text-sm font-semibold text-gray-700">Preparing your order</span>
-            </div>
-            <div class="flex items-center gap-1.5 text-xs text-gray-500 bg-white/80 px-3 py-1.5 rounded-full border border-gray-100">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
+          <!-- Checkmark overlaps bottom-right of logo -->
+          <div class="check-wrap">
+            <div class="check-ring"></div>
+            <div class="check-icon">
+              <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
               </svg>
-              <span id="estimated-time" class="font-medium">~12 min</span>
             </div>
-          </div>
-
-          <!-- placed & ready details with gradient icons -->
-          <div class="grid grid-cols-2 gap-3 bg-gray-50/70 rounded-xl p-3 border border-gray-100">
-            <div class="flex items-start gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-teal-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-              </svg>
-              <div>
-                <p class="text-[11px] uppercase text-gray-400 tracking-wider">Placed at</p>
-                <p id="placed-time" class="font-medium text-gray-700 text-sm">--:-- --</p>
-              </div>
-            </div>
-            <div class="flex items-start gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path d="M12 8v4l3 3M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z"/>
-              </svg>
-              <div>
-                <p class="text-[11px] uppercase text-gray-400 tracking-wider">Est. pickup</p>
-                <p id="ready-time" class="font-medium text-gray-700 text-sm">--:-- --</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Action buttons (fresh, modern with teal primary) -->
-        <div class="mt-7 space-y-3">
-          <a id="track-link" href="track.html" class="btn-lift block w-full text-center bg-[#1F5E6E] hover:bg-[#164c59] transition-all text-white font-semibold py-3.5 rounded-xl shadow-md">
-            Track order
-          </a>
-          
-          <a href="menu.html" class="btn-lift block w-full text-center bg-white border border-gray-300 hover:bg-gray-50 hover:border-teal-200 transition-all text-gray-700 font-medium py-3 rounded-xl">
-            Order more
-          </a>
-          
-          <div class="text-center pt-1">
-            <a href="index.html" class="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-teal-700 transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Back to home
-            </a>
           </div>
         </div>
       </div>
 
-      <!-- footer note (clean & minimal) -->
-      <div class="bg-gray-50/80 border-t border-gray-100 px-6 py-3.5 text-center">
-        <p class="text-xs text-gray-500">Keep this order number handy — just show it at pickup ✨</p>
+      <!-- Heading -->
+      <div class="fade-up delay-2 space-y-2">
+        <h1 class="heading">Order confirmed</h1>
+        <p class="subtext">Your order is locked in — we're preparing it with care.</p>
       </div>
+
+      <!-- Order ID -->
+      <div class="fade-up delay-3">
+        <div class="order-box">
+          <div class="order-label">Order ID</div>
+          <div class="order-id" id="order-id">#----</div>
+          <button class="copy-btn" id="copy-btn" aria-label="Copy order ID">
+            <svg id="copy-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+            <svg id="check-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" style="display:none;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Status & Time -->
+      <div class="fade-up delay-4">
+        <div class="status-row">
+          <div class="status-badge">
+            <div class="pulse-dot"></div>
+            <span class="status-text">Preparing your order</span>
+          </div>
+          <div class="time-badge">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span id="estimated-time">~12 min</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Grid -->
+      <div class="fade-up delay-4">
+        <div class="info-grid">
+          <div class="info-cell">
+            <div class="info-label">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              Placed at
+            </div>
+            <div class="info-value" id="placed-time">--:--</div>
+          </div>
+          <div class="info-cell">
+            <div class="info-label">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3M12 22a10 10 0 100-20 10 10 0 000 20z"/>
+              </svg>
+              Est. ready
+            </div>
+            <div class="info-value" id="ready-time">--:--</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="fade-up delay-5 space-y-3">
+        <a href="track.html" id="track-link" class="btn-primary">
+          Track Order
+        </a>
+        <a href="menu.html" class="btn-secondary">
+          Order More
+        </a>
+        <div class="text-center">
+          <a href="index.html" class="btn-ghost">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Back to Home
+          </a>
+        </div>
+      </div>
+
     </div>
 
-    <!-- subtle support line -->
-    <div class="text-center mt-5 text-xs text-gray-400">
-      Questions? <a href="#" class="text-teal-600 underline-offset-2 hover:underline font-medium">support@beanandbond.com</a>
+    <!-- Footer Note -->
+    <div style="background:var(--dom-gray-light); border-top:2px solid var(--dom-line); padding:14px 20px; text-align:center;">
+      <p style="font-size:12px; color:var(--dom-gray); font-weight:500;">
+        Keep this order ID handy — just show it at pickup
+      </p>
     </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" role="status" aria-live="polite">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+    </svg>
+    <span id="toast-msg">Copied!</span>
   </div>
 
   <script>
     (function() {
-      // ------ extract order number from URL or generate professional mock ----
       const urlParams = new URLSearchParams(window.location.search);
       let orderParam = urlParams.get('order');
+      let finalOrderId = (orderParam && orderParam.trim() !== '') ? orderParam : 'ORD' + Math.floor(Math.random() * 9000 + 1000);
       
-      let finalOrderNumber = (orderParam && orderParam.trim() !== "") ? orderParam : "BOND" + Math.floor(Math.random() * 9000 + 1000);
-      
-      // display order number
-      const orderSpan = document.getElementById('order-number');
-      if (orderSpan) {
-        orderSpan.textContent = `#${finalOrderNumber}`;
+      const orderEl = document.getElementById('order-id');
+      if (orderEl) orderEl.textContent = '#' + finalOrderId;
+
+      const trackLink = document.getElementById('track-link');
+      if (trackLink) trackLink.href = 'track.html?order=' + encodeURIComponent(finalOrderId);
+
+      const now = new Date();
+      const placedEl = document.getElementById('placed-time');
+      if (placedEl) {
+        placedEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       }
 
-      // update track link with order param
-      const trackLink = document.getElementById('track-link');
-      if (trackLink) {
-        trackLink.href = `track.html?order=${encodeURIComponent(finalOrderNumber)}`;
-      }
-      
-      // ------ dynamic times (placed & ready) ------
-      const now = new Date();
-      const placedElem = document.getElementById('placed-time');
-      if (placedElem) {
-        const dateOptions = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-        placedElem.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        // adding a bit more style: also show date for professional touch
-        const dayPart = now.toLocaleDateString([], { month: 'short', day: 'numeric' });
-        placedElem.textContent = `${dayPart} · ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-      }
-      
-      // estimated ready time (9-15 mins dynamic)
-      const minsToAdd = Math.floor(Math.random() * (14 - 8 + 1) + 8); // 8-14 min
+      const minsToAdd = Math.floor(Math.random() * (15 - 8 + 1) + 8);
       const readyDate = new Date(now.getTime() + minsToAdd * 60000);
       const readyFormatted = readyDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const readyTimeElem = document.getElementById('ready-time');
-      if (readyTimeElem) {
-        readyTimeElem.textContent = readyFormatted;
+      
+      const readyEl = document.getElementById('ready-time');
+      if (readyEl) readyEl.textContent = readyFormatted;
+
+      const estEl = document.getElementById('estimated-time');
+      if (estEl) estEl.textContent = '~' + minsToAdd + ' min';
+
+      const copyBtn = document.getElementById('copy-btn');
+      const copyIcon = document.getElementById('copy-icon');
+      const checkIcon = document.getElementById('check-icon');
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-msg');
+
+      function showToast(message) {
+        toastMsg.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
       }
-      
-      const estSpan = document.getElementById('estimated-time');
-      if (estSpan) {
-        estSpan.textContent = `~${minsToAdd} min`;
-      }
-      
-      // ------ COPY ORDER NUMBER with modern feedback toast ------
-      const copyBtn = document.getElementById('copy-order-btn');
-      const toastEl = document.getElementById('copy-toast');
-      
-      function showToastMessage(msg, isError = false) {
-        if (!toastEl) return;
-        toastEl.textContent = msg;
-        toastEl.classList.remove('hidden', 'bg-teal-50', 'bg-rose-50', 'text-teal-800', 'text-rose-600');
-        if (isError) {
-          toastEl.classList.add('bg-rose-50', 'text-rose-600');
-        } else {
-          toastEl.classList.add('bg-teal-50', 'text-teal-800');
-        }
-        toastEl.classList.remove('hidden');
-        setTimeout(() => {
-          toastEl.classList.add('hidden');
-        }, 2000);
-      }
-      
+
       if (copyBtn) {
         copyBtn.addEventListener('click', async () => {
-          const orderFull = `#${finalOrderNumber}`;
+          const orderFull = '#' + finalOrderId;
           try {
             await navigator.clipboard.writeText(orderFull);
-            showToastMessage(`✓ Copied ${orderFull}`, false);
           } catch (err) {
-            // fallback for older browsers
-            const textArea = document.createElement('textarea');
-            textArea.value = orderFull;
-            document.body.appendChild(textArea);
-            textArea.select();
+            const ta = document.createElement('textarea');
+            ta.value = orderFull;
+            document.body.appendChild(ta);
+            ta.select();
             document.execCommand('copy');
-            document.body.removeChild(textArea);
-            showToastMessage(`✓ Copied ${orderFull}`, false);
+            document.body.removeChild(ta);
           }
+          
+          copyBtn.classList.add('copied');
+          copyIcon.style.display = 'none';
+          checkIcon.style.display = 'block';
+          showToast('Copied ' + orderFull);
+          
+          setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyIcon.style.display = 'block';
+            checkIcon.style.display = 'none';
+          }, 2000);
         });
       }
-      
-      // subtle console reassurance
-      console.log(`[Order confirmed] ${finalOrderNumber} · ready around ${readyFormatted}`);
-      
-      // optional: make toast responsive alignment cleaner
-      const adjustToastResponsive = () => {
-        if (window.innerWidth < 640 && toastEl) {
-          toastEl.classList.add('text-center', 'justify-center');
-        } else {
-          toastEl.classList.remove('text-center');
-        }
-      };
-      adjustToastResponsive();
-      window.addEventListener('resize', adjustToastResponsive);
+
+      console.log('[Order confirmed] ' + finalOrderId + ' · ready around ' + readyFormatted);
     })();
   </script>
 </body>

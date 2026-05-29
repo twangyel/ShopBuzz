@@ -4,123 +4,371 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Track Order — Your Cafe</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <style>
-    body { font-family: 'Inter', system-ui, sans-serif; }
-    .font-display { font-family: 'Playfair Display', Georgia, serif; }
+    :root{
+      --dom-blue:#0078AC;
+      --dom-blue-dark:#005a82;
+      --dom-blue-light:#E6F2F8;
+      --dom-red:#D2112C;
+      --dom-red-dark:#A50D22;
+      --dom-red-light:#FDE8EB;
+      --dom-orange:#FF6B00;
+      --dom-dark:#1A1A1A;
+      --dom-gray:#6B7280;
+      --dom-gray-light:#F3F4F6;
+      --dom-line:#E5E7EB;
+      --dom-white:#FFFFFF;
+      --radius:12px;
+      --radius-lg:16px;
+      --radius-xl:24px;
+    }
+
+    *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    body{
+      font-family:'Inter', system-ui, -apple-system, sans-serif;
+      background:var(--dom-gray-light);
+      color:var(--dom-dark);
+      line-height:1.4;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+      min-height:100vh;
+    }
+
+    /* Header */
+    .topbar{ position:sticky; top:0; z-index:50; }
+    #main-header{
+      background:var(--dom-blue);
+      border-bottom:1px solid rgba(255,255,255,.15);
+    }
+    .nav-inner{
+      width:100%; max-width:800px; margin:0 auto;
+      padding:0 16px; display:flex; align-items:center;
+      justify-content:space-between; height:52px;
+    }
+    .brand-name{ font-weight:800; font-size:16px; color:#fff; line-height:1.1; letter-spacing:-.02em; }
+    .brand-sub{ font-size:10px; color:rgba(255,255,255,.75); font-weight:500; line-height:1.2; margin-top:1px; }
+    .icon-btn{
+      width:36px; height:36px; display:flex; align-items:center; justify-content:center;
+      border-radius:10px; color:#fff; background:rgba(255,255,255,.12);
+      border:none; cursor:pointer; transition:all .2s; text-decoration:none;
+    }
+    .icon-btn:hover{ background:rgba(255,255,255,.22); }
+    .icon-btn:active{ transform:scale(.93); }
+
+    /* Main */
+    main{ width:100%; max-width:800px; margin:0 auto; padding:24px 16px 120px; }
+
+    /* Search Section */
+    .search-section{ text-align:center; margin-bottom:32px; }
+    .search-heading{ font-weight:800; font-size:22px; color:var(--dom-dark); letter-spacing:-.02em; margin-bottom:6px; }
+    .search-sub{ font-size:14px; color:var(--dom-gray); font-weight:500; margin-bottom:20px; }
+    .search-box{
+      display:flex; gap:10px; max-width:400px; margin:0 auto;
+      position:relative;
+    }
+
+    /* Field with validation */
+    .field-group{ flex:1; position:relative; }
+    .field{
+      width:100%; padding:12px 14px; border:2px solid var(--dom-line); border-radius:var(--radius);
+      background:var(--dom-white); font-family:inherit; font-size:15px; color:var(--dom-dark);
+      font-weight:600; text-align:center; letter-spacing:0.05em; text-transform:uppercase;
+      transition:all .2s;
+    }
+    .field::placeholder{ color:var(--dom-gray); font-weight:400; text-transform:none; letter-spacing:normal; }
+    .field:focus{ outline:none; border-color:var(--dom-blue); box-shadow:0 0 0 3px rgba(0,120,172,.12); }
+    .field.error{ border-color:var(--dom-red); background:var(--dom-red-light); }
+    .field.error:focus{ box-shadow:0 0 0 3px rgba(210,17,44,.12); }
+    .field.shake{ animation:shake 0.4s ease; }
+
+    @keyframes shake{
+      0%,100%{ transform:translateX(0); }
+      20%{ transform:translateX(-6px); }
+      40%{ transform:translateX(6px); }
+      60%{ transform:translateX(-4px); }
+      80%{ transform:translateX(4px); }
+    }
+
+    .field-error{
+      position:absolute; left:0; right:0; top:100%;
+      margin-top:6px;
+      font-size:12px; font-weight:600; color:var(--dom-red);
+      display:flex; align-items:center; justify-content:center; gap:4px;
+      opacity:0; transform:translateY(-4px);
+      transition:all 0.2s ease;
+      pointer-events:none;
+    }
+    .field-error.show{ opacity:1; transform:translateY(0); }
+
+    .btn-primary{
+      padding:12px 20px; border:none; border-radius:var(--radius);
+      background:var(--dom-red); color:#fff;
+      font-family:inherit; font-weight:700; font-size:14px;
+      cursor:pointer; transition:all .2s; white-space:nowrap;
+    }
+    .btn-primary:hover{ background:var(--dom-red-dark); }
+    .btn-primary:active{ transform:scale(.985); }
+
+    /* Cards */
+    .card{
+      background:var(--dom-white); border:2px solid var(--dom-line); border-radius:var(--radius-lg);
+      overflow:hidden; margin-bottom:16px;
+    }
+    .card-section{ padding:20px; }
+    .card-section + .card-section{ border-top:2px solid var(--dom-line); }
+
+    /* Status Badge */
+    .status-badge{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 14px; border-radius:999px;
+      font-size:12px; font-weight:700; color:#fff;
+      text-transform:capitalize;
+    }
+    .status-dot{ width:8px; height:8px; border-radius:50%; background:#fff; }
+
+    /* Progress Steps */
+    .progress-wrap{ position:relative; padding:0 10px; }
+    .progress-line-bg{
+      position:absolute; top:14px; left:24px; right:24px; height:3px;
+      background:var(--dom-line); border-radius:2px;
+    }
+    .progress-line-fill{
+      position:absolute; top:14px; left:24px; height:3px;
+      background:var(--dom-blue); border-radius:2px;
+      transition:width 0.6s ease;
+    }
+    .steps-row{
+      display:flex; justify-content:space-between; position:relative; z-index:1;
+    }
+    .step{
+      display:flex; flex-direction:column; align-items:center; gap:8px;
+      flex:1;
+    }
+    .step-circle{
+      width:32px; height:32px; border-radius:50%;
+      border:3px solid var(--dom-line); background:var(--dom-white);
+      display:flex; align-items:center; justify-content:center;
+      transition:all 0.4s ease;
+    }
+    .step-circle svg{ width:14px; height:14px; display:none; }
+    .step-circle .step-inner{ width:10px; height:10px; border-radius:50%; background:transparent; }
     
-    .step-dot { transition: all 0.4s ease; }
-    .step-dot.active .dot-circle { background: #C4A77D; border-color: #C4A77D; }
-    .step-dot.active .dot-label { color: #4A3D28; font-weight: 600; }
-    .step-dot.completed .dot-circle { background: #4A3D28; border-color: #4A3D28; }
-    .step-line { transition: width 0.6s ease; }
+    .step.completed .step-circle{
+      border-color:var(--dom-blue); background:var(--dom-blue);
+    }
+    .step.completed .step-circle svg{ display:block; color:#fff; }
+    .step.completed .step-circle .step-inner{ display:none; }
+    
+    .step.active .step-circle{
+      border-color:var(--dom-blue); background:var(--dom-blue-light);
+      box-shadow:0 0 0 4px rgba(0,120,172,.15);
+    }
+    .step.active .step-circle .step-inner{ background:var(--dom-blue); }
+    
+    .step-label{
+      font-size:11px; font-weight:600; color:var(--dom-gray);
+      text-align:center; transition:all 0.3s;
+    }
+    .step.completed .step-label{ color:var(--dom-blue); font-weight:700; }
+    .step.active .step-label{ color:var(--dom-dark); font-weight:700; }
+
+    /* Order Items */
+    .item-row{
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 0; border-bottom:1px solid var(--dom-line);
+    }
+    .item-row:last-child{ border-bottom:none; }
+    .item-name{ font-size:14px; font-weight:500; color:var(--dom-dark); }
+    .item-qty{ font-size:12px; color:var(--dom-gray); font-weight:600; margin-right:6px; }
+    .item-price{ font-size:14px; font-weight:700; color:var(--dom-dark); }
+
+    .total-row{
+      display:flex; justify-content:space-between; align-items:center;
+      padding-top:16px; border-top:2px solid var(--dom-line);
+    }
+    .total-label{ font-size:14px; font-weight:600; color:var(--dom-gray); }
+    .total-value{ font-size:20px; font-weight:800; color:var(--dom-dark); letter-spacing:-.02em; }
+
+    /* Refresh Button */
+    .btn-secondary{
+      width:100%; padding:12px; border:2px solid var(--dom-line); border-radius:var(--radius);
+      background:var(--dom-white); color:var(--dom-dark);
+      font-family:inherit; font-weight:700; font-size:14px;
+      cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .btn-secondary:hover{ background:var(--dom-gray-light); border-color:var(--dom-gray); }
+    .btn-secondary:active{ transform:scale(.985); }
+
+    /* Empty / Not Found */
+    .empty-state{ text-align:center; padding:48px 20px; }
+    .empty-icon{
+      width:64px; height:64px; border-radius:50%; background:var(--dom-blue-light);
+      display:flex; align-items:center; justify-content:center; margin:0 auto 16px;
+    }
+    .empty-icon svg{ width:28px; height:28px; color:var(--dom-blue); }
+    .empty-title{ font-weight:700; font-size:18px; color:var(--dom-dark); margin-bottom:4px; }
+    .empty-sub{ font-size:14px; color:var(--dom-gray); font-weight:500; }
+
+    /* Animations */
+    @keyframes fadeUp{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:translateY(0); } }
+    .fade-up{ animation:fadeUp 0.4s ease both; }
+    .delay-1{ animation-delay:0.1s; }
+    .delay-2{ animation-delay:0.2s; }
+    .delay-3{ animation-delay:0.3s; }
+
+    @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.5; } }
+    .animate-pulse{ animation:pulse 2s ease-in-out infinite; }
+
+    .hide{ display:none !important; }
+
+    @media(min-width:640px){
+      main{ padding:32px 24px 120px; }
+      .search-heading{ font-size:26px; }
+    }
+
+    @media(prefers-reduced-motion:reduce){
+      *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
+    }
   </style>
 </head>
-<body class="bg-cream-50 text-espresso-900 min-h-screen">
+<body>
 
-  <!-- Nav -->
-  <nav class="bg-white border-b">
-    <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
-      <a href="index.html" class="font-bold text-lg">☕ Your Cafe</a>
-      <a href="index.html" class="text-sm text-cream-600 hover:text-espresso-900">← Home</a>
+  <!-- Header -->
+  <header class="topbar">
+    <div id="main-header">
+      <div class="nav-inner">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div>
+            <div class="brand-name">Track Order</div>
+            <div class="brand-sub">Buzz Cafe</div>
+          </div>
+        </div>
+        <a href="index.html" class="icon-btn" aria-label="Back to home">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </a>
+      </div>
     </div>
-  </nav>
+  </header>
 
-  <main class="max-w-2xl mx-auto px-4 py-8">
+  <main>
     
     <!-- Search -->
-    <div class="text-center mb-8">
-      <h1 class="font-display text-2xl font-bold mb-2">Track Your Order</h1>
-      <p class="text-cream-600 text-sm mb-6">Enter your order number to see live status</p>
+    <div class="search-section">
+      <h1 class="search-heading">Track Your Order</h1>
+      <p class="search-sub">Enter your order ID to see live status</p>
       
-      <div class="flex gap-2 max-w-md mx-auto">
-        <input type="text" id="order-input" placeholder="e.g. CAFE-001" 
-          class="flex-1 border border-cream-300 rounded-lg px-4 py-3 uppercase tracking-wider font-bold text-center focus:ring-2 focus:ring-cream-500 outline-none">
-        <button onclick="trackOrder()" class="bg-espresso-800 text-white px-6 py-3 rounded-lg font-medium hover:bg-espresso-700 transition">Track</button>
+      <div class="search-box">
+        <div class="field-group">
+          <input type="text" id="order-input" placeholder="e.g. BC-01-0004" class="field" aria-describedby="input-error">
+          <div class="field-error" id="input-error" role="alert">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Please enter an order ID</span>
+          </div>
+        </div>
+        <button onclick="trackOrder()" class="btn-primary">Track</button>
       </div>
     </div>
 
     <!-- Result -->
-    <div id="result" class="hidden">
-      
+    <div id="result" class="hide">
+
       <!-- Status Card -->
-      <div class="bg-white rounded-xl border border-cream-200 shadow-sm p-6 mb-6">
-        <div class="flex justify-between items-start mb-4">
+      <div class="card fade-up delay-1">
+        <div class="card-section" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
           <div>
-            <p class="text-xs text-cream-500 uppercase tracking-wide">Order</p>
-            <p id="res-number" class="text-2xl font-bold font-mono">---</p>
+            <p style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--dom-gray); margin-bottom:6px;">Order ID</p>
+            <p id="res-number" style="font-family:'SF Mono', Monaco, monospace; font-size:28px; font-weight:800; color:var(--dom-orange); letter-spacing:-0.02em;">---</p>
+            <p id="res-time" style="font-size:13px; color:var(--dom-gray); font-weight:500; margin-top:4px;">---</p>
           </div>
-          <span id="res-status" class="px-3 py-1 rounded-full text-xs font-bold text-white bg-gray-400">---</span>
+          <span id="res-status" class="status-badge">---</span>
         </div>
-        <p id="res-time" class="text-sm text-cream-500">---</p>
       </div>
 
       <!-- Progress Steps -->
-      <div class="bg-white rounded-xl border border-cream-200 shadow-sm p-6 mb-6">
-        <div class="relative flex justify-between items-start">
-          <!-- Background line -->
-          <div class="absolute top-3 left-0 right-0 h-0.5 bg-cream-200"></div>
-          <!-- Active line -->
-          <div id="progress-line" class="absolute top-3 left-0 h-0.5 bg-cream-500 step-line" style="width: 0%"></div>
-          
-          <div class="step-dot flex flex-col items-center relative z-10" data-step="pending">
-            <div class="dot-circle w-6 h-6 rounded-full border-2 border-cream-300 bg-white flex items-center justify-center mb-2">
-              <div class="w-2 h-2 rounded-full bg-transparent"></div>
+      <div class="card fade-up delay-2">
+        <div class="card-section">
+          <div class="progress-wrap">
+            <div class="progress-line-bg"></div>
+            <div class="progress-line-fill" id="progress-line" style="width:0%"></div>
+            <div class="steps-row">
+              <div class="step" data-step="pending">
+                <div class="step-circle">
+                  <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                  <div class="step-inner"></div>
+                </div>
+                <span class="step-label">Pending</span>
+              </div>
+              <div class="step" data-step="confirmed">
+                <div class="step-circle">
+                  <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                  <div class="step-inner"></div>
+                </div>
+                <span class="step-label">Confirmed</span>
+              </div>
+              <div class="step" data-step="preparing">
+                <div class="step-circle">
+                  <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                  <div class="step-inner"></div>
+                </div>
+                <span class="step-label">Preparing</span>
+              </div>
+              <div class="step" data-step="ready">
+                <div class="step-circle">
+                  <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                  <div class="step-inner"></div>
+                </div>
+                <span class="step-label">Ready</span>
+              </div>
+              <div class="step" data-step="completed">
+                <div class="step-circle">
+                  <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                  <div class="step-inner"></div>
+                </div>
+                <span class="step-label">Completed</span>
+              </div>
             </div>
-            <span class="dot-label text-xs text-cream-500">Pending</span>
-          </div>
-          
-          <div class="step-dot flex flex-col items-center relative z-10" data-step="confirmed">
-            <div class="dot-circle w-6 h-6 rounded-full border-2 border-cream-300 bg-white flex items-center justify-center mb-2">
-              <div class="w-2 h-2 rounded-full bg-transparent"></div>
-            </div>
-            <span class="dot-label text-xs text-cream-500">Confirmed</span>
-          </div>
-          
-          <div class="step-dot flex flex-col items-center relative z-10" data-step="preparing">
-            <div class="dot-circle w-6 h-6 rounded-full border-2 border-cream-300 bg-white flex items-center justify-center mb-2">
-              <div class="w-2 h-2 rounded-full bg-transparent"></div>
-            </div>
-            <span class="dot-label text-xs text-cream-500">Preparing</span>
-          </div>
-          
-          <div class="step-dot flex flex-col items-center relative z-10" data-step="ready">
-            <div class="dot-circle w-6 h-6 rounded-full border-2 border-cream-300 bg-white flex items-center justify-center mb-2">
-              <div class="w-2 h-2 rounded-full bg-transparent"></div>
-            </div>
-            <span class="dot-label text-xs text-cream-500">Ready</span>
-          </div>
-          
-          <div class="step-dot flex flex-col items-center relative z-10" data-step="completed">
-            <div class="dot-circle w-6 h-6 rounded-full border-2 border-cream-300 bg-white flex items-center justify-center mb-2">
-              <div class="w-2 h-2 rounded-full bg-transparent"></div>
-            </div>
-            <span class="dot-label text-xs text-cream-500">Completed</span>
           </div>
         </div>
       </div>
 
       <!-- Order Details -->
-      <div class="bg-white rounded-xl border border-cream-200 shadow-sm p-6">
-        <h3 class="font-bold mb-4">Items</h3>
-        <div id="res-items" class="space-y-2 mb-4"></div>
-        <div class="border-t border-cream-100 pt-4 flex justify-between">
-          <span class="text-cream-600">Total</span>
-          <span id="res-total" class="font-bold text-lg">$0.00</span>
+      <div class="card fade-up delay-3">
+        <div class="card-section">
+          <h3 style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--dom-gray); margin-bottom:12px;">Items</h3>
+          <div id="res-items"></div>
+          <div class="total-row">
+            <span class="total-label">Total</span>
+            <span class="total-value" id="res-total">Nu. 0.00</span>
+          </div>
         </div>
       </div>
 
       <!-- Refresh -->
-      <button onclick="refreshOrder()" class="w-full mt-4 bg-white border border-cream-200 text-espresso-700 py-3 rounded-xl font-medium hover:bg-cream-50 transition">
+      <button onclick="refreshOrder()" class="btn-secondary fade-up delay-3">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="animate-pulse">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
         Refresh Status
       </button>
     </div>
 
     <!-- Not Found -->
-    <div id="not-found" class="hidden text-center py-12">
-      <p class="text-cream-400 text-lg">Order not found</p>
-      <p class="text-sm text-cream-400 mt-1">Check your order number and try again</p>
+    <div id="not-found" class="hide empty-state">
+      <div class="empty-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="empty-title">Order not found</div>
+      <div class="empty-sub">Check your order ID and try again</div>
     </div>
 
   </main>
@@ -133,36 +381,64 @@
 
     const steps = ['pending', 'confirmed', 'preparing', 'ready', 'completed']
     const statusColors = {
-      pending: 'bg-yellow-500',
-      confirmed: 'bg-blue-500',
-      preparing: 'bg-orange-500',
-      ready: 'bg-green-500',
-      completed: 'bg-gray-800',
-      cancelled: 'bg-red-500'
+      pending: 'background:#F59E0B;',
+      confirmed: 'background:var(--dom-blue);',
+      preparing: 'background:var(--dom-orange);',
+      ready: 'background:#10B981;',
+      completed: 'background:var(--dom-dark);',
+      cancelled: 'background:var(--dom-red);'
     }
 
     let currentOrderId = null
 
-    async function trackOrder() {
-      const input = document.getElementById('order-input').value.trim().toUpperCase()
-      if (!input) return
+    function showInputError() {
+      const input = document.getElementById('order-input')
+      const error = document.getElementById('input-error')
+      
+      input.classList.add('error', 'shake')
+      error.classList.add('show')
+      
+      // Remove shake class after animation so it can be retriggered
+      setTimeout(() => input.classList.remove('shake'), 400)
+      
+      input.focus()
+    }
 
-      document.getElementById('result').classList.add('hidden')
-      document.getElementById('not-found').classList.add('hidden')
+    function clearInputError() {
+      const input = document.getElementById('order-input')
+      const error = document.getElementById('input-error')
+      
+      input.classList.remove('error')
+      error.classList.remove('show')
+    }
+
+    async function trackOrder() {
+      const input = document.getElementById('order-input')
+      const value = input.value.trim().toUpperCase()
+      
+      // Clear previous error
+      clearInputError()
+      
+      if (!value) {
+        showInputError()
+        return
+      }
+
+      document.getElementById('result').classList.add('hide')
+      document.getElementById('not-found').classList.add('hide')
 
       let query = supabaseClient.from('orders').select('*, order_items(*)')
       
-   // ✅ NEW — handles both BC- and CAFE- formats
-if (input.includes('-')) {
-  query = query.eq('order_number', input)
-} else {
-  query = query.eq('id', input)
-}
+      if (value.includes('-')) {
+        query = query.eq('order_number', value)
+      } else {
+        query = query.eq('id', value)
+      }
 
       const { data } = await query.single()
 
       if (!data) {
-        document.getElementById('not-found').classList.remove('hidden')
+        document.getElementById('not-found').classList.remove('hide')
         return
       }
 
@@ -171,15 +447,15 @@ if (input.includes('-')) {
     }
 
     function showResult(order) {
-      document.getElementById('result').classList.remove('hidden')
+      document.getElementById('result').classList.remove('hide')
       
       document.getElementById('res-number').textContent = order.order_number || order.id.slice(0,8).toUpperCase()
-      document.getElementById('res-time').textContent = 'Placed ' + new Date(order.created_at).toLocaleString()
-      document.getElementById('res-total').textContent = '$' + parseFloat(order.total_amount).toFixed(2)
+      document.getElementById('res-time').textContent = 'Placed ' + new Date(order.created_at).toLocaleString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
+      document.getElementById('res-total').textContent = 'Nu. ' + parseFloat(order.total_amount).toFixed(2)
 
       const statusBadge = document.getElementById('res-status')
       statusBadge.textContent = order.status
-      statusBadge.className = `px-3 py-1 rounded-full text-xs font-bold text-white capitalize ${statusColors[order.status] || 'bg-gray-400'}`
+      statusBadge.style = statusColors[order.status] || 'background:var(--dom-gray);'
 
       // Progress bar
       const currentIndex = steps.indexOf(order.status)
@@ -187,29 +463,27 @@ if (input.includes('-')) {
       document.getElementById('progress-line').style.width = progress + '%'
 
       // Step dots
-      document.querySelectorAll('.step-dot').forEach((dot) => {
-        const dotStep = dot.dataset.step
-        const stepIndex = steps.indexOf(dotStep)
-        const circle = dot.querySelector('.dot-circle')
+      document.querySelectorAll('.step').forEach((step) => {
+        const stepName = step.dataset.step
+        const stepIndex = steps.indexOf(stepName)
         
-        dot.classList.remove('active', 'completed')
+        step.classList.remove('active', 'completed')
         
         if (stepIndex < currentIndex) {
-          dot.classList.add('completed')
-          circle.innerHTML = '<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>'
+          step.classList.add('completed')
         } else if (stepIndex === currentIndex) {
-          dot.classList.add('active')
-          circle.innerHTML = '<div class="w-2 h-2 rounded-full bg-white"></div>'
-        } else {
-          circle.innerHTML = '<div class="w-2 h-2 rounded-full bg-transparent"></div>'
+          step.classList.add('active')
         }
       })
 
       // Items
       document.getElementById('res-items').innerHTML = (order.order_items || []).map(item => `
-        <div class="flex justify-between text-sm">
-          <span class="text-espresso-700">${item.quantity}x ${item.item_name}</span>
-          <span class="font-medium">$${(item.price * item.quantity).toFixed(2)}</span>
+        <div class="item-row">
+          <div>
+            <span class="item-qty">${item.quantity}x</span>
+            <span class="item-name">${item.item_name}</span>
+          </div>
+          <span class="item-price">Nu. ${(item.price * item.quantity).toFixed(2)}</span>
         </div>
       `).join('')
     }
@@ -230,6 +504,9 @@ if (input.includes('-')) {
       if (e.key === 'Enter') trackOrder()
     })
 
+    // Clear error on input
+    document.getElementById('order-input').addEventListener('input', clearInputError)
+
     // Check URL params (from confirmation page)
     const urlParams = new URLSearchParams(window.location.search)
     const urlOrder = urlParams.get('order')
@@ -238,7 +515,6 @@ if (input.includes('-')) {
       trackOrder()
     }
 
-    // PWA
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js')
     }
