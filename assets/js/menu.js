@@ -131,41 +131,118 @@ window.clearTableSession = function() {
 /* ---------- AUTH ---------- */
 async function initAuth() {
   if (!supabaseClient) return
+
+  // Check for OAuth redirect session
   const { data: { session } } = await withTimeout(supabaseClient.auth.getSession(), 6000)
+  
   if (session?.user) {
     currentUser = session.user
+    
+    // Try to load existing customer
     await withTimeout(loadCustomer(), 6000)
+    
+    // If no customer row exists yet (new Google user), create one
+    if (!currentCustomer) {
+      const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'User'
+      const { error } = await supabaseClient.from('customers').insert({
+        auth_user_id: currentUser.id,
+        name: name,
+        email: session.user.email,
+        phone: null
+      })
+      if (!error) await loadCustomer()
+    }
   }
   updateAuthUI()
 }
 
 async function loadCustomer() {
+  // Load from customers table (main source of truth)
   const { data } = await supabaseClient
     .from('customers')
     .select('*')
     .eq('auth_user_id', currentUser.id)
     .single()
+
   if (data) {
     currentCustomer = data
     localStorage.setItem('customer_name', data.name || '')
     localStorage.setItem('customer_phone', data.phone || '')
     localStorage.setItem('customer_email', data.email || '')
-    updateAuthUI()
+  } else {
+    // Fallback to auth metadata if no customers row yet
+    const meta = currentUser.user_metadata || {}
+    currentCustomer = {
+      name: meta.name || 'Guest',
+      phone: meta.phone || '',
+      email: currentUser.email || ''
+    }
   }
+  updateAuthUI()
+}
+
+window.signInAnonymous = async function() {
+  const { data, error } = await supabaseClient.auth.signInAnonymously()
+  if (error) {
+    console.error('Anonymous auth error:', error)
+    showToast('Could not start guest session')
+    return
+  }
+
+  currentUser = data.user
+
+  // Create a customer row for this guest
+  const { error: insertErr } = await supabaseClient
+    .from('customers')
+    .insert({
+      auth_user_id: data.user.id,
+      name: 'Guest',
+      phone: null
+    })
+
+  if (insertErr) {
+    console.warn('Customer insert error:', insertErr)
+    // Non-fatal: they can still order
+  }
+
+  await loadCustomer()
+  closeAuthModal()
+  showToast('Ready to order!')
+  updateAuthUI()
 }
 
 function updateAuthUI() {
   const btn = $('auth-btn')
   if (!btn) return
+
   if (currentCustomer) {
-    const initial = (currentCustomer.name || currentCustomer.email || '?').charAt(0).toUpperCase()
-    btn.innerHTML = `<div class="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center text-sm font-bold border-2 border-white/20 shadow-lg">${initial}</div>`
+    const isGuest = !currentCustomer.phone
+    const displayName = currentCustomer.name || 'Guest'
+    const initial = displayName.charAt(0).toUpperCase()
+    
+    btn.innerHTML = `
+      <div class="w-8 h-8 rounded-full ${isGuest ? 'bg-green-500' : 'bg-accent'} text-white flex items-center justify-center text-sm font-bold border-2 border-white/20 shadow-lg">
+        ${initial}
+      </div>`
     btn.onclick = () => location.href = 'profile.html'
-    btn.title = `Hi, ${currentCustomer.name || 'there'}`
+    btn.title = isGuest ? 'Guest — tap to add details' : `Hi, ${displayName}`
   } else {
     btn.innerHTML = `<svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`
     btn.onclick = openAuthModal
     btn.title = 'Login'
+  }
+}
+
+window.signInWithGoogle = async function() {
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin + window.location.pathname
+    }
+  })
+  if (error) {
+    showToast('Google sign-in failed')
+    console.error(error)
   }
 }
 

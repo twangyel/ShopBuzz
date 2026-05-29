@@ -329,7 +329,7 @@ reviewForm.addEventListener('submit', async (e) => {
   const name = document.getElementById('review-name').value.trim();
   const comment = document.getElementById('review-comment').value.trim();
   const rating = parseInt(ratingInput.value);
-  const orderIdInput = document.getElementById('review-order-id').value.trim().toLowerCase();
+  const orderIdInput = document.getElementById('review-order-id').value.trim();
 
   if (!name || !comment) {
     errorMsg.textContent = 'Please fill in all fields.';
@@ -348,29 +348,55 @@ reviewForm.addEventListener('submit', async (e) => {
   // If order ID provided, verify it exists and name matches
   if (orderIdInput) {
     try {
-      const { data: order, error: orderError } = await supabaseClient
-        .from('orders')
-        .select('id, customer_name')
-        .eq('id', orderIdInput)
-        .single();
+      // FIX: Use .maybeSingle() instead of .single()
+      // .single() returns an error when 0 rows are found, which breaks the check
+     const { data: order, error: orderError } = await supabaseClient
+  .from('orders')
+  .select('id, customer_name')
+  .eq('order_number', orderIdInput)   // ✅ Match by the human-readable field
+  .maybeSingle();
 
-      if (!orderError && order) {
-        // Fuzzy name match: case-insensitive, allow minor variations
-        const reviewName = name.toLowerCase().replace(/\s+/g, ' ').trim();
-        const orderName = (order.customer_name || '').toLowerCase().replace(/\s+/g, ' ').trim();
-        
-        // Check if names are similar (exact match or one contains the other)
-        if (reviewName === orderName || 
-            reviewName.includes(orderName) || 
-            orderName.includes(reviewName)) {
+      if (orderError) {
+        console.error('[Review] Order lookup error:', orderError);
+      }
+
+      if (order) {
+        console.log('[Review] Order found:', order.id, '| Name on order:', order.customer_name);
+
+        // Normalize names for comparison
+        const normalize = (str) => (str || '').toLowerCase().replace(/\s+/g, ' ').trim();
+        const reviewName = normalize(name);
+        const orderName = normalize(order.customer_name);
+
+        const nameMatches = reviewName === orderName || 
+                            reviewName.includes(orderName) || 
+                            orderName.includes(reviewName);
+
+        if (nameMatches) {
           verifiedPurchase = true;
           isGuest = false;
           linkedOrderId = order.id;
+          console.log('[Review] Name matched — verified purchase, linkedOrderId:', linkedOrderId);
+        } else {
+          // FIX: Stop and show error instead of silently submitting as guest
+          console.log('[Review] Name mismatch. You entered:', reviewName, '| Order has:', orderName);
+          errorMsg.textContent = 'Order found, but name does not match our records. Please use the exact name from your receipt, or leave Order ID blank to submit as a guest.';
+          errorMsg.classList.remove('hidden');
+          submitBtn.disabled = false;
+          spinner.classList.add('hidden');
+          return; // STOP submission
         }
+      } else {
+        // FIX: Order ID not found — tell the user instead of silently submitting as guest
+        console.log('[Review] Order ID not found:', orderIdInput);
+        errorMsg.textContent = 'Order ID not found. Please check your receipt and try again, or leave it blank to submit as a guest.';
+        errorMsg.classList.remove('hidden');
+        submitBtn.disabled = false;
+        spinner.classList.add('hidden');
+        return; // STOP submission
       }
     } catch (err) {
-      console.log('Order verification failed:', err);
-      // Continue as guest if verification fails
+      console.error('[Review] Verification exception:', err);
     }
   }
 
@@ -391,7 +417,6 @@ reviewForm.addEventListener('submit', async (e) => {
 
     closeModal();
     
-    // Show appropriate success message
     const badgeText = verifiedPurchase ? 'verified customer' : 'guest';
     reviewsGrid.innerHTML = `
       <div class="col-span-full text-center py-12">
@@ -399,8 +424,8 @@ reviewForm.addEventListener('submit', async (e) => {
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
         </div>
         <p class="text-espresso-800 font-medium">Thank you!</p>
-        <p class="text-cream-500 text-sm mt-1">Your review has been submitted as a <strong>${badgeText}</strong> for approval.</p>
-        ${verifiedPurchase ? '<p class="text-green-600 text-xs mt-1">✓ Purchase verified</p>' : ''}
+        <p class="text-cream-500 text-sm mt-1">Your review has been submitted as a <strong>${badgeText}</strong> and is pending approval.</p>
+        ${verifiedPurchase ? '<p class="text-green-600 text-xs mt-1">✓ Purchase verified</p>' : '<p class="text-cream-400 text-xs mt-1">Submit with your Order ID and receipt name to get a verified badge.</p>'}
       </div>`;
     
     setTimeout(loadReviews, 2000);
@@ -414,7 +439,6 @@ reviewForm.addEventListener('submit', async (e) => {
     spinner.classList.add('hidden');
   }
 });
-
 // Helpers
 function escapeHtml(text) {
   const div = document.createElement('div');
