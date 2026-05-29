@@ -1539,15 +1539,54 @@ async function loadActiveSessions() {
 
 window.closeTableSession = async function(sessionId) {
   if (!confirm('Close this table session?')) return
-  const { error } = await supabaseClient
-    .from('table_sessions')
-    .update({ status: 'closed', closed_at: new Date().toISOString() })
-    .eq('id', sessionId)
-  if (!error) {
+
+  // Primary path: SECURITY DEFINER RPC (mirrors how sessions are opened in
+  // menu.js via start_table_session). This bypasses RLS the same way, so it
+  // won't be silently blocked. Requires the close_table_session() function to
+  // exist in your Supabase project (see the SQL provided with this fix).
+  const rpcRes = await supabaseClient.rpc('close_table_session', { p_session_id: sessionId })
+
+  if (!rpcRes.error) {
     showToast('Session closed', 'order')
     loadActiveSessions()
     loadOrders()
+    return
   }
+
+  // If the RPC doesn't exist yet (function not created), fall back to a direct
+  // update so the button still works wherever RLS allows it. PostgREST returns
+  // code 'PGRST202' / '404' when the function is missing.
+  const rpcMissing =
+    rpcRes.error.code === 'PGRST202' ||
+    /could not find the function|does not exist/i.test(rpcRes.error.message || '')
+
+  if (!rpcMissing) {
+    console.error('close_table_session RPC failed:', rpcRes.error)
+    showToast(`Couldn't close session: ${rpcRes.error.message}`, 'error')
+    return
+  }
+
+  // Fallback: direct update. .select() lets us detect the case where RLS
+  // returns success but changes 0 rows (the silent failure you were hitting).
+  const { data, error } = await supabaseClient
+    .from('table_sessions')
+    .update({ status: 'closed', closed_at: new Date().toISOString() })
+    .eq('id', sessionId)
+    .select()
+
+  if (error) {
+    console.error('Close session failed:', error)
+    showToast(`Couldn't close session: ${error.message}`, 'error')
+    return
+  }
+  if (!data || data.length === 0) {
+    showToast('Session not closed — blocked by database permissions (RLS). Run the close_table_session SQL.', 'error')
+    return
+  }
+
+  showToast('Session closed', 'order')
+  loadActiveSessions()
+  loadOrders()
 }
 
 // ========== WINDOW EXPORTS ==========
