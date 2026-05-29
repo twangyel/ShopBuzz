@@ -2,44 +2,45 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Select Location — Order</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Select Location — BuzzCafe</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#C4A77D">
+  <meta name="theme-color" content="#0078AC">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="BuzzCafe">
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            cream: {
-              50: '#FDFCF8',
-              100: '#F7F3EB',
-              200: '#EDE5D3',
-              300: '#E0D4BC',
-              400: '#C4A77D',
-              500: '#B08D5F',
-              600: '#8B7348',
-              700: '#6B5A3A',
-              800: '#4A3D28',
-              900: '#2C2518',
-            },
-            espresso: {
-              700: '#3E2723',
-              800: '#2C1B18',
-              900: '#1A0F0D',
-            }
+            domBlue: '#0078AC',
+            domBlueDark: '#005a82',
+            domBlueLight: '#E6F2F8',
+            domRed: '#D2112C',
+            domRedDark: '#A50D22',
+            domRedLight: '#FDE8EB',
+            domDark: '#1A1A1A',
+            domGray: '#6B7280',
+            domGrayLight: '#F3F4F6',
+            domLine: '#E5E7EB',
+            domGreen: '#16a34a',
+            domGreenLight: '#dcfce7',
+            domAmber: '#ca8a04',
+            domAmberLight: '#fef9c3',
           },
           fontFamily: {
-            display: ['"Playfair Display"', 'Georgia', 'serif'],
             sans: ['Inter', 'system-ui', 'sans-serif'],
           },
           animation: {
-            'fade-in': 'fadeIn 0.5s ease-out',
-            'slide-up': 'slideUp 0.5s ease-out',
+            'fade-in': 'fadeIn 0.4s ease-out forwards',
+            'slide-up': 'slideUp 0.4s ease-out forwards',
             'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
-            'shimmer': 'shimmer 2s infinite',
+            'shimmer': 'shimmer 1.5s infinite',
           },
           keyframes: {
             fadeIn: {
@@ -47,12 +48,12 @@
               '100%': { opacity: '1' },
             },
             slideUp: {
-              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '0%': { opacity: '0', transform: 'translateY(16px)' },
               '100%': { opacity: '1', transform: 'translateY(0)' },
             },
             pulseSoft: {
               '0%, 100%': { opacity: '1', transform: 'scale(1)' },
-              '50%': { opacity: '0.8', transform: 'scale(1.02)' },
+              '50%': { opacity: '0.85', transform: 'scale(1.02)' },
             },
             shimmer: {
               '0%': { backgroundPosition: '-200% 0' },
@@ -64,150 +65,169 @@
     }
   </script>
   <style>
+    * { -webkit-tap-highlight-color: transparent; }
     body { 
       font-family: 'Inter', system-ui, sans-serif; 
-      background-color: #FDFCF8;
-      background-image: radial-gradient(#E0D4BC 1px, transparent 1px);
-      background-size: 32px 32px;
+      background: #fff;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Loader */
+    /* ===== LOADER ===== */
     #loader {
-      position: fixed; inset: 0; background: #FDFCF8; z-index: 9999;
+      position: fixed; inset: 0; background: #fff; z-index: 9999;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
     }
     #loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-    .loader-logo { 
-      width: 100px; height: 100px; 
-      animation: pulseSoft 2s ease-in-out infinite; 
-      filter: drop-shadow(0 4px 12px rgba(139, 115, 72, 0.15));
+    .loader-ring {
+      width: 48px; height: 48px;
+      border: 3px solid #E6F2F8;
+      border-top-color: #0078AC;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
     }
-    .loader-track { 
-      width: 140px; height: 3px; 
-      background: #EDE5D3; border-radius: 3px; margin-top: 28px; overflow: hidden;
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader-word { 
+      margin-top: 16px; font-size: 18px; font-weight: 800; color: #1A1A1A; letter-spacing: -0.5px;
     }
-    .loader-fill { 
-      width: 40%; height: 100%; 
-      background: linear-gradient(90deg, #C4A77D, #8B7348, #C4A77D);
+    .loader-word span { color: #0078AC; }
+
+    /* ===== SKELETON ===== */
+    .skel {
+      background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
       background-size: 200% 100%;
-      border-radius: 3px; 
-      animation: shimmer 1.5s ease-in-out infinite;
-    }
-    .loader-text { 
-      margin-top: 20px; font-size: 12px; color: #8B7348; 
-      letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500;
+      animation: shimmer 1.2s infinite;
+      border-radius: 8px;
     }
 
-    /* Skeleton */
-    .skeleton {
-      background: linear-gradient(90deg, #F7F3EB 25%, #EDE5D3 50%, #F7F3EB 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: 12px;
+    /* ===== OUTLET GRID — CENTERED ===== */
+    .outlet-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .outlet-grid > * {
+      flex: 0 0 100%;
+      max-width: 420px;
+    }
+    @media (min-width: 640px) {
+      .outlet-grid { gap: 24px; }
+      .outlet-grid > * { flex: 0 0 calc(50% - 12px); }
+    }
+    @media (min-width: 1024px) {
+      .outlet-grid { gap: 28px; }
+      .outlet-grid > * { flex: 0 0 calc(33.333% - 19px); }
     }
 
-    /* Outlet Card */
+    /* ===== OUTLET CARD ===== */
     .outlet-card {
-      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
+      background: #fff;
+      width: 100%;
     }
     .outlet-card:not(.outlet-closed):hover {
-      transform: translateY(-4px);
-      box-shadow: 0 20px 40px -12px rgba(139, 115, 72, 0.18), 0 8px 16px -4px rgba(139, 115, 72, 0.08);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -8px rgba(0,0,0,0.12), 0 4px 8px -4px rgba(0,0,0,0.06);
     }
-    .outlet-card:not(.outlet-closed):hover .outlet-image img {
-      transform: scale(1.05);
+    .outlet-card:not(.outlet-closed):hover .outlet-img {
+      transform: scale(1.04);
     }
-    .outlet-card:not(.outlet-closed):hover .outlet-overlay {
-      opacity: 1;
-    }
-    .outlet-image img {
-      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .outlet-overlay {
-      opacity: 0;
-      transition: opacity 0.3s ease;
+    .outlet-img {
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     /* Closed Outlet */
     .outlet-closed {
       cursor: not-allowed;
     }
-    .outlet-closed .outlet-image img,
-    .outlet-closed .p-5 {
-      filter: grayscale(0.5);
-      opacity: 0.5;
+    .outlet-closed .outlet-img-wrap,
+    .outlet-closed .card-body {
+      filter: grayscale(0.6);
+      opacity: 0.45;
     }
-    .outlet-closed .outlet-overlay {
-      display: none !important;
-    }
-    .closed-overlay {
-      animation: fadeIn 0.3s ease-out;
-      pointer-events: none;
+    .outlet-closed .outlet-img-wrap::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(255,255,255,0.4);
+      backdrop-filter: blur(1px);
     }
 
-    /* Status Badge */
-    .status-open {
-      background: rgba(34, 197, 94, 0.12);
+    /* Status Badges */
+    .badge-open {
+      background: #dcfce7;
       color: #16a34a;
-      border: 1px solid rgba(34, 197, 94, 0.2);
+      border: 1px solid #bbf7d0;
     }
-    .status-busy {
-      background: rgba(234, 179, 8, 0.12);
-      color: #ca8a04;
-      border: 1px solid rgba(234, 179, 8, 0.2);
+    .badge-busy {
+      background: #fef9c3;
+      color: #a16207;
+      border: 1px solid #fde047;
     }
-    .status-closed {
-      background: rgba(239, 68, 68, 0.08);
-      color: #dc2626;
-      border: 1px solid rgba(239, 68, 68, 0.15);
+    .badge-closed {
+      background: #FDE8EB;
+      color: #D2112C;
+      border: 1px solid #fecaca;
     }
 
-    /* Toast */
+    /* ===== TOAST ===== */
     #toast {
       position: fixed;
-      bottom: 24px;
+      bottom: 20px;
       left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: #1A0F0D;
-      color: #FDFCF8;
-      padding: 12px 24px;
+      transform: translateX(-50%) translateY(80px);
+      background: #1A1A1A;
+      color: #fff;
+      padding: 12px 20px;
       border-radius: 12px;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
       box-shadow: 0 8px 24px rgba(0,0,0,0.2);
       z-index: 9998;
       opacity: 0;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       align-items: center;
       gap: 8px;
+      max-width: 90vw;
     }
     #toast.show {
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #C4A77D; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 2px; }
 
-    /* Selection ring animation */
+    /* ===== SELECTION RING ===== */
     @keyframes selectPulse {
-      0% { box-shadow: 0 0 0 0 rgba(196, 167, 125, 0.4); }
-      70% { box-shadow: 0 0 0 16px rgba(196, 167, 125, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(196, 167, 125, 0); }
+      0% { box-shadow: 0 0 0 0 rgba(0,120,172,0.3); }
+      70% { box-shadow: 0 0 0 12px rgba(0,120,172,0); }
+      100% { box-shadow: 0 0 0 0 rgba(0,120,172,0); }
     }
     .selecting {
-      animation: selectPulse 0.6s ease-out;
+      animation: selectPulse 0.5s ease-out;
     }
 
-    /* Image fallback pattern */
-    .image-fallback {
-      background: linear-gradient(135deg, #F7F3EB 0%, #EDE5D3 100%);
+    /* ===== TOPBAR ===== */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px) saturate(180%);
+      -webkit-backdrop-filter: blur(12px) saturate(180%);
+      border-bottom: 1px solid #E5E7EB;
+    }
+
+    /* ===== IMAGE FALLBACK ===== */
+    .img-fallback {
+      background: linear-gradient(135deg, #E6F2F8 0%, #F3F4F6 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -215,22 +235,12 @@
   </style>
 <base target="_blank">
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen bg-white">
 
   <!-- Loading Screen -->
   <div id="loader">
-    <img src="logo.svg" alt="Your Cafe" class="loader-logo" onerror="this.style.display='none'; document.querySelector('.loader-fallback').style.display='flex'">
-    <div class="loader-fallback hidden w-24 h-24 bg-cream-400 rounded-full items-center justify-center text-white text-4xl shadow-xl">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-        <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-        <line x1="6" y1="1" x2="6" y2="4"></line>
-        <line x1="10" y1="1" x2="10" y2="4"></line>
-        <line x1="14" y1="1" x2="14" y2="4"></line>
-      </svg>
-    </div>
-    <div class="loader-track"><div class="loader-fill"></div></div>
-    <p class="loader-text">Preparing your experience</p>
+    <div class="loader-ring"></div>
+    <div class="loader-word">Buzz<span>Cafe</span></div>
   </div>
 
   <!-- Toast Notification -->
@@ -243,109 +253,121 @@
     <span id="toast-message">Something went wrong</span>
   </div>
 
-  <div class="w-full max-w-4xl">
-    <!-- Back Link -->
-    <a href="index.html" class="inline-flex items-center gap-2 text-cream-600 text-sm font-medium hover:text-espresso-900 transition-colors mb-8 group">
-      <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 12H5M12 19l-7-7 7-7"/>
-      </svg>
-      Back to Home
-    </a>
-
-    <!-- Header -->
-    <div class="text-center mb-10 animate-fade-in">
-      <div class="relative w-20 h-20 mx-auto mb-6">
-        <div class="absolute inset-0 bg-cream-400 rounded-full opacity-20 animate-pulse-soft"></div>
-        <div class="relative w-20 h-20 bg-white rounded-full mx-auto flex items-center justify-center shadow-lg border-2 border-cream-200">
-          <img src="image/logo.svg" alt="Your Cafe" class="w-12 h-12 object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
-          <div class="hidden text-cream-500">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-              <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-              <line x1="6" y1="1" x2="6" y2="4"></line>
-              <line x1="10" y1="1" x2="10" y2="4"></line>
-              <line x1="14" y1="1" x2="14" y2="4"></line>
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-14">
+        <div class="flex items-center gap-3">
+          <a href="index.html" class="flex items-center justify-center w-9 h-9 rounded-full hover:bg-domGrayLight transition-colors" aria-label="Back to Home">
+            <svg class="w-5 h-5 text-domDark" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 19l-7-7 7-7"/>
             </svg>
+          </a>
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-domBlue flex items-center justify-center">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                <line x1="6" y1="1" x2="6" y2="4"/>
+                <line x1="10" y1="1" x2="10" y2="4"/>
+                <line x1="14" y1="1" x2="14" y2="4"/>
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-sm font-bold text-domDark leading-tight">BuzzCafe</h1>
+              <p class="text-[11px] text-domGray font-medium">Select your outlet</p>
+            </div>
           </div>
         </div>
+        <div class="text-xs font-semibold text-domGray bg-domGrayLight px-3 py-1.5 rounded-full">
+          Order Online
+        </div>
       </div>
-      <h1 class="font-display text-3xl font-bold text-espresso-900 tracking-tight">Order Online</h1>
-      <p class="text-cream-600 mt-3 text-base font-light">Select your nearest outlet to begin</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+
+    <!-- Header Section -->
+    <div class="mb-6 sm:mb-8 animate-fade-in text-center">
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-domDark tracking-tight">Choose a location</h2>
+      <p class="text-domGray mt-1.5 text-sm sm:text-base font-medium">Pick your nearest BuzzCafe outlet to start ordering</p>
     </div>
 
     <!-- Outlet Grid -->
-    <div id="outlet-list" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div id="outlet-list" class="outlet-grid">
       <!-- Skeleton Loading State -->
-      <div class="bg-white rounded-2xl border border-cream-200 shadow-sm overflow-hidden">
-        <div class="skeleton h-48 w-full rounded-none"></div>
-        <div class="p-5 space-y-3">
+      <div class="outlet-card rounded-2xl border border-domLine overflow-hidden shadow-sm">
+        <div class="skel h-44 w-full rounded-none"></div>
+        <div class="p-4 space-y-3">
           <div class="flex items-center justify-between">
-            <div class="skeleton h-5 w-2/3"></div>
-            <div class="skeleton h-5 w-16"></div>
+            <div class="skel h-4 w-2/3"></div>
+            <div class="skel h-5 w-14 rounded-full"></div>
           </div>
-          <div class="skeleton h-4 w-full"></div>
-          <div class="flex gap-3">
-            <div class="skeleton h-3 w-20"></div>
-            <div class="skeleton h-3 w-24"></div>
+          <div class="skel h-3 w-full"></div>
+          <div class="flex gap-2 pt-1">
+            <div class="skel h-3 w-16"></div>
+            <div class="skel h-3 w-20"></div>
           </div>
         </div>
       </div>
-      <div class="bg-white rounded-2xl border border-cream-200 shadow-sm overflow-hidden">
-        <div class="skeleton h-48 w-full rounded-none"></div>
-        <div class="p-5 space-y-3">
+      <div class="outlet-card rounded-2xl border border-domLine overflow-hidden shadow-sm">
+        <div class="skel h-44 w-full rounded-none"></div>
+        <div class="p-4 space-y-3">
           <div class="flex items-center justify-between">
-            <div class="skeleton h-5 w-3/4"></div>
-            <div class="skeleton h-5 w-16"></div>
+            <div class="skel h-4 w-3/4"></div>
+            <div class="skel h-5 w-14 rounded-full"></div>
           </div>
-          <div class="skeleton h-4 w-full"></div>
-          <div class="flex gap-3">
-            <div class="skeleton h-3 w-20"></div>
-            <div class="skeleton h-3 w-24"></div>
+          <div class="skel h-3 w-full"></div>
+          <div class="flex gap-2 pt-1">
+            <div class="skel h-3 w-16"></div>
+            <div class="skel h-3 w-20"></div>
           </div>
         </div>
       </div>
-      <div class="bg-white rounded-2xl border border-cream-200 shadow-sm overflow-hidden">
-        <div class="skeleton h-48 w-full rounded-none"></div>
-        <div class="p-5 space-y-3">
+      <div class="outlet-card rounded-2xl border border-domLine overflow-hidden shadow-sm">
+        <div class="skel h-44 w-full rounded-none"></div>
+        <div class="p-4 space-y-3">
           <div class="flex items-center justify-between">
-            <div class="skeleton h-5 w-1/2"></div>
-            <div class="skeleton h-5 w-16"></div>
+            <div class="skel h-4 w-1/2"></div>
+            <div class="skel h-5 w-14 rounded-full"></div>
           </div>
-          <div class="skeleton h-4 w-full"></div>
-          <div class="flex gap-3">
-            <div class="skeleton h-3 w-20"></div>
-            <div class="skeleton h-3 w-24"></div>
+          <div class="skel h-3 w-full"></div>
+          <div class="flex gap-2 pt-1">
+            <div class="skel h-3 w-16"></div>
+            <div class="skel h-3 w-20"></div>
           </div>
         </div>
       </div>
-      <div class="bg-white rounded-2xl border border-cream-200 shadow-sm overflow-hidden">
-        <div class="skeleton h-48 w-full rounded-none"></div>
-        <div class="p-5 space-y-3">
+      <div class="outlet-card rounded-2xl border border-domLine overflow-hidden shadow-sm">
+        <div class="skel h-44 w-full rounded-none"></div>
+        <div class="p-4 space-y-3">
           <div class="flex items-center justify-between">
-            <div class="skeleton h-5 w-2/3"></div>
-            <div class="skeleton h-5 w-16"></div>
+            <div class="skel h-4 w-2/3"></div>
+            <div class="skel h-5 w-14 rounded-full"></div>
           </div>
-          <div class="skeleton h-4 w-full"></div>
-          <div class="flex gap-3">
-            <div class="skeleton h-3 w-20"></div>
-            <div class="skeleton h-3 w-24"></div>
+          <div class="skel h-3 w-full"></div>
+          <div class="flex gap-2 pt-1">
+            <div class="skel h-3 w-16"></div>
+            <div class="skel h-3 w-20"></div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Empty State (hidden by default) -->
-    <div id="empty-state" class="hidden text-center py-12">
-      <div class="w-16 h-16 bg-cream-100 rounded-full mx-auto flex items-center justify-center mb-4">
-        <svg class="w-8 h-8 text-cream-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+    <div id="empty-state" class="hidden text-center py-16 sm:py-20">
+      <div class="w-16 h-16 bg-domGrayLight rounded-2xl mx-auto flex items-center justify-center mb-4">
+        <svg class="w-8 h-8 text-domGray" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
           <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
         </svg>
       </div>
-      <h3 class="font-display text-lg font-semibold text-espresso-900">No outlets found</h3>
-      <p class="text-cream-600 mt-2 text-sm">We're expanding to your area soon. Check back later!</p>
+      <h3 class="text-lg font-bold text-domDark">No outlets found</h3>
+      <p class="text-domGray mt-1.5 text-sm font-medium">We're expanding to your area soon. Check back later!</p>
     </div>
-  </div>
+  </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -358,11 +380,11 @@
     window.addEventListener('load', () => {
       setTimeout(() => {
         document.getElementById('loader').classList.add('hidden')
-      }, 1000)
+      }, 600)
     })
 
     // ===== TOAST =====
-    function showToast(message, duration = 4000) {
+    function showToast(message, duration = 3500) {
       const toast = document.getElementById('toast')
       const toastMessage = document.getElementById('toast-message')
       toastMessage.textContent = message
@@ -372,7 +394,6 @@
 
     // ===== SELECT OUTLET =====
     window.selectOutlet = function(id) {
-      // Block if outlet is closed
       const card = document.querySelector(`[data-outlet-id="${id}"]`)
       if (card && card.dataset.status === 'closed') {
         showToast('This outlet is currently closed. Please try another location.')
@@ -386,26 +407,26 @@
       setTimeout(() => {
         localStorage.setItem('selected_outlet', id)
         window.location.href = 'menu.html'
-      }, 400)
+      }, 350)
     }
 
     // ===== FORMAT DISTANCE =====
     function formatDistance(km) {
       if (!km && km !== 0) return ''
-      if (km < 1) return `${Math.round(km * 1000)}m away`
-      return `${km.toFixed(1)}km away`
+      if (km < 1) return `${Math.round(km * 1000)}m`
+      return `${km.toFixed(1)}km`
     }
 
     // ===== GET STATUS BADGE =====
     function getStatusBadge(status) {
-      const statuses = {
-        'open': { class: 'status-open', label: 'Open', icon: '<circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2"/><circle cx="12" cy="12" r="3" fill="currentColor"/>' },
-        'busy': { class: 'status-busy', label: 'Busy', icon: '<circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2"/><path d="M12 8v4l3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' },
-        'closed': { class: 'status-closed', label: 'Closed', icon: '<circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2"/><path d="M15 9l-6 6M9 9l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' }
+      const map = {
+        'open': { cls: 'badge-open', label: 'Open', dot: '#16a34a' },
+        'busy': { cls: 'badge-busy', label: 'Busy', dot: '#ca8a04' },
+        'closed': { cls: 'badge-closed', label: 'Closed', dot: '#D2112C' }
       }
-      const s = statuses[status] || statuses['open']
-      return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${s.class}">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">${s.icon}</svg>
+      const s = map[status] || map['open']
+      return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${s.cls}">
+        <span class="w-1.5 h-1.5 rounded-full" style="background:${s.dot}"></span>
         ${s.label}
       </span>`
     }
@@ -413,11 +434,13 @@
     // ===== GET IMAGE HTML =====
     function getOutletImage(imageUrl, name) {
       if (imageUrl) {
-        return `<div class="outlet-image relative h-48 overflow-hidden bg-cream-100">
-          <img src="${imageUrl}" alt="${name}" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.innerHTML=getImageFallback('${name.replace(/'/g, "\\'")}')">
-          <div class="outlet-overlay absolute inset-0 bg-gradient-to-t from-espresso-900/60 to-transparent flex items-end justify-end p-4">
-            <span class="inline-flex items-center gap-1.5 text-white text-xs font-medium bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/30">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        return `<div class="outlet-img-wrap relative h-44 overflow-hidden bg-domGrayLight">
+          <img src="${imageUrl}" alt="${name}" class="outlet-img w-full h-full object-cover" loading="lazy" 
+            onerror="this.parentElement.innerHTML=getImageFallback('${name.replace(/'/g, "\'")}')">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+          <div class="absolute bottom-3 right-3">
+            <span class="inline-flex items-center gap-1 text-white text-xs font-semibold bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/30">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
               </svg>
               Select
@@ -430,87 +453,91 @@
 
     function getImageFallback(name) {
       const initial = name.charAt(0).toUpperCase()
-      return `<div class="image-fallback h-48 w-full relative">
+      return `<div class="img-fallback h-44 w-full relative">
         <div class="text-center">
-          <div class="w-16 h-16 bg-cream-200 rounded-full mx-auto flex items-center justify-center text-cream-500 text-2xl font-display font-bold mb-2">${initial}</div>
-          <span class="text-cream-500 text-xs font-medium">${name}</span>
+          <div class="w-14 h-14 bg-domBlueLight rounded-xl mx-auto flex items-center justify-center text-domBlue text-xl font-extrabold mb-2">${initial}</div>
+          <span class="text-domGray text-xs font-semibold">${name}</span>
         </div>
-        <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-cream-100/50 to-transparent"></div>
+        <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-domGrayLight/60 to-transparent"></div>
       </div>`
     }
 
     // ===== REALTIME: UPDATE SINGLE CARD =====
-// ===== REALTIME: UPDATE SINGLE CARD =====
-function updateOutletCard(outlet) {
-  console.log('Updating outlet card:', outlet.id, 'new status:', outlet.status)
-  
-  const card = document.querySelector(`[data-outlet-id="${outlet.id}"]`)
-  if (!card) {
-    console.log('Card not found for outlet:', outlet.id)
-    return
-  }
+    function updateOutletCard(outlet) {
+      console.log('Updating outlet card:', outlet.id, 'new status:', outlet.status)
 
-  const newStatus = outlet.status || 'open'
-  const isClosed = newStatus === 'closed'
-  const wasClosed = card.dataset.status === 'closed'
-  
-  console.log('Card found. Was closed:', wasClosed, 'Is closed:', isClosed)
-
-  // If status hasn't changed, do nothing
-  if (newStatus === card.dataset.status) {
-    console.log('Status unchanged, skipping')
-    return
-  }
-
-  // Update data attribute
-  card.dataset.status = newStatus
-
-  // Update badge
-  const badgeContainer = card.querySelector('.status-badge-container')
-  if (badgeContainer) {
-    badgeContainer.innerHTML = getStatusBadge(newStatus)
-  }
-
-  // Handle closed state
-  if (isClosed) {
-    console.log('Closing outlet:', outlet.name)
-    
-    // Add closed class
-    card.classList.add('outlet-closed')
-    
-    // Remove click handler
-    card.removeAttribute('onclick')
-    
-    // Add overlay if not exists
-    let overlay = card.querySelector('.closed-overlay')
-    if (!overlay) {
-      overlay = document.createElement('div')
-      overlay.className = 'closed-overlay absolute inset-0 bg-white/70 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-2xl'
-      overlay.innerHTML = `<span class="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-bold border border-red-200 shadow-sm">Currently Unavailable</span>`
-      card.appendChild(overlay)
-    }
-    
-    showToast(`${outlet.name} is now closed`, 5000)
-    
-  } else {
-    console.log('Opening outlet:', outlet.name)
-    
-    // Remove closed class
-    card.classList.remove('outlet-closed')
-    
-    // Restore click handler
-    card.setAttribute('onclick', `selectOutlet(${outlet.id})`)
-    
-    // Remove overlay
-    const overlay = card.querySelector('.closed-overlay')
-    if (overlay) {
-      overlay.remove()
-    }
-    
-    showToast(`${outlet.name} is now open!`, 5000)
-        }
+      const card = document.querySelector(`[data-outlet-id="${outlet.id}"]`)
+      if (!card) {
+        console.log('Card not found for outlet:', outlet.id)
+        return
       }
-    
+
+      const newStatus = outlet.status || 'open'
+      const isClosed = newStatus === 'closed'
+      const wasClosed = card.dataset.status === 'closed'
+
+      console.log('Card found. Was closed:', wasClosed, 'Is closed:', isClosed)
+
+      // If status hasn't changed, do nothing
+      if (newStatus === card.dataset.status) {
+        console.log('Status unchanged, skipping')
+        return
+      }
+
+      // Update data attribute
+      card.dataset.status = newStatus
+
+      // Update badge
+      const badgeContainer = card.querySelector('.status-badge-container')
+      if (badgeContainer) {
+        badgeContainer.innerHTML = getStatusBadge(newStatus)
+      }
+
+      // Handle closed state
+      if (isClosed) {
+        console.log('Closing outlet:', outlet.name)
+
+        // Add closed class
+        card.classList.add('outlet-closed')
+
+        // Remove click handler
+        card.removeAttribute('onclick')
+
+        // Add overlay if not exists
+        let overlay = card.querySelector('.closed-overlay')
+        if (!overlay) {
+          overlay = document.createElement('div')
+          overlay.className = 'closed-overlay absolute inset-0 z-20 flex flex-col items-center justify-center rounded-2xl bg-white/60 backdrop-blur-[2px]'
+          overlay.innerHTML = `<div class="text-center px-4">
+            <div class="w-12 h-12 bg-domRedLight rounded-full mx-auto flex items-center justify-center mb-3 shadow-sm">
+              <span class="text-xl">😊</span>
+            </div>
+            <p class="text-domDark font-bold text-sm mb-1">We'll be back soon!</p>
+            <p class="text-domGray text-xs font-medium">This outlet is temporarily closed</p>
+          </div>`
+          card.appendChild(overlay)
+        }
+
+        showToast(`${outlet.name} is temporarily closed — check back soon! 😊`, 4000)
+
+      } else {
+        console.log('Opening outlet:', outlet.name)
+
+        // Remove closed class
+        card.classList.remove('outlet-closed')
+
+        // Restore click handler
+        card.setAttribute('onclick', `selectOutlet(${outlet.id})`)
+
+        // Remove overlay
+        const overlay = card.querySelector('.closed-overlay')
+        if (overlay) {
+          overlay.remove()
+        }
+
+        showToast(`${outlet.name} is now open and ready to serve! 🎉`, 4000)
+      }
+    }
 
     // ===== LOAD OUTLETS =====
     async function loadOutlets() {
@@ -541,44 +568,52 @@ function updateOutletCard(outlet) {
           const isClosed = status === 'closed'
           const badge = getStatusBadge(status)
           const imageHtml = getOutletImage(o.image_url, o.name)
-          const delay = index * 0.08
+          const delay = Math.min(index * 0.06, 0.4)
 
           // Closed outlets: no click handler, add overlay, dimmed style
           const clickAttr = isClosed ? '' : `onclick="selectOutlet(${o.id})"`
           const closedClass = isClosed ? 'outlet-closed' : ''
           const closedOverlay = isClosed 
-            ? `<div class="closed-overlay absolute inset-0 bg-white/70 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-2xl"><span class="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-bold border border-red-200 shadow-sm">Currently Unavailable</span></div>` 
+            ? `<div class="closed-overlay absolute inset-0 z-20 flex flex-col items-center justify-center rounded-2xl bg-white/60 backdrop-blur-[2px]">
+                <div class="text-center px-4">
+                  <div class="w-12 h-12 bg-domRedLight rounded-full mx-auto flex items-center justify-center mb-3 shadow-sm">
+                    <span class="text-xl">😊</span>
+                  </div>
+                  <p class="text-domDark font-bold text-sm mb-1">We'll be back soon!</p>
+                  <p class="text-domGray text-xs font-medium">This outlet is temporarily closed</p>
+                </div>
+              </div>` 
             : ''
 
           return `
           <button type="button" ${clickAttr}
-            class="outlet-card w-full bg-white rounded-2xl shadow-sm border border-cream-200 text-left group cursor-pointer animate-slide-up ${closedClass}"
+            class="outlet-card w-full rounded-2xl shadow-sm border border-domLine text-left group cursor-pointer animate-slide-up ${closedClass}"
             style="animation-delay: ${delay}s; animation-fill-mode: both;"
             data-outlet-id="${o.id}"
             data-status="${status}">
             ${closedOverlay}
             ${imageHtml}
-            <div class="p-5 relative z-10">
-              <div class="flex items-start justify-between gap-3 mb-2">
-                <h3 class="font-display text-lg font-bold text-espresso-900 group-hover:text-cream-600 transition-colors leading-tight">${o.name}</h3>
-                <span class="status-badge-container">${badge}</span>
+            <div class="card-body p-4 relative z-10">
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <h3 class="text-base font-bold text-domDark group-hover:text-domBlue transition-colors leading-tight">${o.name}</h3>
+                <span class="status-badge-container flex-shrink-0">${badge}</span>
               </div>
-              <p class="text-sm text-cream-600 leading-relaxed line-clamp-2">${o.location || ''}</p>
-              <div class="flex items-center flex-wrap gap-x-4 gap-y-2 mt-3 pt-3 border-t border-cream-100">
-                ${o.phone ? `<span class="inline-flex items-center gap-1.5 text-xs text-cream-500">
+              <p class="text-[13px] text-domGray leading-relaxed line-clamp-2 font-medium">${o.location || ''}</p>
+              <div class="flex items-center flex-wrap gap-x-4 gap-y-1.5 mt-3 pt-3 border-t border-domLine/60">
+                ${o.phone ? `<span class="inline-flex items-center gap-1.5 text-xs text-domGray font-medium">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
                   </svg>
                   ${o.phone}
                 </span>` : ''}
-                ${distance ? `<span class="inline-flex items-center gap-1.5 text-xs text-cream-500">
+                ${distance ? `<span class="inline-flex items-center gap-1.5 text-xs text-domGray font-medium">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"/>
                     <path d="M12 6v6l4 2"/>
                   </svg>
                   ${distance}
                 </span>` : ''}
-                ${o.rating ? `<span class="inline-flex items-center gap-1 text-xs text-amber-600 font-medium">
+                ${o.rating ? `<span class="inline-flex items-center gap-1 text-xs text-amber-600 font-bold">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                   </svg>
@@ -597,16 +632,16 @@ function updateOutletCard(outlet) {
       } catch (err) {
         console.error('Failed to load outlets:', err)
         document.getElementById('outlet-list').innerHTML = `
-          <div class="col-span-full">
-            <div class="bg-red-50 border border-red-200 rounded-2xl p-8 text-center animate-fade-in max-w-md mx-auto">
-              <div class="w-14 h-14 bg-red-100 rounded-full mx-auto flex items-center justify-center mb-4">
-                <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <div class="col-span-full" style="flex:0 0 100%;max-width:100%;">
+            <div class="bg-domRedLight border border-red-200 rounded-2xl p-8 text-center animate-fade-in max-w-md mx-auto">
+              <div class="w-14 h-14 bg-white rounded-xl mx-auto flex items-center justify-center mb-4 shadow-sm">
+                <svg class="w-7 h-7 text-domRed" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
                 </svg>
               </div>
-              <h3 class="font-display text-xl font-semibold text-red-900 mb-2">Unable to load outlets</h3>
-              <p class="text-red-600 text-sm mb-5">Please check your connection and try again.</p>
-              <button onclick="loadOutlets()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl text-sm font-medium transition-colors">
+              <h3 class="text-xl font-bold text-domDark mb-2">Unable to load outlets</h3>
+              <p class="text-domGray text-sm mb-5 font-medium">Please check your connection and try again.</p>
+              <button onclick="loadOutlets()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-domBlue hover:bg-domBlueDark text-white rounded-xl text-sm font-bold transition-colors shadow-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/>
                 </svg>
@@ -620,37 +655,45 @@ function updateOutletCard(outlet) {
     }
 
     // ===== REALTIME SUBSCRIPTION =====
-let outletChannel = null
+    let outletChannel = null
 
-function subscribeToOutlets() {
-  console.log('Subscribing to outlet status updates...')
+    function subscribeToOutlets() {
+      console.log('Subscribing to outlet status updates...')
 
-  // Remove existing channel to avoid duplicates
-  if (outletChannel) {
-    supabaseClient.removeChannel(outletChannel)
-  }
-
-  outletChannel = supabaseClient
-    .channel('outlets-status-customer')
-    .on('postgres_changes', { 
-      event: '*', 
-      schema: 'public', 
-      table: 'outlets'
-    }, payload => {
-      console.log('Realtime update received:', payload)
-      // FIX: removed `payload.new.is_active` guard — it blocked updates for
-      // outlets being toggled closed (is_active may be true; status changes)
-      if (payload.new) {
-        updateOutletCard(payload.new)
+      // Remove existing channel to avoid duplicates
+      if (outletChannel) {
+        supabaseClient.removeChannel(outletChannel)
       }
-    })
-    .subscribe((status) => {
-      console.log('Realtime subscription status:', status)
-      if (status === 'SUBSCRIBED') {
-        console.log('Successfully subscribed to outlet updates')
-      }
-    })
-}
+
+      outletChannel = supabaseClient
+        .channel('outlets-status-customer')
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: 'outlets'
+        }, payload => {
+          console.log('Realtime update received:', payload)
+
+          // Handle the payload — payload.new contains the updated row
+          if (payload.new && payload.new.id) {
+            updateOutletCard(payload.new)
+          }
+        })
+        .subscribe((status) => {
+          console.log('Realtime subscription status:', status)
+          if (status === 'SUBSCRIBED') {
+            console.log('Successfully subscribed to outlet updates')
+          }
+          if (status === 'CHANNEL_ERROR') {
+            console.error('Realtime channel error — retrying in 3s...')
+            setTimeout(subscribeToOutlets, 3000)
+          }
+          if (status === 'TIMED_OUT') {
+            console.warn('Realtime subscription timed out — retrying...')
+            setTimeout(subscribeToOutlets, 3000)
+          }
+        })
+    }
 
     // Load immediately
     loadOutlets()
