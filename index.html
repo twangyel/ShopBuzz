@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Buzz Cafe — Artisan coffee, handcrafted meals, fresh smoothies & custom cakes. Two locations in Phuentsholing. Order online or visit us today.">
+<meta property="og:title" content="Buzz Cafe | Artisan Coffee & Kitchen">
+<meta property="og:description" content="Handcrafted coffee, fresh smoothies, and custom cakes made with love. Two locations across the city.">
+<meta property="og:image" content="https://cafetest3.vercel.app/image/og-image.jpg">
+<meta property="og:url" content="https://cafetest3.vercel.app/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://cafetest3.vercel.app/">
   <title>Buzz Cafe</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,10 +44,6 @@
       }
     }
   </script>
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
 </head>
 <body class="bg-cream-50 text-espresso-900 antialiased">
 
@@ -251,15 +254,16 @@
         <p class="text-cream-600 text-sm mb-6">Share your Buzz Cafe experience</p>
         
         <form id="review-form" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-espresso-800 mb-1">Your Name</label>
-            <input type="text" id="review-name" required class="w-full px-4 py-2.5 rounded-xl border border-cream-300 focus:border-orange-600 focus:ring-2 focus:ring-orange-600/20 outline-none transition bg-cream-50" placeholder="John Doe">
-            <div>
-  <label class="block text-sm font-medium text-espresso-800 mb-1">Order Number <span class="text-cream-500 font-normal">(optional — for verified badge)</span></label>
-  <input type="text" id="review-order-id" class="w-full px-4 py-2.5 rounded-xl border border-cream-300 focus:border-orange-600 focus:ring-2 focus:ring-orange-600/20 outline-none transition bg-cream-50 font-mono text-sm" placeholder="e.g., a7f3d2e9">
+       <!-- FIX -->
+<div>
+  <label class="block text-sm font-medium text-espresso-800 mb-1">Your Name</label>
+  <input type="text" id="review-name" required class="...">
+</div>
+<div>
+  <label class="block text-sm font-medium text-espresso-800 mb-1">Order Number <span class="text-cream-500 font-normal">(optional)</span></label>
+  <input type="text" id="review-order-id" class="...">
   <p class="text-cream-500 text-xs mt-1">Find this on your receipt. Leave blank to submit as guest.</p>
 </div>
-          </div>
           <div>
             <label class="block text-sm font-medium text-espresso-800 mb-1">Rating</label>
             <div class="flex gap-2" id="star-rating">
@@ -345,7 +349,7 @@
             </a>
             <a href="https://instagram.com/yourcafe" target="_blank" class="w-9 h-9 rounded-full bg-espresso-800 hover:bg-cream-600 hover:text-espresso-900 transition flex items-center justify-center">
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z"/>
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
               </svg>
             </a>
           </div>

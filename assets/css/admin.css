@@ -71,6 +71,12 @@
       flex-direction: column;
       gap: 8px;
     }
+
+    .toast-error { 
+  background: #dc2626; 
+  border-left: 3px solid #991b1b; 
+}
+
     .toast {
       background: #1a1a1a;
       color: white;
@@ -190,3 +196,9 @@
       object-fit: cover;
       border-radius: 6px;
     }
+
+    @media print {
+  header { background: white !important; color: black !important; }
+  header img, .img-zoom { display: none; }
+  .sticky-order, #loader { display: none !important; }
+}
