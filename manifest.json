@@ -1,11 +1,11 @@
 {
-  "name": "Buzz Cafe and Bakery",
+  "name": "Buzz bakery and cafe",
   "short_name": "Buzz Cafe",
   "description": "Handcrafted coffee, fresh smoothies, custom cakes & warm meals. Order online or find our two locations in Phuentsholing.",
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#FDFCF8",
-  "theme_color": "#C4A77D",
+  "theme_color": "#FDFCF8",
   "orientation": "portrait-primary",
   "scope": "/",
   "id": "/index.html",
@@ -22,13 +22,25 @@
       "src": "/image/logo-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/image/logo-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/image/logo-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/image/logo-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [

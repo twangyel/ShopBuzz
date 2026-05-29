@@ -1,3 +1,34 @@
+/* ===== PWA SPLASH SCREEN FIX — Buzz Cafe =====
+   Add this to the VERY TOP of your index.css file
+*/
+
+/* Force cream background everywhere, prevent any black/dark flash */
+html {
+  background-color: #FDFCF8 !important;
+  height: 100%;
+}
+
+body {
+  background-color: #FDFCF8 !important;
+  min-height: 100vh;
+  overscroll-behavior-y: none;
+}
+
+/* PWA standalone mode fixes */
+@media all and (display-mode: standalone) {
+  html, body {
+    background-color: #FDFCF8 !important;
+  }
+}
+
+/* iOS specific */
+@supports (-webkit-touch-callout: none) {
+  html, body {
+    background-color: #FDFCF8 !important;
+  }
+}
+
+
 body { font-family: 'Inter', system-ui, sans-serif; padding-top: 80px; }
     .font-display { font-family: 'Playfair Display', Georgia, serif; }
 
