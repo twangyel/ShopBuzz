@@ -4,9 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Track Order — Your Cafe</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
   <style>
     :root{
       --dom-blue:#0078AC;
@@ -16,6 +14,11 @@
       --dom-red-dark:#A50D22;
       --dom-red-light:#FDE8EB;
       --dom-orange:#FF6B00;
+      --dom-orange-light:#FFF0E0;
+      --dom-green:#10B981;
+      --dom-green-light:#D1FAE5;
+      --dom-yellow:#F59E0B;
+      --dom-yellow-light:#FEF3C7;
       --dom-dark:#1A1A1A;
       --dom-gray:#6B7280;
       --dom-gray-light:#F3F4F6;
@@ -56,7 +59,7 @@
       border-radius:10px; color:#fff; background:rgba(255,255,255,.12);
       border:none; cursor:pointer; transition:all .2s; text-decoration:none;
     }
-    .icon-btn:hover{ background:rgba(255,255,255,.22); }
+    .icon-btn:hover{ background:rgba(255,255,255,.22); transform:translateY(-1px); }
     .icon-btn:active{ transform:scale(.93); }
 
     /* Main */
@@ -64,33 +67,34 @@
 
     /* Search Section */
     .search-section{ text-align:center; margin-bottom:32px; }
-    .search-heading{ font-weight:800; font-size:22px; color:var(--dom-dark); letter-spacing:-.02em; margin-bottom:6px; }
-    .search-sub{ font-size:14px; color:var(--dom-gray); font-weight:500; margin-bottom:20px; }
+    .search-heading{ font-weight:800; font-size:26px; color:var(--dom-dark); letter-spacing:-.02em; margin-bottom:6px; }
+    .search-sub{ font-size:14px; color:var(--dom-gray); font-weight:500; margin-bottom:24px; }
     .search-box{
-      display:flex; gap:10px; max-width:400px; margin:0 auto;
-      position:relative;
+      display:flex; gap:10px; max-width:420px; margin:0 auto;
+      position:relative; align-items:flex-start;
     }
 
-    /* Field with validation */
     .field-group{ flex:1; position:relative; }
     .field{
-      width:100%; padding:12px 14px; border:2px solid var(--dom-line); border-radius:var(--radius);
+      width:100%; padding:14px 16px; border:2px solid var(--dom-line); border-radius:var(--radius);
       background:var(--dom-white); font-family:inherit; font-size:15px; color:var(--dom-dark);
       font-weight:600; text-align:center; letter-spacing:0.05em; text-transform:uppercase;
       transition:all .2s;
     }
     .field::placeholder{ color:var(--dom-gray); font-weight:400; text-transform:none; letter-spacing:normal; }
-    .field:focus{ outline:none; border-color:var(--dom-blue); box-shadow:0 0 0 3px rgba(0,120,172,.12); }
+    .field:focus{ outline:none; border-color:var(--dom-blue); box-shadow:0 0 0 4px rgba(0,120,172,.12); transform:translateY(-1px); }
     .field.error{ border-color:var(--dom-red); background:var(--dom-red-light); }
-    .field.error:focus{ box-shadow:0 0 0 3px rgba(210,17,44,.12); }
-    .field.shake{ animation:shake 0.4s ease; }
+    .field.error:focus{ box-shadow:0 0 0 4px rgba(210,17,44,.12); }
+    .field.shake{ animation:shake 0.5s ease; }
 
     @keyframes shake{
       0%,100%{ transform:translateX(0); }
-      20%{ transform:translateX(-6px); }
-      40%{ transform:translateX(6px); }
-      60%{ transform:translateX(-4px); }
-      80%{ transform:translateX(4px); }
+      15%{ transform:translateX(-8px); }
+      30%{ transform:translateX(8px); }
+      45%{ transform:translateX(-5px); }
+      60%{ transform:translateX(5px); }
+      75%{ transform:translateX(-2px); }
+      90%{ transform:translateX(2px); }
     }
 
     .field-error{
@@ -105,129 +109,252 @@
     .field-error.show{ opacity:1; transform:translateY(0); }
 
     .btn-primary{
-      padding:12px 20px; border:none; border-radius:var(--radius);
+      padding:14px 24px; border:none; border-radius:var(--radius);
       background:var(--dom-red); color:#fff;
-      font-family:inherit; font-weight:700; font-size:14px;
+      font-family:inherit; font-weight:700; font-size:15px;
       cursor:pointer; transition:all .2s; white-space:nowrap;
+      display:flex; align-items:center; gap:8px;
+      box-shadow:0 4px 14px rgba(210,17,44,.25);
     }
-    .btn-primary:hover{ background:var(--dom-red-dark); }
-    .btn-primary:active{ transform:scale(.985); }
+    .btn-primary:hover{ background:var(--dom-red-dark); transform:translateY(-2px); box-shadow:0 6px 20px rgba(210,17,44,.35); }
+    .btn-primary:active{ transform:scale(.98); }
+
+    /* Loading Skeleton */
+    .skeleton-wrap{ display:none; }
+    .skeleton-wrap.active{ display:block; animation:fadeUp 0.3s ease; }
+    .skeleton-card{
+      background:var(--dom-white); border:2px solid var(--dom-line); border-radius:var(--radius-lg);
+      overflow:hidden; margin-bottom:16px; padding:20px;
+    }
+    .skeleton{
+      background:linear-gradient(100deg, var(--dom-gray-light) 30%, #E8EAED 50%, var(--dom-gray-light) 70%);
+      background-size:200% 100%;
+      animation:shimmer 1.4s ease-in-out infinite;
+      border-radius:8px;
+    }
+    @keyframes shimmer{ to{ background-position:-200% 0; } }
+    .skeleton-title{ height:20px; width:140px; margin-bottom:12px; }
+    .skeleton-text{ height:14px; margin-bottom:10px; }
+    .skeleton-text.short{ width:60%; }
+    .skeleton-circle{ width:40px; height:40px; border-radius:50%; }
+    .skeleton-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .skeleton-line{ height:4px; border-radius:2px; margin:20px 0; }
+    .skeleton-steps{ display:flex; justify-content:space-between; }
+    .skeleton-step{ display:flex; flex-direction:column; align-items:center; gap:8px; }
+    .skeleton-dot{ width:32px; height:32px; border-radius:50%; }
+    .skeleton-label{ height:10px; width:50px; }
 
     /* Cards */
     .card{
       background:var(--dom-white); border:2px solid var(--dom-line); border-radius:var(--radius-lg);
       overflow:hidden; margin-bottom:16px;
+      transition:all 0.3s ease;
+      animation:fadeUp 0.5s ease both;
     }
-    .card-section{ padding:20px; }
+    .card:hover{ box-shadow:0 8px 30px -10px rgba(0,0,0,.08); border-color:#d1d5db; }
+    .card-section{ padding:24px; }
     .card-section + .card-section{ border-top:2px solid var(--dom-line); }
 
     /* Status Badge */
     .status-badge{
-      display:inline-flex; align-items:center; gap:6px;
-      padding:6px 14px; border-radius:999px;
-      font-size:12px; font-weight:700; color:#fff;
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 16px; border-radius:999px;
+      font-size:13px; font-weight:700; color:#fff;
       text-transform:capitalize;
+      box-shadow:0 4px 12px rgba(0,0,0,.1);
+      animation:badgePop 0.4s cubic-bezier(.34,1.56,.64,1);
     }
-    .status-dot{ width:8px; height:8px; border-radius:50%; background:#fff; }
+    @keyframes badgePop{
+      from{ transform:scale(0.8); opacity:0; }
+      to{ transform:scale(1); opacity:1; }
+    }
+    .status-dot{ 
+      width:8px; height:8px; border-radius:50%; background:#fff; 
+      animation:pulseDot 2s ease-in-out infinite;
+    }
+    @keyframes pulseDot{
+      0%,100%{ box-shadow:0 0 0 0 rgba(255,255,255,.7); }
+      50%{ box-shadow:0 0 0 6px rgba(255,255,255,0); }
+    }
+
+    /* Live Indicator */
+    .live-indicator{
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:11px; font-weight:700; color:var(--dom-green);
+      background:var(--dom-green-light);
+      padding:4px 10px; border-radius:999px;
+      margin-bottom:10px;
+    }
+    .live-pulse{
+      width:6px; height:6px; border-radius:50%; background:var(--dom-green);
+      animation:pulseLive 2s ease-in-out infinite;
+    }
+    @keyframes pulseLive{
+      0%,100%{ opacity:1; transform:scale(1); }
+      50%{ opacity:.5; transform:scale(1.3); }
+    }
 
     /* Progress Steps */
-    .progress-wrap{ position:relative; padding:0 10px; }
+    .progress-wrap{ position:relative; padding:10px 6px 0; }
     .progress-line-bg{
-      position:absolute; top:14px; left:24px; right:24px; height:3px;
+      position:absolute; top:31px; left:40px; right:40px; height:4px;
       background:var(--dom-line); border-radius:2px;
     }
     .progress-line-fill{
-      position:absolute; top:14px; left:24px; height:3px;
-      background:var(--dom-blue); border-radius:2px;
-      transition:width 0.6s ease;
+      position:absolute; top:31px; left:40px; height:4px;
+      background:linear-gradient(90deg, var(--dom-blue) 0%, var(--dom-green) 100%);
+      border-radius:2px;
+      transition:width 0.8s cubic-bezier(.4,0,.2,1);
+      box-shadow:0 2px 8px rgba(0,120,172,.2);
     }
     .steps-row{
       display:flex; justify-content:space-between; position:relative; z-index:1;
     }
     .step{
-      display:flex; flex-direction:column; align-items:center; gap:8px;
-      flex:1;
+      display:flex; flex-direction:column; align-items:center; gap:10px;
+      flex:1; cursor:default;
     }
     .step-circle{
-      width:32px; height:32px; border-radius:50%;
+      width:44px; height:44px; border-radius:50%;
       border:3px solid var(--dom-line); background:var(--dom-white);
       display:flex; align-items:center; justify-content:center;
-      transition:all 0.4s ease;
+      transition:all 0.5s cubic-bezier(.34,1.56,.64,1);
+      position:relative;
     }
-    .step-circle svg{ width:14px; height:14px; display:none; }
-    .step-circle .step-inner{ width:10px; height:10px; border-radius:50%; background:transparent; }
+    .step-circle svg{ width:20px; height:20px; color:var(--dom-gray); transition:all 0.3s; }
     
     .step.completed .step-circle{
-      border-color:var(--dom-blue); background:var(--dom-blue);
+      border-color:var(--dom-green); background:var(--dom-green);
+      box-shadow:0 4px 12px rgba(16,185,129,.3);
+      transform:scale(1.05);
     }
-    .step.completed .step-circle svg{ display:block; color:#fff; }
-    .step.completed .step-circle .step-inner{ display:none; }
+    .step.completed .step-circle svg{ color:#fff; }
     
     .step.active .step-circle{
       border-color:var(--dom-blue); background:var(--dom-blue-light);
-      box-shadow:0 0 0 4px rgba(0,120,172,.15);
+      box-shadow:0 0 0 6px rgba(0,120,172,.15);
+      animation:activePulse 2s ease-in-out infinite;
     }
-    .step.active .step-circle .step-inner{ background:var(--dom-blue); }
+    .step.active .step-circle svg{ color:var(--dom-blue); }
+    
+    @keyframes activePulse{
+      0%,100%{ box-shadow:0 0 0 4px rgba(0,120,172,.15); }
+      50%{ box-shadow:0 0 0 10px rgba(0,120,172,.05); }
+    }
     
     .step-label{
       font-size:11px; font-weight:600; color:var(--dom-gray);
       text-align:center; transition:all 0.3s;
+      max-width:70px; line-height:1.3;
     }
-    .step.completed .step-label{ color:var(--dom-blue); font-weight:700; }
-    .step.active .step-label{ color:var(--dom-dark); font-weight:700; }
+    .step.completed .step-label{ color:var(--dom-green); font-weight:700; }
+    .step.active .step-label{ color:var(--dom-blue); font-weight:800; font-size:12px; }
+
+    /* Step connector animation */
+    .step-connector{
+      position:absolute; top:31px; left:50%; right:-50%; height:4px;
+      background:transparent; z-index:0;
+    }
+
+    /* Order Meta Grid */
+    .meta-grid{
+      display:grid; grid-template-columns:repeat(2, 1fr); gap:16px; margin-top:16px;
+    }
+    .meta-item{
+      background:var(--dom-gray-light); border-radius:var(--radius);
+      padding:12px 16px;
+    }
+    .meta-label{
+      font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em;
+      color:var(--dom-gray); margin-bottom:4px;
+    }
+    .meta-value{
+      font-size:14px; font-weight:700; color:var(--dom-dark);
+    }
 
     /* Order Items */
     .item-row{
       display:flex; justify-content:space-between; align-items:center;
-      padding:10px 0; border-bottom:1px solid var(--dom-line);
+      padding:14px 0; border-bottom:1px solid var(--dom-line);
+      transition:all 0.2s;
     }
+    .item-row:hover{ padding-left:4px; padding-right:4px; }
     .item-row:last-child{ border-bottom:none; }
-    .item-name{ font-size:14px; font-weight:500; color:var(--dom-dark); }
-    .item-qty{ font-size:12px; color:var(--dom-gray); font-weight:600; margin-right:6px; }
-    .item-price{ font-size:14px; font-weight:700; color:var(--dom-dark); }
+    .item-info{ display:flex; align-items:center; gap:12px; }
+    .item-icon{
+      width:36px; height:36px; border-radius:10px; background:var(--dom-blue-light);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--dom-blue); flex-shrink:0;
+    }
+    .item-name{ font-size:14px; font-weight:600; color:var(--dom-dark); }
+    .item-qty{ 
+      font-size:11px; font-weight:700; color:var(--dom-blue); 
+      background:var(--dom-blue-light); padding:2px 8px; border-radius:999px;
+    }
+    .item-price{ font-size:15px; font-weight:700; color:var(--dom-dark); }
 
     .total-row{
       display:flex; justify-content:space-between; align-items:center;
-      padding-top:16px; border-top:2px solid var(--dom-line);
+      padding-top:20px; border-top:2px solid var(--dom-line);
     }
     .total-label{ font-size:14px; font-weight:600; color:var(--dom-gray); }
-    .total-value{ font-size:20px; font-weight:800; color:var(--dom-dark); letter-spacing:-.02em; }
+    .total-value{ font-size:24px; font-weight:800; color:var(--dom-dark); letter-spacing:-.02em; }
 
     /* Refresh Button */
     .btn-secondary{
-      width:100%; padding:12px; border:2px solid var(--dom-line); border-radius:var(--radius);
+      width:100%; padding:14px; border:2px solid var(--dom-line); border-radius:var(--radius);
       background:var(--dom-white); color:var(--dom-dark);
       font-family:inherit; font-weight:700; font-size:14px;
-      cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px;
+      cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:10px;
     }
-    .btn-secondary:hover{ background:var(--dom-gray-light); border-color:var(--dom-gray); }
+    .btn-secondary:hover{ background:var(--dom-gray-light); border-color:var(--dom-gray); transform:translateY(-1px); }
     .btn-secondary:active{ transform:scale(.985); }
+    .btn-secondary .spin-icon{ animation:spin 1s linear infinite; }
+    @keyframes spin{ to{ transform:rotate(360deg); } }
 
     /* Empty / Not Found */
-    .empty-state{ text-align:center; padding:48px 20px; }
-    .empty-icon{
-      width:64px; height:64px; border-radius:50%; background:var(--dom-blue-light);
-      display:flex; align-items:center; justify-content:center; margin:0 auto 16px;
+    .empty-state{ text-align:center; padding:60px 20px; animation:fadeUp 0.5s ease; }
+    .empty-illustration{
+      width:120px; height:120px; margin:0 auto 24px;
+      background:var(--dom-blue-light); border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      border:3px solid rgba(0,120,172,.1);
+      animation:float 3s ease-in-out infinite;
     }
-    .empty-icon svg{ width:28px; height:28px; color:var(--dom-blue); }
-    .empty-title{ font-weight:700; font-size:18px; color:var(--dom-dark); margin-bottom:4px; }
-    .empty-sub{ font-size:14px; color:var(--dom-gray); font-weight:500; }
+    @keyframes float{
+      0%,100%{ transform:translateY(0); }
+      50%{ transform:translateY(-10px); }
+    }
+    .empty-illustration svg{ width:56px; height:56px; color:var(--dom-blue); }
+    .empty-title{ font-weight:800; font-size:20px; color:var(--dom-dark); margin-bottom:6px; }
+    .empty-sub{ font-size:14px; color:var(--dom-gray); font-weight:500; max-width:280px; margin:0 auto; line-height:1.5; }
+
+    /* Confetti Canvas */
+    #confetti-canvas{
+      position:fixed; inset:0; pointer-events:none; z-index:9999;
+    }
 
     /* Animations */
-    @keyframes fadeUp{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:translateY(0); } }
-    .fade-up{ animation:fadeUp 0.4s ease both; }
+    @keyframes fadeUp{ 
+      from{ opacity:0; transform:translateY(16px); } 
+      to{ opacity:1; transform:translateY(0); } 
+    }
+    .fade-up{ animation:fadeUp 0.5s ease both; }
     .delay-1{ animation-delay:0.1s; }
     .delay-2{ animation-delay:0.2s; }
     .delay-3{ animation-delay:0.3s; }
-
-    @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.5; } }
-    .animate-pulse{ animation:pulse 2s ease-in-out infinite; }
+    .delay-4{ animation-delay:0.4s; }
 
     .hide{ display:none !important; }
 
     @media(min-width:640px){
-      main{ padding:32px 24px 120px; }
-      .search-heading{ font-size:26px; }
+      main{ padding:40px 24px 120px; }
+      .search-heading{ font-size:32px; }
+      .search-sub{ font-size:15px; }
+      .step-label{ font-size:12px; max-width:none; }
+      .step-circle{ width:48px; height:48px; }
+      .step-circle svg{ width:22px; height:22px; }
+      .progress-line-bg, .progress-line-fill{ top:33px; }
     }
 
     @media(prefers-reduced-motion:reduce){
@@ -236,6 +363,8 @@
   </style>
 </head>
 <body>
+
+  <canvas id="confetti-canvas"></canvas>
 
   <!-- Header -->
   <header class="topbar">
@@ -261,7 +390,7 @@
     <!-- Search -->
     <div class="search-section">
       <h1 class="search-heading">Track Your Order</h1>
-      <p class="search-sub">Enter your order ID to see live status</p>
+      <p class="search-sub">Enter your order ID to see live status updates</p>
       
       <div class="search-box">
         <div class="field-group">
@@ -273,7 +402,40 @@
             <span>Please enter an order ID</span>
           </div>
         </div>
-        <button onclick="trackOrder()" class="btn-primary">Track</button>
+        <button onclick="trackOrder()" class="btn-primary">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          Track
+        </button>
+      </div>
+    </div>
+
+    <!-- Skeleton Loading -->
+    <div id="skeleton-loader" class="skeleton-wrap">
+      <div class="skeleton-card">
+        <div class="skeleton-row">
+          <div>
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-text short" style="width:180px;"></div>
+          </div>
+          <div class="skeleton skeleton-circle" style="width:80px; height:32px; border-radius:999px;"></div>
+        </div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton-line" style="margin-bottom:30px;"></div>
+        <div class="skeleton-steps">
+          <div class="skeleton-step"><div class="skeleton skeleton-dot"></div><div class="skeleton skeleton-label"></div></div>
+          <div class="skeleton-step"><div class="skeleton skeleton-dot"></div><div class="skeleton skeleton-label"></div></div>
+          <div class="skeleton-step"><div class="skeleton skeleton-dot"></div><div class="skeleton skeleton-label"></div></div>
+          <div class="skeleton-step"><div class="skeleton skeleton-dot"></div><div class="skeleton skeleton-label"></div></div>
+          <div class="skeleton-step"><div class="skeleton skeleton-dot"></div><div class="skeleton skeleton-label"></div></div>
+        </div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-text" style="width:60px; margin-bottom:16px;"></div>
+        <div class="skeleton-row"><div class="skeleton skeleton-text" style="width:140px;"></div><div class="skeleton skeleton-text" style="width:80px;"></div></div>
+        <div class="skeleton-row"><div class="skeleton skeleton-text" style="width:120px;"></div><div class="skeleton skeleton-text" style="width:80px;"></div></div>
       </div>
     </div>
 
@@ -281,19 +443,36 @@
     <div id="result" class="hide">
 
       <!-- Status Card -->
-      <div class="card fade-up delay-1">
-        <div class="card-section" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
-          <div>
-            <p style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--dom-gray); margin-bottom:6px;">Order ID</p>
-            <p id="res-number" style="font-family:'SF Mono', Monaco, monospace; font-size:28px; font-weight:800; color:var(--dom-orange); letter-spacing:-0.02em;">---</p>
-            <p id="res-time" style="font-size:13px; color:var(--dom-gray); font-weight:500; margin-top:4px;">---</p>
+      <div class="card delay-1">
+        <div class="card-section">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+            <div style="flex:1;">
+              <div class="live-indicator" id="live-badge">
+                <span class="live-pulse"></span>
+                <span>Live Tracking</span>
+              </div>
+              <p style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--dom-gray); margin-bottom:6px;">Order ID</p>
+              <p id="res-number" style="font-family:'SF Mono', Monaco, monospace; font-size:32px; font-weight:800; color:var(--dom-orange); letter-spacing:-0.02em; line-height:1;">---</p>
+              <p id="res-time" style="font-size:13px; color:var(--dom-gray); font-weight:500; margin-top:6px;">---</p>
+              
+              <div class="meta-grid">
+                <div class="meta-item">
+                  <div class="meta-label">Customer</div>
+                  <div class="meta-value" id="res-customer">---</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Type</div>
+                  <div class="meta-value" id="res-type" style="text-transform:capitalize;">---</div>
+                </div>
+              </div>
+            </div>
+            <span id="res-status" class="status-badge">---</span>
           </div>
-          <span id="res-status" class="status-badge">---</span>
         </div>
       </div>
 
       <!-- Progress Steps -->
-      <div class="card fade-up delay-2">
+      <div class="card delay-2">
         <div class="card-section">
           <div class="progress-wrap">
             <div class="progress-line-bg"></div>
@@ -301,36 +480,41 @@
             <div class="steps-row">
               <div class="step" data-step="pending">
                 <div class="step-circle">
-                  <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                  <div class="step-inner"></div>
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                  </svg>
                 </div>
                 <span class="step-label">Pending</span>
               </div>
               <div class="step" data-step="confirmed">
                 <div class="step-circle">
-                  <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                  <div class="step-inner"></div>
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
                 </div>
                 <span class="step-label">Confirmed</span>
               </div>
               <div class="step" data-step="preparing">
                 <div class="step-circle">
-                  <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                  <div class="step-inner"></div>
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                  </svg>
                 </div>
                 <span class="step-label">Preparing</span>
               </div>
               <div class="step" data-step="ready">
                 <div class="step-circle">
-                  <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                  <div class="step-inner"></div>
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                  </svg>
                 </div>
                 <span class="step-label">Ready</span>
               </div>
               <div class="step" data-step="completed">
                 <div class="step-circle">
-                  <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                  <div class="step-inner"></div>
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                  </svg>
                 </div>
                 <span class="step-label">Completed</span>
               </div>
@@ -340,20 +524,25 @@
       </div>
 
       <!-- Order Details -->
-      <div class="card fade-up delay-3">
+      <div class="card delay-3">
         <div class="card-section">
-          <h3 style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--dom-gray); margin-bottom:12px;">Items</h3>
+          <h3 style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:var(--dom-gray); margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--dom-blue);">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Order Items
+          </h3>
           <div id="res-items"></div>
           <div class="total-row">
-            <span class="total-label">Total</span>
+            <span class="total-label">Total Amount</span>
             <span class="total-value" id="res-total">Nu. 0.00</span>
           </div>
         </div>
       </div>
 
       <!-- Refresh -->
-      <button onclick="refreshOrder()" class="btn-secondary fade-up delay-3">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="animate-pulse">
+      <button onclick="refreshOrder()" class="btn-secondary delay-4" id="refresh-btn">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
         </svg>
         Refresh Status
@@ -362,13 +551,13 @@
 
     <!-- Not Found -->
     <div id="not-found" class="hide empty-state">
-      <div class="empty-icon">
+      <div class="empty-illustration">
         <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
       </div>
       <div class="empty-title">Order not found</div>
-      <div class="empty-sub">Check your order ID and try again</div>
+      <div class="empty-sub">We couldn't find that order ID. Please check and try again, or contact the cafe.</div>
     </div>
 
   </main>
@@ -380,62 +569,131 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
     const steps = ['pending', 'confirmed', 'preparing', 'ready', 'completed']
-    const statusColors = {
-      pending: 'background:#F59E0B;',
-      confirmed: 'background:var(--dom-blue);',
-      preparing: 'background:var(--dom-orange);',
-      ready: 'background:#10B981;',
-      completed: 'background:var(--dom-dark);',
-      cancelled: 'background:var(--dom-red);'
+    const statusConfig = {
+      pending: { color: '#F59E0B', bg: '#FEF3C7', label: 'Pending' },
+      confirmed: { color: '#0078AC', bg: '#E6F2F8', label: 'Confirmed' },
+      preparing: { color: '#FF6B00', bg: '#FFF0E0', label: 'Preparing' },
+      ready: { color: '#10B981', bg: '#D1FAE5', label: 'Ready' },
+      completed: { color: '#1A1A1A', bg: '#F3F4F6', label: 'Completed' },
+      cancelled: { color: '#D2112C', bg: '#FDE8EB', label: 'Cancelled' }
     }
 
     let currentOrderId = null
+    let currentStatus = null
+
+    // Confetti System
+    const canvas = document.getElementById('confetti-canvas')
+    const ctx = canvas.getContext('2d')
+    let confettiParticles = []
+    let confettiActive = false
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+    window.addEventListener('resize', resizeCanvas)
+    resizeCanvas()
+
+    function createConfetti() {
+      const colors = ['#0078AC', '#FF6B00', '#10B981', '#D2112C', '#F59E0B', '#8B5CF6']
+      for (let i = 0; i < 120; i++) {
+        confettiParticles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          w: Math.random() * 10 + 5,
+          h: Math.random() * 6 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          speed: Math.random() * 3 + 2,
+          angle: Math.random() * 360,
+          spin: Math.random() * 10 - 5,
+          drift: Math.random() * 2 - 1
+        })
+      }
+    }
+
+    function updateConfetti() {
+      if (!confettiActive) return
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      
+      confettiParticles.forEach((p, i) => {
+        p.y += p.speed
+        p.x += p.drift
+        p.angle += p.spin
+        
+        ctx.save()
+        ctx.translate(p.x, p.y)
+        ctx.rotate(p.angle * Math.PI / 180)
+        ctx.fillStyle = p.color
+        ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h)
+        ctx.restore()
+        
+        if (p.y > canvas.height + 20) {
+          confettiParticles.splice(i, 1)
+        }
+      })
+      
+      if (confettiParticles.length === 0) {
+        confettiActive = false
+      } else {
+        requestAnimationFrame(updateConfetti)
+      }
+    }
+
+    function fireConfetti() {
+      confettiParticles = []
+      createConfetti()
+      if (!confettiActive) {
+        confettiActive = true
+        updateConfetti()
+      }
+    }
 
     function showInputError() {
       const input = document.getElementById('order-input')
       const error = document.getElementById('input-error')
-      
       input.classList.add('error', 'shake')
       error.classList.add('show')
-      
-      // Remove shake class after animation so it can be retriggered
-      setTimeout(() => input.classList.remove('shake'), 400)
-      
+      setTimeout(() => input.classList.remove('shake'), 500)
       input.focus()
     }
 
     function clearInputError() {
       const input = document.getElementById('order-input')
       const error = document.getElementById('input-error')
-      
       input.classList.remove('error')
       error.classList.remove('show')
+    }
+
+    function setLoading(isLoading) {
+      const skeleton = document.getElementById('skeleton-loader')
+      const result = document.getElementById('result')
+      const notFound = document.getElementById('not-found')
+      
+      if (isLoading) {
+        skeleton.classList.add('active')
+        result.classList.add('hide')
+        notFound.classList.add('hide')
+      } else {
+        skeleton.classList.remove('active')
+      }
     }
 
     async function trackOrder() {
       const input = document.getElementById('order-input')
       const value = input.value.trim().toUpperCase()
       
-      // Clear previous error
       clearInputError()
-      
-      if (!value) {
-        showInputError()
-        return
-      }
+      if (!value) { showInputError(); return }
 
-      document.getElementById('result').classList.add('hide')
-      document.getElementById('not-found').classList.add('hide')
+      setLoading(true)
 
       let query = supabaseClient.from('orders').select('*, order_items(*)')
-      
-      if (value.includes('-')) {
-        query = query.eq('order_number', value)
-      } else {
-        query = query.eq('id', value)
-      }
+      if (value.includes('-')) { query = query.eq('order_number', value) } 
+      else { query = query.eq('id', value) }
 
       const { data } = await query.single()
+
+      setLoading(false)
 
       if (!data) {
         document.getElementById('not-found').classList.remove('hide')
@@ -449,20 +707,41 @@
     function showResult(order) {
       document.getElementById('result').classList.remove('hide')
       
-      document.getElementById('res-number').textContent = order.order_number || order.id.slice(0,8).toUpperCase()
-      document.getElementById('res-time').textContent = 'Placed ' + new Date(order.created_at).toLocaleString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
-      document.getElementById('res-total').textContent = 'Nu. ' + parseFloat(order.total_amount).toFixed(2)
+      // Reset animations by re-adding classes
+      document.querySelectorAll('.card, .btn-secondary').forEach(el => {
+        el.style.animation = 'none'
+        el.offsetHeight // trigger reflow
+        el.style.animation = ''
+      })
 
+      document.getElementById('res-number').textContent = order.order_number || order.id.slice(0,8).toUpperCase()
+      document.getElementById('res-time').textContent = 'Placed on ' + new Date(order.created_at).toLocaleString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
+      document.getElementById('res-total').textContent = 'Nu. ' + parseFloat(order.total_amount).toFixed(2)
+      document.getElementById('res-customer').textContent = order.customer_name || 'Guest'
+      document.getElementById('res-type').textContent = order.delivery_type || order.order_type || 'Pickup'
+
+      const config = statusConfig[order.status] || statusConfig.pending
       const statusBadge = document.getElementById('res-status')
-      statusBadge.textContent = order.status
-      statusBadge.style = statusColors[order.status] || 'background:var(--dom-gray);'
+      statusBadge.textContent = config.label
+      statusBadge.style.background = config.color
+      statusBadge.style.color = '#fff'
+
+      // Live badge - hide if completed or cancelled
+      const liveBadge = document.getElementById('live-badge')
+      if (order.status === 'completed' || order.status === 'cancelled') {
+        liveBadge.style.display = 'none'
+      } else {
+        liveBadge.style.display = 'inline-flex'
+      }
 
       // Progress bar
       const currentIndex = steps.indexOf(order.status)
       const progress = currentIndex >= 0 ? (currentIndex / (steps.length - 1)) * 100 : 0
-      document.getElementById('progress-line').style.width = progress + '%'
+      setTimeout(() => {
+        document.getElementById('progress-line').style.width = progress + '%'
+      }, 100)
 
-      // Step dots
+      // Step dots with icons
       document.querySelectorAll('.step').forEach((step) => {
         const stepName = step.dataset.step
         const stepIndex = steps.indexOf(stepName)
@@ -476,30 +755,57 @@
         }
       })
 
-      // Items
-      document.getElementById('res-items').innerHTML = (order.order_items || []).map(item => `
-        <div class="item-row">
-          <div>
-            <span class="item-qty">${item.quantity}x</span>
-            <span class="item-name">${item.item_name}</span>
+      // Items with icons
+      document.getElementById('res-items').innerHTML = (order.order_items || []).map((item, i) => `
+        <div class="item-row" style="animation:fadeUp 0.3s ease ${i * 0.05}s both;">
+          <div class="item-info">
+            <div class="item-icon">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+            </div>
+            <div>
+              <div class="item-name">${item.item_name}</div>
+            </div>
           </div>
-          <span class="item-price">Nu. ${(item.price * item.quantity).toFixed(2)}</span>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span class="item-qty">${item.quantity}x</span>
+            <span class="item-price">Nu. ${(item.price * item.quantity).toFixed(2)}</span>
+          </div>
         </div>
       `).join('')
+
+      // Confetti on completion
+      if (order.status === 'completed' && currentStatus !== 'completed') {
+        setTimeout(fireConfetti, 600)
+      }
+      currentStatus = order.status
     }
 
     async function refreshOrder() {
       if (!currentOrderId) return
+      
+      const btn = document.getElementById('refresh-btn')
+      const originalHTML = btn.innerHTML
+      btn.innerHTML = `<svg class="spin-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Refreshing...`
+      btn.disabled = true
+      
       const { data } = await supabaseClient.from('orders').select('*, order_items(*)').eq('id', currentOrderId).single()
+      
+      btn.innerHTML = originalHTML
+      btn.disabled = false
+      
       if (data) showResult(data)
     }
 
     // Auto-refresh every 30 seconds
     setInterval(() => {
-      if (currentOrderId && !document.hidden) refreshOrder()
+      if (currentOrderId && !document.hidden && currentStatus !== 'completed' && currentStatus !== 'cancelled') {
+        refreshOrder()
+      }
     }, 30000)
 
-    // Allow Enter key
+    // Enter key support
     document.getElementById('order-input').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') trackOrder()
     })
@@ -507,7 +813,7 @@
     // Clear error on input
     document.getElementById('order-input').addEventListener('input', clearInputError)
 
-    // Check URL params (from confirmation page)
+    // URL params
     const urlParams = new URLSearchParams(window.location.search)
     const urlOrder = urlParams.get('order')
     if (urlOrder) {
@@ -519,6 +825,5 @@
       navigator.serviceWorker.register('/sw.js')
     }
   </script>
-
 </body>
 </html>
