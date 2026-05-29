@@ -224,19 +224,31 @@ function renderOutletsControl() {
 
 async function toggleOutletStatus(outletId, isOpen) {
   const newStatus = isOpen ? 'open' : 'closed'
+
+  // Optimistically update the in-memory array and re-render immediately
+  const outlet = allOutlets.find(o => o.id === outletId)
+  if (outlet) {
+    outlet.status = newStatus
+    renderOutletsControl()
+    updatePortalInfo()
+  }
+
   const { error } = await supabaseClient
     .from('outlets')
     .update({ status: newStatus })
     .eq('id', outletId)
 
   if (error) {
+    // Rollback optimistic update on failure
+    if (outlet) {
+      outlet.status = isOpen ? 'closed' : 'open'
+      renderOutletsControl()
+      updatePortalInfo()
+    }
     showToast('Failed to update status', 'error')
-    loadOutlets()
   } else {
-    const outlet = allOutlets.find(o => o.id === outletId)
     showToast(`${outlet?.name || 'Store'} is now ${newStatus}`, 'outlet')
     addNotification(`${outlet?.name || 'Store'} status changed to ${newStatus}`, 'outlet')
-    loadOutlets()
   }
 }
 
@@ -1339,9 +1351,16 @@ function setupRealtimeSubscriptions() {
   supabaseClient
     .channel('admin-outlets')
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'outlets' }, payload => {
-      const status = escapeHtml(payload.new.status || '')
+      const updated = payload.new
+      const status = escapeHtml(updated.status || '')
+      // Update in-memory array so re-render is instant, no extra DB round-trip
+      const idx = allOutlets.findIndex(o => o.id === updated.id)
+      if (idx !== -1) {
+        allOutlets[idx] = { ...allOutlets[idx], ...updated }
+      }
+      renderOutletsControl()
+      updatePortalInfo()
       showToast(`Store status: ${status}`, 'outlet')
-      loadOutlets()
     })
     .subscribe()
 

@@ -101,24 +101,18 @@
       border-radius: 8px;
     }
 
-    /* ===== OUTLET GRID — CENTERED ===== */
+    /* ===== OUTLET GRID — CENTERED LIKE ORIGINAL ===== */
     .outlet-grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
       gap: 20px;
-    }
-    .outlet-grid > * {
-      flex: 0 0 100%;
-      max-width: 420px;
+      justify-items: center; /* centers cards horizontally in their grid cell */
     }
     @media (min-width: 640px) {
-      .outlet-grid { gap: 24px; }
-      .outlet-grid > * { flex: 0 0 calc(50% - 12px); }
+      .outlet-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
     }
     @media (min-width: 1024px) {
-      .outlet-grid { gap: 28px; }
-      .outlet-grid > * { flex: 0 0 calc(33.333% - 19px); }
+      .outlet-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
     }
 
     /* ===== OUTLET CARD ===== */
@@ -128,6 +122,7 @@
       overflow: hidden;
       background: #fff;
       width: 100%;
+      max-width: 420px;
     }
     .outlet-card:not(.outlet-closed):hover {
       transform: translateY(-2px);
@@ -143,17 +138,13 @@
     /* Closed Outlet */
     .outlet-closed {
       cursor: not-allowed;
+      pointer-events: none;
     }
     .outlet-closed .outlet-img-wrap,
     .outlet-closed .card-body {
       filter: grayscale(0.6);
       opacity: 0.45;
-    }
-    .outlet-closed .outlet-img-wrap::after {
-      content: '';
-      position: absolute; inset: 0;
-      background: rgba(255,255,255,0.4);
-      backdrop-filter: blur(1px);
+      transition: filter 0.3s ease, opacity 0.3s ease;
     }
 
     /* Status Badges */
@@ -171,6 +162,23 @@
       background: #FDE8EB;
       color: #D2112C;
       border: 1px solid #fecaca;
+    }
+
+    /* ===== CLOSED OVERLAY ===== */
+    .closed-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      border-radius: 16px;
+      animation: fadeIn 0.3s ease-out;
+      pointer-events: none;
     }
 
     /* ===== TOAST ===== */
@@ -264,14 +272,8 @@
             </svg>
           </a>
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-lg bg-domBlue flex items-center justify-center">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
-                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-                <line x1="6" y1="1" x2="6" y2="4"/>
-                <line x1="10" y1="1" x2="10" y2="4"/>
-                <line x1="14" y1="1" x2="14" y2="4"/>
-              </svg>
+            <div class="w-18 h-18 rounded-lg bg-domBlue flex items-center justify-center">
+           <img src="image/logo.svg" alt="BuzzCafe Logo" class="w-4 h-4">
             </div>
             <div>
               <h1 class="text-sm font-bold text-domDark leading-tight">BuzzCafe</h1>
@@ -464,79 +466,105 @@
 
     // ===== REALTIME: UPDATE SINGLE CARD =====
     function updateOutletCard(outlet) {
-      console.log('Updating outlet card:', outlet.id, 'new status:', outlet.status)
+      console.log('=== updateOutletCard START ===', outlet.id, outlet.status)
 
       const card = document.querySelector(`[data-outlet-id="${outlet.id}"]`)
       if (!card) {
-        console.log('Card not found for outlet:', outlet.id)
+        console.log('Card NOT found for outlet id:', outlet.id)
         return
       }
+      console.log('Card FOUND:', card)
 
-      const newStatus = outlet.status || 'open'
+      const newStatus = (outlet.status || 'open').toString().toLowerCase().trim()
+      const currentStatus = (card.dataset.status || 'open').toString().toLowerCase().trim()
       const isClosed = newStatus === 'closed'
-      const wasClosed = card.dataset.status === 'closed'
+      const wasClosed = currentStatus === 'closed'
 
-      console.log('Card found. Was closed:', wasClosed, 'Is closed:', isClosed)
+      console.log('currentStatus:', currentStatus, '| newStatus:', newStatus, '| wasClosed:', wasClosed, '| isClosed:', isClosed)
 
-      // If status hasn't changed, do nothing
-      if (newStatus === card.dataset.status) {
-        console.log('Status unchanged, skipping')
+      if (newStatus === currentStatus) {
+        console.log('Status unchanged, skipping update')
         return
       }
 
-      // Update data attribute
+      // 1. Update data attribute
       card.dataset.status = newStatus
+      console.log('Step 1: dataset.status set to', newStatus)
 
-      // Update badge
+      // 2. Update badge
       const badgeContainer = card.querySelector('.status-badge-container')
       if (badgeContainer) {
         badgeContainer.innerHTML = getStatusBadge(newStatus)
+        console.log('Step 2: badge updated to', newStatus)
+      } else {
+        console.log('Step 2: badge container NOT found!')
       }
 
-      // Handle closed state
+      // 3. Handle closed/open state
       if (isClosed) {
-        console.log('Closing outlet:', outlet.name)
+        console.log('Step 3: CLOSING outlet')
 
         // Add closed class
         card.classList.add('outlet-closed')
+        console.log('Step 3a: outlet-closed class ADDED. Classes now:', card.className)
 
         // Remove click handler
         card.removeAttribute('onclick')
+        console.log('Step 3b: onclick removed')
+
+        // Force reflow to ensure CSS transitions apply
+        void card.offsetHeight
 
         // Add overlay if not exists
         let overlay = card.querySelector('.closed-overlay')
         if (!overlay) {
+          console.log('Step 3c: creating NEW overlay')
           overlay = document.createElement('div')
-          overlay.className = 'closed-overlay absolute inset-0 z-20 flex flex-col items-center justify-center rounded-2xl bg-white/60 backdrop-blur-[2px]'
-          overlay.innerHTML = `<div class="text-center px-4">
-            <div class="w-12 h-12 bg-domRedLight rounded-full mx-auto flex items-center justify-center mb-3 shadow-sm">
-              <span class="text-xl">😊</span>
+          overlay.className = 'closed-overlay'
+          overlay.innerHTML = `
+            <div style="text-align:center; padding: 0 16px;">
+              <div style="width:52px; height:52px; background:#FDE8EB; border-radius:50%; margin:0 auto 12px; display:flex; align-items:center; justify-content:center; box-shadow: 0 2px 8px rgba(210,17,44,0.15);">
+                <span style="font-size:24px;">😊</span>
+              </div>
+              <p style="color:#1A1A1A; font-weight:800; font-size:15px; margin-bottom:4px; letter-spacing:-0.3px;">We'll be back soon!</p>
+              <p style="color:#6B7280; font-size:13px; font-weight:500;">This outlet is temporarily closed</p>
             </div>
-            <p class="text-domDark font-bold text-sm mb-1">We'll be back soon!</p>
-            <p class="text-domGray text-xs font-medium">This outlet is temporarily closed</p>
-          </div>`
+          `
           card.appendChild(overlay)
+          console.log('Step 3d: overlay APPENDED to card')
+        } else {
+          console.log('Step 3c: overlay already exists, skipping creation')
         }
 
         showToast(`${outlet.name} is temporarily closed — check back soon! 😊`, 4000)
 
       } else {
-        console.log('Opening outlet:', outlet.name)
+        console.log('Step 3: OPENING outlet')
 
         // Remove closed class
         card.classList.remove('outlet-closed')
+        console.log('Step 3a: outlet-closed class REMOVED. Classes now:', card.className)
 
         // Restore click handler
         card.setAttribute('onclick', `selectOutlet(${outlet.id})`)
+        console.log('Step 3b: onclick restored')
+
+        // Force reflow
+        void card.offsetHeight
 
         // Remove overlay
         const overlay = card.querySelector('.closed-overlay')
         if (overlay) {
           overlay.remove()
+          console.log('Step 3c: overlay REMOVED')
+        } else {
+          console.log('Step 3c: no overlay found to remove')
         }
 
         showToast(`${outlet.name} is now open and ready to serve! 🎉`, 4000)
       }
+
+      console.log('=== updateOutletCard END ===')
     }
 
     // ===== LOAD OUTLETS =====
@@ -564,23 +592,22 @@
 
         const html = data.map((o, index) => {
           const distance = formatDistance(o.distance_km)
-          const status = o.status || 'open'
+          const status = (o.status || 'open').toString().toLowerCase().trim()
           const isClosed = status === 'closed'
           const badge = getStatusBadge(status)
           const imageHtml = getOutletImage(o.image_url, o.name)
           const delay = Math.min(index * 0.06, 0.4)
 
-          // Closed outlets: no click handler, add overlay, dimmed style
           const clickAttr = isClosed ? '' : `onclick="selectOutlet(${o.id})"`
           const closedClass = isClosed ? 'outlet-closed' : ''
           const closedOverlay = isClosed 
-            ? `<div class="closed-overlay absolute inset-0 z-20 flex flex-col items-center justify-center rounded-2xl bg-white/60 backdrop-blur-[2px]">
-                <div class="text-center px-4">
-                  <div class="w-12 h-12 bg-domRedLight rounded-full mx-auto flex items-center justify-center mb-3 shadow-sm">
-                    <span class="text-xl">😊</span>
+            ? `<div class="closed-overlay">
+                <div style="text-align:center; padding: 0 16px;">
+                  <div style="width:52px; height:52px; background:#FDE8EB; border-radius:50%; margin:0 auto 12px; display:flex; align-items:center; justify-content:center; box-shadow: 0 2px 8px rgba(210,17,44,0.15);">
+                    <span style="font-size:24px;">😊</span>
                   </div>
-                  <p class="text-domDark font-bold text-sm mb-1">We'll be back soon!</p>
-                  <p class="text-domGray text-xs font-medium">This outlet is temporarily closed</p>
+                  <p style="color:#1A1A1A; font-weight:800; font-size:15px; margin-bottom:4px; letter-spacing:-0.3px;">We'll be back soon!</p>
+                  <p style="color:#6B7280; font-size:13px; font-weight:500;">This outlet is temporarily closed</p>
                 </div>
               </div>` 
             : ''
@@ -632,7 +659,7 @@
       } catch (err) {
         console.error('Failed to load outlets:', err)
         document.getElementById('outlet-list').innerHTML = `
-          <div class="col-span-full" style="flex:0 0 100%;max-width:100%;">
+          <div class="col-span-full" style="max-width:100%;">
             <div class="bg-domRedLight border border-red-200 rounded-2xl p-8 text-center animate-fade-in max-w-md mx-auto">
               <div class="w-14 h-14 bg-white rounded-xl mx-auto flex items-center justify-center mb-4 shadow-sm">
                 <svg class="w-7 h-7 text-domRed" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -660,7 +687,6 @@
     function subscribeToOutlets() {
       console.log('Subscribing to outlet status updates...')
 
-      // Remove existing channel to avoid duplicates
       if (outletChannel) {
         supabaseClient.removeChannel(outletChannel)
       }
@@ -672,11 +698,13 @@
           schema: 'public', 
           table: 'outlets'
         }, payload => {
-          console.log('Realtime update received:', payload)
+          console.log('=== REALTIME PAYLOAD ===', payload)
 
-          // Handle the payload — payload.new contains the updated row
-          if (payload.new && payload.new.id) {
+          if (payload.new && payload.new.id != null) {
+            console.log('Calling updateOutletCard with:', payload.new)
             updateOutletCard(payload.new)
+          } else {
+            console.log('Payload missing new.id, skipping. payload.new:', payload.new)
           }
         })
         .subscribe((status) => {
