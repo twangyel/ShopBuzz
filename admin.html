@@ -73,16 +73,16 @@
     .notif-dropdown {
       position: absolute; right: 0; top: calc(100% + 0.5rem);
       width: 20rem; max-height: 24rem; overflow-y: auto;
-      background: #1f2937; border-radius: 0.75rem; color: #f9fafb;
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-      border: 1px solid #f3f4f6;
+      background: white; border-radius: 0.75rem; color: #111827;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.15);
+      border: 1px solid #e5e7eb;
       opacity: 0; visibility: hidden; transform: translateY(-4px);
       transition: all 0.15s ease;
       z-index: 50;
     }
     .notif-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
-    .notif-item { padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #f9fafb; transition: background 0.15s; }
-    .notif-item:hover { background: #fafafa; }
+    .notif-item { padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #f3f4f6; transition: background 0.15s; color: #111827; }
+    .notif-item:hover { background: #f9fafb; }
     .notif-item.unread { background: #fff7ed; }
 
     /* Modal */
