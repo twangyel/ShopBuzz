@@ -1315,12 +1315,21 @@ function setupRealtimeSubscriptions() {
     })
     .subscribe()
 
-  supabaseClient
-    .channel('admin-tables')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'table_sessions' }, () => {
-      loadActiveSessions()
-    })
-    .subscribe()
+supabaseClient
+  .channel('admin-tables')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'table_sessions' }, payload => {
+    // Always refresh the active sessions panel
+    loadActiveSessions()
+
+    // Show notification when a new active session is inserted
+    if (payload.eventType === 'INSERT' && payload.new?.status === 'active') {
+      const table = allTables.find(t => t.id === payload.new.table_id)
+      const tableNum = table ? escapeHtml(table.number) : 'Unknown'
+      showToast(`Table ${tableNum} session started`, 'order')
+      addNotification(`Table ${tableNum} session started`, 'order')
+    }
+  })
+  .subscribe()
 
   supabaseClient
     .channel('admin-payments')
