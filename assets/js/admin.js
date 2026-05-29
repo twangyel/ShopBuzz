@@ -92,6 +92,51 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     return;
   }
 
+  // Inside: document.getElementById('login-form').addEventListener('submit', async (e) => { ... })
+
+const rememberMe = document.getElementById('remember-me')?.checked
+
+if (signInError) {
+  errorEl.textContent = signInError.message
+  errorEl.classList.remove('hidden')
+  return
+}
+
+// Save or clear email based on Remember Me
+if (rememberMe) {
+  localStorage.setItem('cp_remember_email', email)
+} else {
+  localStorage.removeItem('cp_remember_email')
+}
+
+// ... continue with role check ...
+
+  // Password visibility toggle
+window.togglePasswordVisibility = function() {
+  const input = document.getElementById('login-password')
+  const eyeOpen = document.getElementById('icon-eye')
+  const eyeOff = document.getElementById('icon-eye-off')
+  
+  if (input.type === 'password') {
+    input.type = 'text'
+    eyeOpen.classList.add('hidden')
+    eyeOff.classList.remove('hidden')
+  } else {
+    input.type = 'password'
+    eyeOpen.classList.remove('hidden')
+    eyeOff.classList.add('hidden')
+  }
+}
+
+// Restore remembered email on load
+const savedEmail = localStorage.getItem('cp_remember_email')
+if (savedEmail) {
+  const emailInput = document.getElementById('login-email')
+  const rememberBox = document.getElementById('remember-me')
+  if (emailInput) emailInput.value = savedEmail
+  if (rememberBox) rememberBox.checked = true
+}
+
   console.log('✅ Signed in successfully:', data.user.email);
 
   const { profile, error: profileErr } = await getUserProfile(data.user.id);
