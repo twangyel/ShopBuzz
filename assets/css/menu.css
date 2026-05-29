@@ -244,16 +244,16 @@
       padding:4px 10px; border-radius:6px; letter-spacing:.04em;
     }
 
-    .card-body{ padding:14px; display:flex; flex-direction:column; flex:1; }
+    .card-body{ padding:10px; display:flex; flex-direction:column; flex:1; }
 
     .dish-name{
       font-size:15px; font-weight:700; color:var(--dom-dark); line-height:1.3;
-      margin-bottom:4px; letter-spacing:-.01em;
+      margin-bottom:2px; letter-spacing:-.01em;
       display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;
     }
     .dish-desc{
-      font-size:12.5px; color:var(--dom-gray); line-height:1.4; margin-bottom:12px;
-      flex:1; min-height:36px;
+      font-size:12.5px; color:var(--dom-gray); line-height:1.4; margin-bottom:8px;
+      flex:1; min-height:28px;
       display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
     }
     .dish-price{
@@ -269,7 +269,7 @@
   font-weight:700; letter-spacing:.02em; cursor:pointer;
   background: var(--dom-red); color:#fff; font-family:inherit; font-size:14px;
   transition:all .2s ease;
-  margin-top:12px;
+  margin-top:8px;
 }
 .btn-add:hover{ background: darkorange; transform:translateY(-1px); }
 .btn-add:active{ transform:scale(.97); }
@@ -277,7 +277,7 @@
       display:flex; align-items:center; justify-content:space-between;
       border-radius:var(--radius); overflow:hidden; height:44px;
       background:var(--dom-red-light); border:2px solid var(--dom-red);
-      margin-top:12px;
+      margin-top:8px;
     }
     .stepper button{
       width:46px; height:100%; border:none; background:transparent;
