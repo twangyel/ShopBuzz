@@ -16,107 +16,127 @@ let currentProductFilter = 'all'
 let editingProductId = null
 let photoRemoved = false
 
+// ===== UTILITIES =====
+function escapeHtml(text) {
+  if (!text) return ''
+  const div = document.createElement('div')
+  div.textContent = text
+  return div.innerHTML
+}
+
+function debounce(fn, ms = 250) {
+  let timer
+  return (...args) => {
+    clearTimeout(timer)
+    timer = setTimeout(() => fn(...args), ms)
+  }
+}
+
+function skeletonRows(rows, cols) {
+  let html = ''
+  for (let i = 0; i < rows; i++) {
+    html += '<tr>'
+    for (let j = 0; j < cols; j++) {
+      html += `<td class="px-3 py-2"><div class="skeleton h-4 w-${j === 0 ? '16' : 'full'}"></div></td>`
+    }
+    html += '</tr>'
+  }
+  return html
+}
+
+// ===== AUTH & PROFILE =====
 async function getUserProfile(userId) {
-  const maxRetries = 3;
-  let lastError = null;  // <-- remove the 'a'
+  const maxRetries = 3
+  let lastError = null
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`🔍 Profile fetch attempt ${attempt} for user: ${userId}`);
-
       const { data, error } = await supabaseClient
         .from('profiles')
         .select('role')
         .eq('id', userId)
-        .single();
+        .single()
 
-      if (error) {
-        console.warn(`Attempt ${attempt} error:`, error.message);
-        throw error;
-      }
-
-      console.log('✅ Profile fetched successfully:', data);
-      return { profile: data, error: null };
-
+      if (error) throw error
+      return { profile: data, error: null }
     } catch (err) {
-      lastError = err;
-      console.warn(`Attempt ${attempt} failed:`, err.message);
-      
+      lastError = err
       if (attempt < maxRetries) {
-        console.log(`⏳ Retrying in ${600 * attempt}ms...`);
-        await new Promise(r => setTimeout(r, 600 * attempt));
+        await new Promise(r => setTimeout(r, 600 * attempt))
       }
     }
   }
-
-  console.error('❌ All attempts failed:', lastError?.message);
-  return { profile: null, error: lastError };
+  return { profile: null, error: lastError }
 }
 
 // On page load: restore session
 supabaseClient.auth.getSession().then(async ({ data: { session } }) => {
+  const loader = document.getElementById('auth-loader')
+
   if (!session?.user) {
-    console.log('No active session on load');
-    return;
+    document.getElementById('login-view').classList.add('active')
+    loader?.classList.add('hidden')
+    return
   }
 
-  console.log('🔄 Restoring session for:', session.user.email);
-
-  const { profile, error } = await getUserProfile(session.user.id);
-
-  const role = profile?.role || session.user?.user_metadata?.role || null;
+  const { profile, error } = await getUserProfile(session.user.id)
+  const role = profile?.role || session.user?.user_metadata?.role || null
 
   if (['admin', 'staff'].includes(role)) {
-    console.log('✅ Access granted. Loading dashboard...');
-    showDashboard(session.user.email);
+    showDashboard(session.user.email)
   } else {
-    console.warn('❌ Access denied - invalid role:', role);
-    await supabaseClient.auth.signOut();
+    await supabaseClient.auth.signOut()
+    document.getElementById('login-view').classList.add('active')
+    loader?.classList.add('hidden')
   }
-});
+})
 
 // Login form
 document.getElementById('login-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  const errorEl = document.getElementById('login-error');
+  e.preventDefault()
+  const email = document.getElementById('login-email').value.trim()
+  const password = document.getElementById('login-password').value
+  const errorEl = document.getElementById('login-error')
+  const rememberMe = document.getElementById('remember-me')?.checked
 
-  errorEl.classList.add('hidden');
+  errorEl.classList.add('hidden')
 
-  const { data, error: signInError } = await supabaseClient.auth.signInWithPassword({ email, password });
+  const { data, error: signInError } = await supabaseClient.auth.signInWithPassword({ email, password })
 
   if (signInError) {
-    errorEl.textContent = signInError.message;
-    errorEl.classList.remove('hidden');
-    return;
+    errorEl.textContent = signInError.message
+    errorEl.classList.remove('hidden')
+    return
   }
 
-  // Inside: document.getElementById('login-form').addEventListener('submit', async (e) => { ... })
+  // Save or clear email based on Remember Me
+  if (rememberMe) {
+    localStorage.setItem('cp_remember_email', email)
+  } else {
+    localStorage.removeItem('cp_remember_email')
+  }
 
-const rememberMe = document.getElementById('remember-me')?.checked
+  const { profile, error: profileErr } = await getUserProfile(data.user.id)
+  const userRole = profile?.role || data.user?.user_metadata?.role || null
 
-if (signInError) {
-  errorEl.textContent = signInError.message
-  errorEl.classList.remove('hidden')
-  return
-}
+  if (!['admin', 'staff'].includes(userRole)) {
+    await supabaseClient.auth.signOut()
+    errorEl.textContent = profileErr
+      ? `Access check failed: ${profileErr.message}. Make sure this user has a row in the "profiles" table with role = 'admin' or 'staff'.`
+      : 'Access denied. This account does not have admin/staff privileges.'
+    errorEl.classList.remove('hidden')
+    return
+  }
 
-// Save or clear email based on Remember Me
-if (rememberMe) {
-  localStorage.setItem('cp_remember_email', email)
-} else {
-  localStorage.removeItem('cp_remember_email')
-}
+  showDashboard(data.user.email)
+})
 
-// ... continue with role check ...
-
-  // Password visibility toggle
-window.togglePasswordVisibility = function() {
+// Password visibility toggle
+window.togglePassword = function() {
   const input = document.getElementById('login-password')
-  const eyeOpen = document.getElementById('icon-eye')
-  const eyeOff = document.getElementById('icon-eye-off')
-  
+  const eyeOpen = document.getElementById('eye-icon')
+  const eyeOff = document.getElementById('eye-off-icon')
+
   if (input.type === 'password') {
     input.type = 'text'
     eyeOpen.classList.add('hidden')
@@ -137,25 +157,6 @@ if (savedEmail) {
   if (rememberBox) rememberBox.checked = true
 }
 
-  console.log('✅ Signed in successfully:', data.user.email);
-
-  const { profile, error: profileErr } = await getUserProfile(data.user.id);
-
-  const userRole = profile?.role || data.user?.user_metadata?.role || null;
-
-  if (!['admin', 'staff'].includes(userRole)) {
-    await supabaseClient.auth.signOut();
-    errorEl.textContent = profileErr 
-      ? `Access check failed: ${profileErr.message}. Make sure this user has a row in the "profiles" table with role = 'admin' or 'staff'.`
-      : 'Access denied. This account does not have admin/staff privileges.';
-    errorEl.classList.remove('hidden');
-    return;
-  }
-
-  console.log('✅ Role verified. Loading dashboard...');
-  showDashboard(data.user.email);
-});
-
 async function logout() {
   await supabaseClient.auth.signOut()
   location.reload()
@@ -163,8 +164,9 @@ async function logout() {
 
 // ========== DASHBOARD INIT ==========
 async function showDashboard(email) {
-  document.getElementById('login-view').classList.add('hidden')
-  document.getElementById('dashboard-view').classList.remove('hidden')
+  document.getElementById('login-view').classList.remove('active')
+  document.getElementById('dashboard-view').classList.add('active')
+  document.getElementById('auth-loader')?.classList.add('hidden')
   document.getElementById('staff-email').textContent = email
 
   try {
@@ -202,18 +204,18 @@ function renderOutletsControl() {
   container.innerHTML = allOutlets.map(outlet => {
     const isOpen = outlet.status === 'open'
     return `
-      <div class="bg-white rounded-xl border shadow-sm p-4 flex items-center justify-between">
-        <div>
-          <h4 class="font-semibold text-gray-900 text-sm">${escapeHtml(outlet.name)}</h4>
-          <p class="text-xs text-gray-500 mt-0.5">${escapeHtml(outlet.location || 'No location')}</p>
+      <div class="bg-white rounded-xl border shadow-sm p-3 flex items-center justify-between">
+        <div class="min-w-0">
+          <h4 class="font-semibold text-gray-900 text-sm truncate">${escapeHtml(outlet.name)}</h4>
+          <p class="text-xs text-gray-500 mt-0.5 truncate">${escapeHtml(outlet.location || 'No location')}</p>
           <span class="inline-flex items-center gap-1 text-xs mt-1 ${isOpen ? 'text-green-600' : 'text-red-600'}">
             <span class="w-1.5 h-1.5 rounded-full ${isOpen ? 'bg-green-500' : 'bg-red-500'}"></span>
             ${isOpen ? 'Open' : 'Closed'}
           </span>
         </div>
-        <label class="outlet-toggle">
-          <input type="checkbox" 
-            onchange="toggleOutletStatus(${outlet.id}, this.checked)" 
+        <label class="outlet-toggle ml-3">
+          <input type="checkbox"
+            onchange="toggleOutletStatus(${outlet.id}, this.checked)"
             ${isOpen ? 'checked' : ''}>
           <span class="outlet-toggle-track"></span>
         </label>
@@ -224,8 +226,6 @@ function renderOutletsControl() {
 
 async function toggleOutletStatus(outletId, isOpen) {
   const newStatus = isOpen ? 'open' : 'closed'
-
-  // Optimistically update the in-memory array and re-render immediately
   const outlet = allOutlets.find(o => o.id === outletId)
   if (outlet) {
     outlet.status = newStatus
@@ -239,7 +239,6 @@ async function toggleOutletStatus(outletId, isOpen) {
     .eq('id', outletId)
 
   if (error) {
-    // Rollback optimistic update on failure
     if (outlet) {
       outlet.status = isOpen ? 'closed' : 'open'
       renderOutletsControl()
@@ -258,22 +257,22 @@ function updatePortalInfo() {
     return
   }
   document.getElementById('portal-outlet-info').innerHTML = allOutlets.map(outlet => `
-    <div class="mb-3 pb-3 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
-      <div class="flex justify-between py-1">
-        <span class="text-gray-400">Name</span>
-        <span class="font-medium text-gray-900">${escapeHtml(outlet.name)}</span>
+    <div class="mb-2 pb-2 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
+      <div class="flex justify-between py-0.5">
+        <span class="text-gray-400 text-xs">Name</span>
+        <span class="font-medium text-gray-900 text-sm">${escapeHtml(outlet.name)}</span>
       </div>
-      <div class="flex justify-between py-1">
-        <span class="text-gray-400">Location</span>
-        <span class="text-gray-700">${escapeHtml(outlet.location || 'N/A')}</span>
+      <div class="flex justify-between py-0.5">
+        <span class="text-gray-400 text-xs">Location</span>
+        <span class="text-gray-700 text-sm">${escapeHtml(outlet.location || 'N/A')}</span>
       </div>
-      <div class="flex justify-between py-1">
-        <span class="text-gray-400">Phone</span>
-        <span class="text-gray-700">${escapeHtml(outlet.phone || 'N/A')}</span>
+      <div class="flex justify-between py-0.5">
+        <span class="text-gray-400 text-xs">Phone</span>
+        <span class="text-gray-700 text-sm">${escapeHtml(outlet.phone || 'N/A')}</span>
       </div>
-      <div class="flex justify-between py-1">
-        <span class="text-gray-400">Status</span>
-        <span class="${outlet.status === 'open' ? 'text-green-600' : 'text-red-600'} font-medium">${escapeHtml(outlet.status || 'open')}</span>
+      <div class="flex justify-between py-0.5">
+        <span class="text-gray-400 text-xs">Status</span>
+        <span class="${outlet.status === 'open' ? 'text-green-600' : 'text-red-600'} font-medium text-sm">${escapeHtml(outlet.status || 'open')}</span>
       </div>
     </div>
   `).join('')
@@ -381,7 +380,6 @@ window.switchOrdersSubTab = function(subTabName) {
     btn.classList.toggle('hover:bg-gray-100', !isActive)
   })
   document.querySelectorAll('.orders-sub-content').forEach(content => {
-    content.classList.toggle('hidden', content.id !== `orders-sub-${subTabName}`)
     content.classList.toggle('active', content.id === `orders-sub-${subTabName}`)
   })
 }
@@ -417,6 +415,7 @@ window.filterOrders = function(status) {
     btn.classList.toggle('text-white', isActive)
     btn.classList.toggle('bg-white', !isActive)
     btn.classList.toggle('text-gray-700', !isActive)
+    btn.classList.toggle('border', !isActive)
   })
   const query = document.getElementById('orders-search').value.toLowerCase().trim()
   if (query) {
@@ -439,7 +438,7 @@ function renderOrders(ordersToRender = null) {
     }
   }
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No orders found</td></tr>'
+    tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400 text-sm">No orders found</td></tr>'
     return
   }
   const statusColors = {
@@ -453,26 +452,29 @@ function renderOrders(ordersToRender = null) {
   tbody.innerHTML = filtered.map(order => {
     const time = new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     const itemCount = order.order_items?.reduce((sum, i) => sum + i.quantity, 0) || 0
+    const tableInfo = order.order_type === 'table' && order.table_id
+      ? allTables.find(t => t.id === order.table_id)
+      : null
     return `
-      <tr class="hover:bg-gray-50 transition">
-        <td class="px-3 py-2 font-mono text-xs text-gray-500">#${escapeHtml(order.order_number || order.id.slice(0,8).toUpperCase())}</td>
+      <tr class="hover:bg-gray-50 transition group">
+        <td class="px-3 py-2 font-mono text-[11px] text-gray-500">#${escapeHtml(order.order_number || order.id.slice(0,8).toUpperCase())}</td>
         <td class="px-3 py-2">
           <div class="font-medium text-gray-900 text-sm">${escapeHtml(order.customer_name)}</div>
-          ${order.order_type === 'table' ? `<div class="text-[10px] inline-flex items-center gap-1 text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded mt-0.5"><span>🪑</span> Table ${escapeHtml(order.table_id ? allTables.find(t => t.id === order.table_id)?.number || '' : '')}</div>` : ''}
+          ${tableInfo ? `<div class="text-[10px] inline-flex items-center gap-1 text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded mt-0.5"><span>🪑</span> ${escapeHtml(tableInfo.number)}</div>` : ''}
           <div class="text-gray-500 text-xs">${escapeHtml(order.customer_phone)}</div>
         </td>
         <td class="px-3 py-2 text-gray-600 text-sm">${itemCount} items</td>
         <td class="px-3 py-2 font-semibold text-sm">Nu. ${parseFloat(order.total_amount).toFixed(2)}</td>
         <td class="px-3 py-2">
-          <span class="text-xs font-medium px-2 py-0.5 rounded-full ${statusColors[order.status] || 'bg-gray-100'}">${order.status}</span>
+          <span class="text-[11px] font-medium px-2 py-0.5 rounded-full ${statusColors[order.status] || 'bg-gray-100'}">${order.status}</span>
         </td>
-        <td class="px-3 py-2 text-gray-500 text-xs">${time}</td>
-        <td class="px-3 py-2">
-          <div class="flex items-center gap-1">
+        <td class="px-3 py-2 text-gray-500 text-[11px]">${time}</td>
+        <td class="px-3 py-2 text-right">
+          <div class="flex items-center justify-end gap-1">
             <button onclick="openOrderModal('${order.id}')" class="p-1.5 hover:bg-gray-100 rounded-lg transition text-gray-500" title="View Details">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
             </button>
-            <select onchange="updateStatus('${order.id}', this.value)" class="text-xs border rounded-lg px-2 py-1 bg-white cursor-pointer hover:border-orange-400 outline-none">
+            <select onchange="updateStatus('${order.id}', this.value)" class="text-[11px] border rounded-lg px-2 py-1 bg-white cursor-pointer hover:border-orange-400 outline-none">
               <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
               <option value="confirmed" ${order.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
               <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>Preparing</option>
@@ -505,29 +507,29 @@ window.openOrderModal = function(orderId) {
     cancelled: 'bg-red-100 text-red-800'
   }
   document.getElementById('modal-order-content').innerHTML = `
-    <div class="bg-gray-50 rounded-lg p-3 space-y-1">
+    <div class="bg-gray-50 rounded-lg p-3 space-y-1 text-sm">
       <div class="flex justify-between">
         <span class="text-xs text-gray-500">Customer</span>
-        <span class="text-sm font-medium text-gray-900">${escapeHtml(order.customer_name)}</span>
+        <span class="font-medium text-gray-900">${escapeHtml(order.customer_name)}</span>
       </div>
       <div class="flex justify-between">
         <span class="text-xs text-gray-500">Phone</span>
-        <span class="text-sm text-gray-700">${escapeHtml(order.customer_phone)}</span>
+        <span class="text-gray-700">${escapeHtml(order.customer_phone)}</span>
       </div>
       ${order.customer_email ? `
       <div class="flex justify-between">
         <span class="text-xs text-gray-500">Email</span>
-        <span class="text-sm text-gray-700">${escapeHtml(order.customer_email)}</span>
+        <span class="text-gray-700">${escapeHtml(order.customer_email)}</span>
       </div>` : ''}
       ${order.delivery_type ? `
       <div class="flex justify-between">
         <span class="text-xs text-gray-500">Type</span>
-        <span class="text-sm text-gray-700 capitalize">${escapeHtml(order.delivery_type)}</span>
+        <span class="text-gray-700 capitalize">${escapeHtml(order.delivery_type)}</span>
       </div>` : ''}
       ${order.address ? `
       <div class="flex justify-between">
         <span class="text-xs text-gray-500">Address</span>
-        <span class="text-sm text-gray-700">${escapeHtml(order.address)}</span>
+        <span class="text-gray-700">${escapeHtml(order.address)}</span>
       </div>` : ''}
     </div>
     <div class="flex items-center justify-between">
@@ -536,7 +538,7 @@ window.openOrderModal = function(orderId) {
     </div>
     <div>
       <h4 class="text-sm font-semibold text-gray-900 mb-2">Items (${items.reduce((s,i)=>s+i.quantity,0)})</h4>
-      <div class="space-y-2">
+      <div class="space-y-1">
         ${items.map(item => `
           <div class="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
             <div class="flex items-center gap-2">
@@ -586,7 +588,7 @@ window.searchOrders = function() {
     return
   }
   const baseList = currentFilter === 'all' ? allOrders : allOrders.filter(o => o.status === currentFilter)
-  const filtered = baseList.filter(o => 
+  const filtered = baseList.filter(o =>
     (o.customer_name || '').toLowerCase().includes(query) ||
     (o.customer_phone || '').toLowerCase().includes(query) ||
     (o.order_number || '').toLowerCase().includes(query) ||
@@ -594,6 +596,8 @@ window.searchOrders = function() {
   )
   renderOrders(filtered)
 }
+
+window.debouncedSearchOrders = debounce(searchOrders, 250)
 
 window.updateStatus = async function(orderId, status) {
   const { error } = await supabaseClient.from('orders').update({ status }).eq('id', orderId)
@@ -620,7 +624,7 @@ function renderPayments(paymentsToRender = null) {
   const tbody = document.getElementById('payments-table')
   const filtered = paymentsToRender || allPayments
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No payments found</td></tr>'
+    tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400 text-sm">No payments found</td></tr>'
     return
   }
   const methodColors = {
@@ -633,24 +637,24 @@ function renderPayments(paymentsToRender = null) {
     const order = p.orders || {}
     return `
       <tr class="hover:bg-gray-50 transition">
-        <td class="px-3 py-2 font-mono text-xs text-gray-500">#${escapeHtml(order.order_number || p.order_id?.slice(0,8).toUpperCase() || '')}</td>
+        <td class="px-3 py-2 font-mono text-[11px] text-gray-500">#${escapeHtml(order.order_number || p.order_id?.slice(0,8).toUpperCase() || '')}</td>
         <td class="px-3 py-2">
           <div class="font-medium text-gray-900 text-sm">${escapeHtml(order.customer_name || 'N/A')}</div>
           <div class="text-gray-500 text-xs">${escapeHtml(order.customer_phone || '')}</div>
         </td>
         <td class="px-3 py-2 font-semibold text-sm">Nu. ${parseFloat(p.amount).toFixed(2)}</td>
         <td class="px-3 py-2">
-          <span class="text-xs font-medium px-2 py-0.5 rounded-full ${methodColors[p.method] || 'bg-gray-100'}">${escapeHtml(p.method?.replace(/-/g, ' ') || '')}</span>
+          <span class="text-[11px] font-medium px-2 py-0.5 rounded-full ${methodColors[p.method] || 'bg-gray-100'}">${escapeHtml(p.method?.replace(/-/g, ' ') || '')}</span>
         </td>
         <td class="px-3 py-2">
-          <span class="text-xs font-medium px-2 py-0.5 rounded-full ${p.status === 'verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${escapeHtml(p.status || '')}</span>
+          <span class="text-[11px] font-medium px-2 py-0.5 rounded-full ${p.status === 'verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${escapeHtml(p.status || '')}</span>
         </td>
         <td class="px-3 py-2">
-          ${p.screenshot_url 
-            ? `<a href="${escapeHtml(p.screenshot_url)}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline text-xs">View</a>` 
+          ${p.screenshot_url
+            ? `<a href="${escapeHtml(p.screenshot_url)}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline text-xs">View</a>`
             : '<span class="text-gray-400 text-xs">—</span>'}
         </td>
-        <td class="px-3 py-2 text-gray-500 text-xs">${time}</td>
+        <td class="px-3 py-2 text-gray-500 text-[11px]">${time}</td>
       </tr>
     `
   }).join('')
@@ -674,6 +678,8 @@ window.searchPayments = function() {
   renderPayments(filtered)
 }
 
+window.debouncedSearchPayments = debounce(searchPayments, 250)
+
 // ========== REVIEWS ==========
 let currentReviewFilter = 'all'
 
@@ -685,8 +691,8 @@ async function loadReviews() {
     .limit(200)
   if (error) {
     console.error('Reviews load error:', error)
-    document.getElementById('reviews-table').innerHTML = 
-      '<tr><td colspan="6" class="px-4 py-8 text-center text-red-500">Error loading reviews: ' + error.message + '</td></tr>'
+    document.getElementById('reviews-table').innerHTML =
+      '<tr><td colspan="6" class="px-4 py-8 text-center text-red-500 text-sm">Error loading reviews: ' + error.message + '</td></tr>'
     return
   }
   allReviews = reviews || []
@@ -697,7 +703,7 @@ async function loadReviews() {
 function updateReviewStats() {
   const total = allReviews.length
   const pending = allReviews.filter(r => !r.approved).length
-  const avg = total > 0 
+  const avg = total > 0
     ? (allReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / total).toFixed(1)
     : '0.0'
   document.getElementById('stat-total-reviews').textContent = total
@@ -717,13 +723,6 @@ window.filterReviews = function(filter) {
   renderReviews()
 }
 
-function escapeHtml(text) {
-  if (!text) return ''
-  const div = document.createElement('div')
-  div.textContent = text
-  return div.innerHTML
-}
-
 function renderReviews(reviewsToRender = null) {
   const tbody = document.getElementById('reviews-table')
   let filtered = reviewsToRender || allReviews
@@ -733,7 +732,7 @@ function renderReviews(reviewsToRender = null) {
     filtered = filtered.filter(r => r.approved)
   }
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">No reviews found</td></tr>'
+    tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400 text-sm">No reviews found</td></tr>'
     return
   }
   tbody.innerHTML = filtered.map(r => {
@@ -762,9 +761,9 @@ function renderReviews(reviewsToRender = null) {
           <span class="text-xs text-gray-500 ml-1">${r.rating || 0}/5</span>
         </td>
         <td class="px-3 py-2 text-sm text-gray-600 max-w-[200px] truncate">${escapeHtml(r.comment || '—')}</td>
-        <td class="px-3 py-2 text-xs text-gray-500">${date}<br>${time}</td>
+        <td class="px-3 py-2 text-[11px] text-gray-500">${date}<br>${time}</td>
         <td class="px-3 py-2">
-          <span class="text-xs font-medium px-2 py-0.5 rounded-full ${r.approved ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-700'}">
+          <span class="text-[11px] font-medium px-2 py-0.5 rounded-full ${r.approved ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-700'}">
             ${r.approved ? 'Approved' : 'Pending'}
           </span>
         </td>
@@ -793,6 +792,8 @@ window.searchReviews = function() {
   )
   renderReviews(filtered)
 }
+
+window.debouncedSearchReviews = debounce(searchReviews, 250)
 
 window.toggleReviewApproved = async function(id, approved) {
   const { error } = await supabaseClient
@@ -832,8 +833,8 @@ async function loadAnalytics() {
 
   const totalOrders = monthOrders?.length || 0
   const totalRevenue = monthOrders?.reduce((sum, o) => sum + (parseFloat(o.total_amount) || 0), 0) || 0
-  const avgRating = allReviewsData?.length 
-    ? (allReviewsData.reduce((sum, r) => sum + r.rating, 0) / allReviewsData.length).toFixed(1) 
+  const avgRating = allReviewsData?.length
+    ? (allReviewsData.reduce((sum, r) => sum + r.rating, 0) / allReviewsData.length).toFixed(1)
     : '0.0'
 
   const itemCounts = {}
@@ -848,7 +849,7 @@ async function loadAnalytics() {
   document.getElementById('analytics-revenue').textContent = 'Nu. ' + totalRevenue.toFixed(2)
   document.getElementById('analytics-rating').textContent = avgRating
 
-  document.getElementById('analytics-top-items').innerHTML = sortedItems.length 
+  document.getElementById('analytics-top-items').innerHTML = sortedItems.length
     ? sortedItems.map(([name, count], i) => `
         <div class="flex items-center justify-between py-2 ${i < sortedItems.length - 1 ? 'border-b border-gray-50' : ''}">
           <div class="flex items-center gap-2">
@@ -885,6 +886,12 @@ async function loadProducts() {
   populateCategorySelect()
   populateParentCategorySelect()
   populateOutletSelect()
+  updateProductCount()
+}
+
+function updateProductCount() {
+  const el = document.getElementById('products-count')
+  if (el) el.textContent = `${allProducts.length} products`
 }
 
 function populateCategorySelect() {
@@ -894,14 +901,12 @@ function populateCategorySelect() {
 
   const sections = productCategories.filter(c => !c.parent_id).sort((a,b) => (a.sort_order||0) - (b.sort_order||0))
   sections.forEach(section => {
-    // Parent section as selectable option
     const optSection = document.createElement('option')
     optSection.value = section.id
     optSection.textContent = section.name
     optSection.style.fontWeight = '600'
     select.appendChild(optSection)
 
-    // Indented children
     const children = productCategories.filter(c => c.parent_id === section.id).sort((a,b) => (a.sort_order||0) - (b.sort_order||0))
     children.forEach(child => {
       const option = document.createElement('option')
@@ -943,16 +948,16 @@ function populateOutletSelect() {
 
 function renderCategoryFilters() {
   const container = document.getElementById('category-filters')
-  let html = `<button onclick="filterProducts('all')" class="cat-filter active px-3 py-1 rounded-lg text-xs font-medium bg-gray-900 text-white" data-cat="all">All</button>`
+  let html = `<button onclick="filterProducts('all')" class="cat-filter active px-2.5 py-1 rounded-lg text-[11px] font-medium bg-gray-900 text-white" data-cat="all">All</button>`
   const sections = productCategories.filter(c => !c.parent_id).sort((a,b) => (a.sort_order||0) - (b.sort_order||0))
   const subCategories = productCategories.filter(c => c.parent_id)
   sections.forEach(section => {
     const children = subCategories.filter(c => c.parent_id === section.id).sort((a,b) => (a.sort_order||0) - (b.sort_order||0))
     if (children.length === 0) {
-      html += `<button onclick="filterProducts('${escapeHtml(section.id)}')" class="cat-filter px-3 py-1 rounded-lg text-xs font-medium bg-white border text-gray-700" data-cat="${escapeHtml(section.id)}">${escapeHtml(section.name)}</button>`
+      html += `<button onclick="filterProducts('${escapeHtml(section.id)}')" class="cat-filter px-2.5 py-1 rounded-lg text-[11px] font-medium bg-white border text-gray-700" data-cat="${escapeHtml(section.id)}">${escapeHtml(section.name)}</button>`
     } else {
       html += `<div class="relative inline-block group">
-        <button class="px-3 py-1 rounded-lg text-xs font-medium bg-white border text-gray-700 hover:bg-gray-50">${escapeHtml(section.name)} ▾</button>
+        <button class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-white border text-gray-700 hover:bg-gray-50">${escapeHtml(section.name)} ▾</button>
         <div class="absolute left-0 top-full hidden group-hover:block z-50 pt-1">
           <div class="bg-white border shadow-lg rounded-lg min-w-[140px] overflow-hidden flex flex-col">
             ${children.map(child => `
@@ -1002,25 +1007,25 @@ function renderProducts(productsToRender = null) {
     }
   }
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">No products found</td></tr>'
+    tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400 text-sm">No products found</td></tr>'
     return
   }
   tbody.innerHTML = filtered.map(p => {
     return `
-      <tr class="hover:bg-gray-50 transition">
+      <tr class="hover:bg-gray-50 transition group">
         <td class="px-3 py-2">
-          ${p.image_url ? `<img src="${escapeHtml(p.image_url)}" alt="" class="product-photo-thumb">` : `<div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs">No img</div>`}
+          ${p.image_url ? `<img src="${escapeHtml(p.image_url)}" alt="" class="product-photo-thumb" loading="lazy">` : `<div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs">No img</div>`}
         </td>
         <td class="px-3 py-2">
           <div class="font-medium text-gray-900 text-sm">${escapeHtml(p.name)}</div>
-          <div class="text-gray-500 text-xs truncate max-w-[200px]">${escapeHtml(p.description || '')}</div>
+          <div class="text-gray-500 text-xs truncate max-w-[180px]">${escapeHtml(p.description || '')}</div>
         </td>
         <td class="px-3 py-2">
-          <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-50 text-orange-700">${escapeHtml(p.category_name || 'Uncategorized')}</span>
+          <span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-orange-50 text-orange-700">${escapeHtml(p.category_name || 'Uncategorized')}</span>
         </td>
         <td class="px-3 py-2 font-semibold text-sm">Nu. ${parseFloat(p.price).toFixed(2)}</td>
         <td class="px-3 py-2">
-          <span class="text-xs font-medium px-2 py-0.5 rounded-full ${p.is_available !== false ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}">${p.is_available !== false ? 'Available' : 'Unavailable'}</span>
+          <span class="text-[11px] font-medium px-2 py-0.5 rounded-full ${p.is_available !== false ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}">${p.is_available !== false ? 'Available' : 'Unavailable'}</span>
         </td>
         <td class="px-3 py-2 text-right">
           <div class="flex items-center justify-end gap-1">
@@ -1043,7 +1048,6 @@ function renderProducts(productsToRender = null) {
 window.previewPhoto = function() {
   const file = document.getElementById('product-photo').files[0]
   const preview = document.getElementById('photo-preview')
-  const uploadArea = document.getElementById('photo-upload-area')
   const img = preview.querySelector('img')
   if (img.src && img.src.startsWith('blob:')) {
     URL.revokeObjectURL(img.src)
@@ -1057,10 +1061,8 @@ window.previewPhoto = function() {
     photoRemoved = false
     img.src = URL.createObjectURL(file)
     preview.classList.remove('hidden')
-    uploadArea.classList.add('hidden')
   } else {
     preview.classList.add('hidden')
-    uploadArea.classList.remove('hidden')
     img.src = ''
   }
 }
@@ -1068,7 +1070,6 @@ window.previewPhoto = function() {
 window.removePhoto = function() {
   const input = document.getElementById('product-photo')
   const preview = document.getElementById('photo-preview')
-  const uploadArea = document.getElementById('photo-upload-area')
   const img = preview.querySelector('img')
   if (img.src && img.src.startsWith('blob:')) {
     URL.revokeObjectURL(img.src)
@@ -1076,7 +1077,6 @@ window.removePhoto = function() {
   input.value = ''
   img.src = ''
   preview.classList.add('hidden')
-  uploadArea.classList.remove('hidden')
   photoRemoved = true
 }
 
@@ -1087,8 +1087,8 @@ window.addCategory = async function() {
   const parent_id = parentSelect.value || null
   if (!name) return
 
-  const exists = productCategories.find(c => 
-    c.name.toLowerCase() === name.toLowerCase() && 
+  const exists = productCategories.find(c =>
+    c.name.toLowerCase() === name.toLowerCase() &&
     (c.parent_id || null) === (parent_id || null)
   )
   if (exists) {
@@ -1104,12 +1104,12 @@ window.addCategory = async function() {
     .order('sort_order', { ascending: false })
     .limit(1)
   const nextSortOrder = sortData?.[0]?.sort_order != null ? sortData[0].sort_order + 1 : 1
-  
+
   const { data, error } = await supabaseClient
     .from('categories')
     .insert({ name, parent_id, sort_order: nextSortOrder })
     .select()
-  
+
   if (error) {
     showToast('Failed to add category', 'error')
     return
@@ -1216,18 +1216,15 @@ window.editProduct = function(id) {
   document.getElementById('product-cancel-btn').classList.remove('hidden')
 
   const preview = document.getElementById('photo-preview')
-  const uploadArea = document.getElementById('photo-upload-area')
   const img = preview.querySelector('img')
   if (img.src && img.src.startsWith('blob:')) URL.revokeObjectURL(img.src)
 
   if (p.image_url) {
     img.src = p.image_url
     preview.classList.remove('hidden')
-    uploadArea.classList.add('hidden')
   } else {
     img.src = ''
     preview.classList.add('hidden')
-    uploadArea.classList.remove('hidden')
   }
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -1242,16 +1239,12 @@ window.resetProductForm = function() {
   document.getElementById('apply-all-outlets').checked = false
   document.getElementById('product-cancel-btn').classList.add('hidden')
 
-  // Reset photo area
   const preview = document.getElementById('photo-preview')
-  const uploadArea = document.getElementById('photo-upload-area')
   const img = preview.querySelector('img')
   if (img.src && img.src.startsWith('blob:')) URL.revokeObjectURL(img.src)
   img.src = ''
   preview.classList.add('hidden')
-  uploadArea.classList.remove('hidden')
 
-  // Reset outlet select state (critical fix: re-enable after "all outlets" submit)
   const outletSelect = document.getElementById('product-outlet')
   const wrapper = outletSelect.closest('div')
   outletSelect.disabled = false
@@ -1300,13 +1293,15 @@ window.searchProducts = function() {
     renderProducts()
     return
   }
-  const filtered = allProducts.filter(p => 
+  const filtered = allProducts.filter(p =>
     (p.name || '').toLowerCase().includes(query) ||
     (p.category_name || '').toLowerCase().includes(query) ||
     (p.description || '').toLowerCase().includes(query)
   )
   renderProducts(filtered)
 }
+
+window.debouncedSearchProducts = debounce(searchProducts, 250)
 
 // ========== REALTIME SUBSCRIPTIONS ==========
 function setupRealtimeSubscriptions() {
@@ -1353,7 +1348,6 @@ function setupRealtimeSubscriptions() {
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'outlets' }, payload => {
       const updated = payload.new
       const status = escapeHtml(updated.status || '')
-      // Update in-memory array so re-render is instant, no extra DB round-trip
       const idx = allOutlets.findIndex(o => o.id === updated.id)
       if (idx !== -1) {
         allOutlets[idx] = { ...allOutlets[idx], ...updated }
@@ -1366,7 +1360,7 @@ function setupRealtimeSubscriptions() {
 
   supabaseClient
     .channel('admin-menu')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'menu_items' }, payload => {
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'menu_items' }, () => {
       loadProducts()
     })
     .subscribe()
@@ -1431,19 +1425,19 @@ function renderTables() {
   grid.innerHTML = allTables.map(t => {
     const rawQrUrl = `${baseUrl}/menu.html?table=${encodeURIComponent(t.number)}&outlet=${t.outlet_id}`
     return `
-      <div class="border rounded-xl p-3 relative group hover:border-orange-300 transition">
+      <div class="border rounded-xl p-2.5 relative group hover:border-orange-300 transition bg-white">
         <div class="flex justify-between items-start mb-2">
-          <div>
-            <div class="text-lg font-bold text-gray-900">#${escapeHtml(t.number)}</div>
-            <div class="text-xs text-gray-500">${escapeHtml(t.section || 'No section')}</div>
-            <div class="text-[10px] text-gray-400 mt-0.5">${escapeHtml(t.outlets?.name || '')}</div>
+          <div class="min-w-0">
+            <div class="text-base font-bold text-gray-900">#${escapeHtml(t.number)}</div>
+            <div class="text-[11px] text-gray-500">${escapeHtml(t.section || 'No section')}</div>
+            <div class="text-[10px] text-gray-400 mt-0.5 truncate">${escapeHtml(t.outlets?.name || '')}</div>
           </div>
           <button onclick="deleteTable('${t.id}')" class="text-red-400 hover:text-red-600 p-1" title="Delete">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
         <div class="bg-gray-50 rounded-lg p-2 flex justify-center mb-2">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(rawQrUrl)}" alt="QR" class="w-20 h-20">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(rawQrUrl)}" alt="QR" class="w-20 h-20" loading="lazy">
         </div>
         <div class="flex gap-1.5">
           <a href="${rawQrUrl}" target="_blank" rel="noopener noreferrer" class="flex-1 text-center text-[10px] bg-orange-50 text-orange-700 py-1.5 rounded font-medium hover:bg-orange-100">Preview</a>
@@ -1515,17 +1509,17 @@ async function loadActiveSessions() {
     const orderCount = s.orders?.length || 0
     const total = s.orders?.reduce((sum, o) => sum + (parseFloat(o.total_amount) || 0), 0) || 0
     return `
-      <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center font-bold text-sm">
+      <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg border border-gray-100">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-9 h-9 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
             ${escapeHtml(s.tables?.number || '?')}
           </div>
-          <div>
-            <div class="text-sm font-medium text-gray-900">Table ${escapeHtml(s.tables?.number || '')}</div>
-            <div class="text-xs text-gray-500">${escapeHtml(s.tables?.section || '')} • ${orderCount} orders</div>
+          <div class="min-w-0">
+            <div class="text-sm font-medium text-gray-900 truncate">Table ${escapeHtml(s.tables?.number || '')}</div>
+            <div class="text-xs text-gray-500 truncate">${escapeHtml(s.tables?.section || '')} • ${orderCount} orders</div>
           </div>
         </div>
-        <div class="text-right">
+        <div class="text-right flex-shrink-0 ml-3">
           <div class="text-sm font-semibold text-gray-900">Nu. ${total.toFixed(2)}</div>
           <button onclick="closeTableSession('${s.id}')" class="text-xs text-red-600 hover:underline mt-0.5">Close Session</button>
         </div>
