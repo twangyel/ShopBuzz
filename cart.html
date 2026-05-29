@@ -5,321 +5,746 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cart — Your Cafe</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#C4A77D">
+  <meta name="theme-color" content="#0078AC">
+  
   <style>
-    body { font-family: 'Inter', system-ui, sans-serif; }
-    .font-display { font-family: 'Playfair Display', Georgia, serif; }
-    
-    #loader {
-      position: fixed; inset: 0; background: #FDFCF8; z-index: 9999;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      transition: opacity 0.6s ease, visibility 0.6s ease;
-    }
-    #loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-    
-    #birthday-section, #address-section {
-      max-height: 0; overflow: hidden; opacity: 0;
-      transition: max-height 0.5s ease, opacity 0.4s ease;
-    }
-    #birthday-section.show, #address-section.show {
-      max-height: 300px; opacity: 1;
+    :root{
+      --dom-blue:#0078AC;
+      --dom-blue-dark:#005a82;
+      --dom-blue-light:#E6F2F8;
+      --dom-red:#D2112C;
+      --dom-red-dark:#A50D22;
+      --dom-red-light:#FDE8EB;
+      --dom-dark:#1A1A1A;
+      --dom-gray:#6B7280;
+      --dom-gray-light:#F3F4F6;
+      --dom-line:#E5E7EB;
+      --dom-white:#FFFFFF;
+      --radius:12px;
+      --radius-lg:16px;
     }
 
-    .radio-card:has(input:checked) {
-      border-color: #ea580c;
-      background-color: #fff7ed;
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    body{
+      font-family:'Inter', system-ui, -apple-system, sans-serif;
+      background:var(--dom-gray-light);
+      color:var(--dom-dark);
+      line-height:1.4;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+      min-height:100vh;
     }
 
-    #payment-modal {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50;
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
+    /* Loader */
+    #loader{
+      position:fixed; inset:0; z-index:9999;
+      background:var(--dom-blue);
+      display:flex; flex-direction:column; gap:16px;
+      align-items:center; justify-content:center;
+      transition:opacity .4s ease;
     }
-    #payment-modal.active {
-      opacity: 1; visibility: visible;
+    #loader.hidden{ opacity:0; pointer-events:none; }
+    .loader-ring{
+      width:40px; height:40px; border-radius:50%;
+      border:3px solid rgba(255,255,255,.3);
+      border-top-color:#fff;
+      animation:spin .7s linear infinite;
     }
-    #payment-modal .modal-content {
-      background: white; border-radius: 1rem; width: 100%; max-width: 420px;
-      max-height: 90vh; overflow-y: auto; margin: 1rem;
-      transform: scale(0.95); transition: transform 0.3s ease;
+    .loader-word{ font-weight:800; font-size:22px; color:#fff; letter-spacing:-.02em; }
+    @keyframes spin{ to{ transform:rotate(360deg); } }
+
+    /* Header */
+    .topbar{ position:sticky; top:0; z-index:50; }
+    #main-header{
+      background:var(--dom-blue);
+      border-bottom:1px solid rgba(255,255,255,.15);
     }
-    #payment-modal.active .modal-content {
-      transform: scale(1);
+    .nav-inner{
+      width:100%; max-width:800px; margin:0 auto;
+      padding:0 16px; display:flex; align-items:center;
+      justify-content:space-between; height:52px;
     }
-    .qr-placeholder {
-      width: 100%; aspect-ratio: 1; background: #f5f5f4;
-      border: 2px dashed #d6d3d1; border-radius: 0.75rem;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      color: #78716c; font-size: 0.75rem; text-align: center; padding: 0.5rem;
+    .brand-name{ font-weight:800; font-size:16px; color:#fff; line-height:1.1; letter-spacing:-.02em; }
+    .brand-sub{ font-size:10px; color:rgba(255,255,255,.75); font-weight:500; line-height:1.2; margin-top:1px; }
+
+    .icon-btn{
+      width:36px; height:36px; display:flex; align-items:center; justify-content:center;
+      border-radius:10px; color:#fff; background:rgba(255,255,255,.12);
+      border:none; cursor:pointer; transition:all .2s;
+    }
+    .icon-btn:hover{ background:rgba(255,255,255,.22); }
+    .icon-btn:active{ transform:scale(.93); }
+
+    /* Table Banner */
+    #table-banner{
+      display:none; background:var(--dom-blue-light);
+      border-bottom:1px solid rgba(0,120,172,.15);
+    }
+    #table-banner:not(.hidden){ display:block; }
+    .tb-inner{
+      max-width:800px; margin:0 auto; padding:12px 16px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .tb-left{ display:flex; align-items:center; gap:10px; }
+    .tb-dot{ width:8px; height:8px; border-radius:50%; background:var(--dom-blue); flex:0 0 auto; animation:pulseDot 2s ease-in-out infinite; }
+    @keyframes pulseDot{ 0%,100%{ box-shadow:0 0 0 3px rgba(0,120,172,.2);} 50%{ box-shadow:0 0 0 6px rgba(0,120,172,.08);} }
+    .tb-title{ font-weight:700; font-size:14px; color:var(--dom-dark); }
+    .tb-title b{ color:var(--dom-blue); }
+    .tb-sub{ font-size:12px; color:var(--dom-gray); font-weight:500; }
+    .tb-leave{
+      font-family:inherit; font-size:12px; font-weight:700; color:var(--dom-blue);
+      background:#fff; border:2px solid var(--dom-blue);
+      padding:6px 14px; border-radius:var(--radius); cursor:pointer; transition:all .2s; flex:0 0 auto;
+    }
+    .tb-leave:hover{ background:var(--dom-blue); color:#fff; }
+    .tb-leave:active{ transform:scale(.95); }
+
+    /* Main Layout */
+    main{ width:100%; max-width:800px; margin:0 auto; padding:16px 16px 140px; }
+
+    /* Cards */
+    .card{
+      background:var(--dom-white); border:2px solid var(--dom-line); border-radius:var(--radius-lg);
+      overflow:hidden;
+    }
+    .card-section{ padding:16px; }
+    .card-section + .card-section{ border-top:2px solid var(--dom-line); }
+
+    /* Cart Items */
+    .cart-item{
+      display:flex; gap:12px; padding:12px;
+      background:var(--dom-white); border:2px solid var(--dom-line); border-radius:var(--radius-lg);
+      transition:all .2s ease;
+    }
+    .cart-item:hover{ border-color:var(--dom-blue); transform:translateY(-1px); box-shadow:0 8px 24px -12px rgba(0,0,0,.1); }
+    .cart-item:active{ transform:scale(.985); }
+    .item-img{ width:72px; height:72px; border-radius:10px; object-fit:cover; flex:0 0 auto; background:var(--dom-gray-light); }
+    .item-img-fallback{
+      width:72px; height:72px; border-radius:10px; flex:0 0 auto; background:var(--dom-gray-light);
+      display:flex; align-items:center; justify-content:center; color:var(--dom-gray);
+    }
+
+    .stepper{
+      display:flex; align-items:center; justify-content:space-between;
+      border-radius:var(--radius); overflow:hidden; height:36px;
+      background:var(--dom-red-light); border:2px solid var(--dom-red);
+      width:110px;
+    }
+    .stepper button{
+      width:36px; height:100%; border:none; background:transparent;
+      font-size:18px; font-weight:700; color:var(--dom-red); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; transition:background .18s;
+    }
+    .stepper button:hover{ background:rgba(210,17,44,.1); }
+    .stepper button:active{ background:rgba(210,17,44,.18); }
+    .stepper .qty{ font-size:14px; font-weight:700; color:var(--dom-dark); min-width:28px; text-align:center; }
+
+    .btn-remove{
+      font-size:12px; font-weight:600; color:var(--dom-red);
+      background:transparent; border:none; cursor:pointer;
+      padding:4px 8px; border-radius:6px; transition:all .2s;
+      display:flex; align-items:center; gap:4px;
+    }
+    .btn-remove:hover{ background:var(--dom-red-light); }
+
+    /* Empty State */
+    .empty-icon{
+      width:72px; height:72px; border-radius:50%; background:var(--dom-blue-light);
+      border:2px solid rgba(0,120,172,.1);
+      display:flex; align-items:center; justify-content:center; margin:0 auto 16px;
+    }
+    .empty-title{ font-weight:700; font-size:20px; color:var(--dom-dark); }
+    .empty-sub{ font-size:14px; color:var(--dom-gray); margin-top:4px; font-weight:500; }
+
+    /* Order Summary */
+    .summary-row{ display:flex; justify-content:space-between; font-size:14px; margin-bottom:10px; }
+    .summary-row .label{ color:var(--dom-gray); font-weight:500; }
+    .summary-row .value{ color:var(--dom-dark); font-weight:600; }
+    .summary-total{ display:flex; justify-content:space-between; align-items:center; padding-top:12px; border-top:2px solid var(--dom-line); }
+    .summary-total .label{ font-weight:700; font-size:16px; color:var(--dom-dark); }
+    .summary-total .value{ font-weight:800; font-size:24px; color:var(--dom-dark); letter-spacing:-.02em; }
+
+    /* Customer Details Card */
+    .customer-card{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 16px; cursor:pointer;
+      transition:all .2s;
+    }
+    .customer-card:hover{ background:var(--dom-gray-light); }
+    .customer-info{ display:flex; align-items:center; gap:12px; }
+    .customer-avatar{
+      width:40px; height:40px; border-radius:50%;
+      background:var(--dom-blue-light); color:var(--dom-blue);
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:16px; flex:0 0 auto;
+    }
+    .customer-text{ display:flex; flex-direction:column; }
+    .customer-name{ font-weight:700; font-size:15px; color:var(--dom-dark); }
+    .customer-phone{ font-size:13px; color:var(--dom-gray); font-weight:500; margin-top:1px; }
+    .customer-add{
+      font-size:13px; font-weight:700; color:var(--dom-blue);
+      display:flex; align-items:center; gap:4px;
+    }
+
+    /* Radio Cards */
+    .radio-card{
+      display:flex; align-items:center; gap:10px;
+      padding:12px 14px; border:2px solid var(--dom-line); border-radius:var(--radius);
+      cursor:pointer; background:var(--dom-white); transition:all .2s;
+    }
+    .radio-card:hover{ border-color:var(--dom-blue); background:var(--dom-blue-light); }
+    .radio-card.active{
+      border-color:var(--dom-blue); background:var(--dom-blue-light);
+    }
+    .radio-dot{
+      width:20px; height:20px; border-radius:50%; border:2px solid var(--dom-line);
+      display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+      transition:all .2s;
+    }
+    .radio-card.active .radio-dot{ border-color:var(--dom-blue); }
+    .radio-dot-inner{
+      width:10px; height:10px; border-radius:50%; background:var(--dom-blue);
+      transform:scale(0); transition:transform .2s cubic-bezier(.34,1.56,.64,1);
+    }
+    .radio-card.active .radio-dot-inner{ transform:scale(1); }
+    .radio-label{ font-size:14px; font-weight:600; color:var(--dom-dark); }
+    .radio-sublabel{ font-size:12px; color:var(--dom-gray); font-weight:500; }
+
+    /* Inputs */
+    .field{
+      width:100%; padding:12px 14px; border:2px solid var(--dom-line); border-radius:var(--radius);
+      background:var(--dom-white); font-family:inherit; font-size:15px; color:var(--dom-dark); transition:all .2s;
+      font-weight:500;
+    }
+    .field::placeholder{ color:var(--dom-gray); font-weight:400; }
+    .field:focus{ outline:none; border-color:var(--dom-blue); box-shadow:0 0 0 3px rgba(0,120,172,.12); }
+    .field-label{ display:block; font-size:13px; font-weight:700; color:var(--dom-dark); margin-bottom:6px; }
+    .field-label .req{ color:var(--dom-red); }
+
+    /* Buttons */
+    .btn-primary{
+      width:100%; padding:14px; border:none; border-radius:var(--radius);
+      background:var(--dom-red); color:#fff; font-family:inherit; font-weight:700; font-size:15px;
+      cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .btn-primary:hover{ background:var(--dom-red-dark); }
+    .btn-primary:active{ transform:scale(.985); }
+    .btn-primary:disabled{ opacity:.6; cursor:not-allowed; }
+
+    .btn-secondary{
+      width:100%; padding:12px; border:2px solid var(--dom-line); border-radius:var(--radius);
+      background:var(--dom-white); color:var(--dom-dark); font-family:inherit; font-weight:700; font-size:14px;
+      cursor:pointer; transition:all .2s;
+    }
+    .btn-secondary:hover{ background:var(--dom-gray-light); border-color:var(--dom-gray); }
+
+    /* Customer Modal */
+    #customer-modal{
+      position:fixed; inset:0; background:rgba(0,0,0,.5);
+      z-index:100; display:flex; align-items:flex-end; justify-content:center;
+      opacity:0; visibility:hidden; transition:opacity .3s, visibility .3s;
+    }
+    #customer-modal.active{ opacity:1; visibility:visible; }
+    #customer-modal .modal-sheet{
+      background:var(--dom-white); width:100%; max-width:480px; max-height:90vh; overflow-y:auto;
+      border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+      transform:translateY(100%); transition:transform .4s cubic-bezier(.16,1,.3,1);
+    }
+    @media(min-width:640px){
+      #customer-modal{ align-items:center; }
+      #customer-modal .modal-sheet{ border-radius:var(--radius-lg); transform:scale(.95) translateY(10px); }
+    }
+    #customer-modal.active .modal-sheet{ transform:translateY(0); }
+    @media(min-width:640px){ #customer-modal.active .modal-sheet{ transform:scale(1) translateY(0); } }
+
+    .modal-grabber{ width:44px; height:4px; background:var(--dom-line); border-radius:999px; margin:12px auto 8px; }
+    .modal-header{ display:flex; align-items:center; justify-content:space-between; padding:16px 20px 0; }
+    .modal-title{ font-weight:800; font-size:20px; color:var(--dom-dark); letter-spacing:-.02em; }
+    .modal-close{
+      width:36px; height:36px; display:flex; align-items:center; justify-content:center;
+      border-radius:var(--radius); color:var(--dom-gray); background:var(--dom-gray-light);
+      cursor:pointer; transition:all .2s; border:none;
+    }
+    .modal-close:hover{ background:var(--dom-line); color:var(--dom-dark); }
+
+    /* Payment Modal */
+    #payment-modal{
+      position:fixed; inset:0; background:rgba(0,0,0,.5);
+      z-index:100; display:flex; align-items:flex-end; justify-content:center;
+      opacity:0; visibility:hidden; transition:opacity .3s, visibility .3s;
+    }
+    #payment-modal.active{ opacity:1; visibility:visible; }
+    #payment-modal .modal-sheet{
+      background:var(--dom-white); width:100%; max-width:480px; max-height:90vh; overflow-y:auto;
+      border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+      transform:translateY(100%); transition:transform .4s cubic-bezier(.16,1,.3,1);
+    }
+    @media(min-width:640px){
+      #payment-modal{ align-items:center; }
+      #payment-modal .modal-sheet{ border-radius:var(--radius-lg); transform:scale(.95) translateY(10px); }
+    }
+    #payment-modal.active .modal-sheet{ transform:translateY(0); }
+    @media(min-width:640px){ #payment-modal.active .modal-sheet{ transform:scale(1) translateY(0); } }
+
+    .qr-card{
+      background:var(--dom-gray-light); border:2px dashed var(--dom-line); border-radius:var(--radius);
+      aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      transition:all .2s;
+    }
+    .qr-card:hover{ border-color:var(--dom-blue); background:var(--dom-blue-light); }
+
+    .upload-area{
+      border:2px dashed var(--dom-line); border-radius:var(--radius); padding:20px;
+      text-align:center; cursor:pointer; transition:all .2s;
+      background:var(--dom-gray-light);
+    }
+    .upload-area:hover{ border-color:var(--dom-blue); background:var(--dom-blue-light); }
+
+    /* Mobile sticky bar */
+    @media(max-width:639px){
+      .mobile-sticky{
+        position:fixed; bottom:0; left:0; right:0;
+        background:var(--dom-white); border-top:2px solid var(--dom-line);
+        padding:12px 16px; z-index:40;
+        box-shadow:0 -4px 20px rgba(0,0,0,.05);
+      }
+    }
+
+    /* Toast */
+    #toast{
+      position:fixed; bottom:24px; left:50%;
+      transform:translateX(-50%) translateY(170%);
+      background:var(--dom-dark); color:#fff;
+      padding:14px 24px; border-radius:var(--radius-lg); font-size:14px; font-weight:600;
+      z-index:9999; opacity:0; display:flex; align-items:center; gap:10px; white-space:nowrap;
+      box-shadow:0 20px 44px -14px rgba(0,0,0,.35);
+      transition:all .4s cubic-bezier(.34,1.56,.64,1);
+    }
+    #toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+    /* Animations */
+    @keyframes cardIn{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:translateY(0); } }
+    .animate-in{ animation:cardIn .4s ease backwards; }
+
+    .hide-scroll::-webkit-scrollbar{ display:none; }
+    .hide-scroll{ -ms-overflow-style:none; scrollbar-width:none; }
+
+    @media(prefers-reduced-motion:reduce){
+      *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
     }
   </style>
+  <base target="_blank">
 <base target="_blank">
 </head>
-<body class="bg-cream-50 text-espresso-900 antialiased">
+<body>
 
   <!-- Loader -->
   <div id="loader">
-    <div class="w-16 h-16 bg-cream-500 rounded-full flex items-center justify-center text-white text-2xl animate-pulse">☕</div>
-    <p class="text-cream-600 text-xs mt-4 tracking-widest uppercase">Loading Cart</p>
+    <div class="loader-ring"></div>
+    <div class="loader-word">Your <span>Cafe</span></div>
+  </div>
+
+  <!-- Table Banner -->
+  <div id="table-banner" class="hidden">
+    <div class="tb-inner">
+      <div class="tb-left">
+        <div class="tb-dot"></div>
+        <div>
+          <div class="tb-title">Table Order — Table <b id="banner-table-num"></b></div>
+          <div class="tb-sub">Ordering from your table</div>
+        </div>
+      </div>
+      <button onclick="clearTableSession()" class="tb-leave">End Session</button>
+    </div>
   </div>
 
   <!-- Header -->
-  <header class="bg-white border-b sticky top-0 z-40">
-    <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
-      <div class="flex items-center gap-3">
-        <a href="menu.html" class="text-cream-600 hover:text-espresso-900">←</a>
-        <h1 class="font-bold text-espresso-900">Your Cart</h1>
+  <header class="topbar">
+    <div id="main-header">
+      <div class="nav-inner">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <a href="menu.html" class="icon-btn">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </a>
+          <div>
+            <div class="brand-name">Your Cart</div>
+            <div class="brand-sub" id="cart-count-header">0 items</div>
+          </div>
+        </div>
+        <button onclick="clearCart()" class="icon-btn" style="background:rgba(255,255,255,.15);" title="Clear cart">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+        </button>
       </div>
-      <button onclick="clearCart()" class="text-red-600 text-sm hover:text-red-700">Clear</button>
     </div>
   </header>
 
-    <!-- Table Order Banner -->
-  <div id="table-banner" class="hidden bg-gradient-to-r from-orange-500 to-amber-500 text-white text-center py-2.5 text-sm font-semibold sticky top-[53px] z-30">
-    <div class="max-w-2xl mx-auto px-4 flex items-center justify-center gap-2">
-      <span>🪑</span>
-      <span>Table Order — Table <span id="banner-table-num" class="font-bold text-base"></span></span>
-      <button onclick="clearTableSession()" class="ml-2 text-xs bg-white text-orange-600 px-2 py-0.5 rounded font-bold hover:bg-gray-100 transition">End</button>
-    </div>
-  </div>
-
-  <main class="max-w-2xl mx-auto px-4 py-6 pb-32">
+  <main>
     
     <!-- Cart Items -->
-    <div id="cart-items" class="space-y-3 mb-6"></div>
+    <div id="cart-items" class="space-y-3 mb-4"></div>
 
     <!-- Empty State -->
-    <div id="empty-state" class="hidden text-center py-16">
-      <p class="text-cream-500 text-lg mb-4">Your cart is empty</p>
-      <a href="menu.html" class="inline-block bg-espresso-800 text-white px-8 py-3 rounded-lg font-medium hover:bg-espresso-700">Browse Menu</a>
+    <div id="empty-state" class="hidden text-center py-16 animate-in">
+      <div class="empty-icon">
+        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+        </svg>
+      </div>
+      <div class="empty-title">Your cart is empty</div>
+      <div class="empty-sub">Add some delicious items from the menu</div>
+      <a href="menu.html" class="btn-primary mt-6 inline-flex max-w-xs mx-auto" style="border-radius:999px; padding:12px 32px;">
+        Browse Menu
+      </a>
     </div>
 
-    <!-- Order Summary -->
-    <div id="checkout-section" class="hidden">
-      <div class="bg-white p-5 rounded-xl border border-cream-200 mb-6">
-        <div class="flex justify-between text-lg font-bold mb-1">
-          <span>Total</span>
-          <span id="cart-total">Nu. 0.00</span>
+    <!-- Checkout Section -->
+    <div id="checkout-section" class="hidden space-y-4">
+
+      <!-- Order Summary -->
+      <div class="card animate-in">
+        <div class="card-section">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+            <h2 style="font-weight:800; font-size:18px; color:var(--dom-dark); letter-spacing:-.02em;">Order Summary</h2>
+            <span style="font-size:12px; font-weight:700; color:var(--dom-blue); background:var(--dom-blue-light); padding:4px 12px; border-radius:999px;" id="summary-item-count">0 items</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Subtotal</span>
+            <span class="value" id="summary-subtotal">Nu. 0.00</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Service Charge (5%)</span>
+            <span class="value" id="summary-service">Nu. 0.00</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Tax (GST)</span>
+            <span class="value">Nu. 0.00</span>
+          </div>
+          <div class="summary-total">
+            <span class="label">Total</span>
+            <span class="value" id="cart-total">Nu. 0.00</span>
+          </div>
         </div>
-        <p class="text-cream-500 text-xs">Tax included. Pay on pickup.</p>
       </div>
 
-      <!-- Checkout Form -->
-      <form id="checkout-form" class="bg-white p-5 rounded-xl border border-cream-200 space-y-4">
-        
-        <h3 class="font-bold text-espresso-900 mb-2">Customer Details</h3>
-        
-        <div>
-          <label class="block text-sm font-medium text-espresso-700 mb-1">Full Name *</label>
-          <input type="text" id="customer-name" required class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none" placeholder="Tashi Dorji">
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-espresso-700 mb-1">Phone Number *</label>
-          <input type="tel" id="customer-phone" required class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none" placeholder="77 12 34 56">
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-espresso-700 mb-1">Email (optional)</label>
-          <input type="email" id="customer-email" class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none" placeholder="tashi@example.com">
-        </div>
-
-        <!-- Birthday Section -->
-        <div id="birthday-section">
-          <div class="bg-cream-100 p-4 rounded-lg border border-cream-200">
-            <p class="text-sm text-espresso-700 mb-3">🎂 <strong>First time ordering?</strong> Add your birthday and get a free treat on your special day!</p>
-            <label class="block text-sm font-medium text-espresso-700 mb-1">Birthday</label>
-            <input type="date" id="customer-birthday" class="w-full border border-cream-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cream-500 outline-none">
+      <!-- Customer Details (Clickable Card) -->
+      <div class="card animate-in" id="customer-card-wrapper" onclick="openCustomerModal()" style="cursor:pointer;">
+        <div class="customer-card">
+          <div class="customer-info">
+            <div class="customer-avatar" id="customer-avatar">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+            </div>
+            <div class="customer-text" id="customer-text">
+              <span class="customer-name">Add Customer Details</span>
+              <span class="customer-phone">Required to place order</span>
+            </div>
+          </div>
+          <div class="customer-add" id="customer-add-btn">
+            <span>Add</span>
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+            </svg>
           </div>
         </div>
+      </div>
 
-        <!-- Delivery Type -->
-        <div class="pt-2">
-          <label class="block text-sm font-medium text-espresso-700 mb-2">Order Type *</label>
-          <div class="flex gap-3">
-            <label class="radio-card flex-1 border border-cream-300 rounded-lg px-4 py-3 cursor-pointer hover:bg-cream-50 transition">
-              <input type="radio" name="delivery-type" value="walk-in" checked class="sr-only">
-              <div class="flex items-center gap-2">
-                <span class="w-4 h-4 rounded-full border-2 border-cream-400 flex items-center justify-center">
-                  <span class="w-2 h-2 rounded-full bg-orange-600 opacity-0 check-dot"></span>
-                </span>
-               <span class="text-sm font-medium">Pick up</span>
-              </div>
-            </label>
-            <label class="radio-card flex-1 border border-cream-300 rounded-lg px-4 py-3 cursor-pointer hover:bg-cream-50 transition">
-              <input type="radio" name="delivery-type" value="delivery" class="sr-only">
-              <div class="flex items-center gap-2">
-                <span class="w-4 h-4 rounded-full border-2 border-cream-400 flex items-center justify-center">
-                  <span class="w-2 h-2 rounded-full bg-orange-600 opacity-0 check-dot"></span>
-                </span>
-                <span class="text-sm font-medium">Delivery</span>
-              </div>
-            </label>
+      <form id="checkout-form" class="space-y-4">
+
+        <!-- Order Type -->
+        <div class="card animate-in">
+          <div class="card-section">
+            <label class="field-label" style="margin-bottom:10px;">Order Type <span class="req">*</span></label>
+            <div class="grid grid-cols-2 gap-3">
+              <label class="radio-card active" onclick="selectRadio(this, 'walk-in')">
+                <input type="radio" name="delivery-type" value="walk-in" checked class="sr-only">
+                <div class="radio-dot"><div class="radio-dot-inner"></div></div>
+                <div>
+                  <div class="radio-label">Pick up</div>
+                  <div class="radio-sublabel">Collect at cafe</div>
+                </div>
+              </label>
+              <label class="radio-card" onclick="selectRadio(this, 'delivery')">
+                <input type="radio" name="delivery-type" value="delivery" class="sr-only">
+                <div class="radio-dot"><div class="radio-dot-inner"></div></div>
+                <div>
+                  <div class="radio-label">Delivery</div>
+                  <div class="radio-sublabel">We come to you</div>
+                </div>
+              </label>
+            </div>
           </div>
-        </div>
-
-        <!-- Address -->
-        <div id="address-section">
-          <label class="block text-sm font-medium text-espresso-700 mb-1">Delivery Address *</label>
-          <textarea id="delivery-address" rows="2" class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none" placeholder="Changzamtog, Thimphu"></textarea>
+          
+          <!-- Address (hidden by default) -->
+          <div id="address-section" class="card-section hidden" style="border-top:2px solid var(--dom-line); background:var(--dom-gray-light);">
+            <label class="field-label">Delivery Address <span class="req">*</span></label>
+            <textarea id="delivery-address" rows="2" class="field" placeholder="Changzamtog, Thimphu" style="resize:none;"></textarea>
+          </div>
         </div>
 
         <!-- Payment Method -->
-        <div>
-          <label class="block text-sm font-medium text-espresso-700 mb-1">Payment Method *</label>
-          <select id="payment-method" required class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none bg-white">
-            <option value="" disabled selected>Select payment method</option>
-            <option value="half-payment">Half Payment</option>
-            <option value="full-payment">Full Payment</option>
-            <option value="cash-on-delivery">Cash on Delivery</option>
-                        <option value="pay-at-counter">Pay at Counter</option>
-          </select>
+        <div class="card animate-in">
+          <div class="card-section">
+            <label class="field-label" style="margin-bottom:10px;">Payment Method <span class="req">*</span></label>
+            <div class="relative">
+              <select id="payment-method" required class="field" style="appearance:none; cursor:pointer;">
+                <option value="" disabled selected>Select payment method</option>
+                <option value="half-payment">Half Payment (50% now)</option>
+                <option value="full-payment">Full Payment (100% now)</option>
+                <option value="cash-on-delivery">Cash on Delivery</option>
+                <option value="pay-at-counter">Pay at Counter</option>
+              </select>
+              <svg style="position:absolute; right:14px; top:50%; transform:translateY(-50%); width:20px; height:20px; color:var(--dom-gray); pointer-events:none;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </div>
+          </div>
         </div>
 
-        <div>
-          <label class="block text-sm font-medium text-espresso-700 mb-1">Special Instructions</label>
-          <textarea id="special-notes" rows="2" class="w-full border border-cream-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cream-500 outline-none" placeholder="Allergies, dietary needs, pickup time..."></textarea>
+        <!-- Special Notes -->
+        <div class="card animate-in">
+          <div class="card-section">
+            <label class="field-label" style="margin-bottom:10px;">Special Instructions <span style="color:var(--dom-gray); font-weight:500;">(optional)</span></label>
+            <textarea id="special-notes" rows="2" class="field" placeholder="Allergies, dietary needs, pickup time..." style="resize:none;"></textarea>
+          </div>
         </div>
 
-        <button type="submit" id="place-order-btn" class="w-full bg-orange-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-orange-700 transition shadow-lg">
-          Place Order
+        <!-- Submit -->
+        <button type="submit" id="place-order-btn" class="btn-primary animate-in" style="font-size:16px; padding:16px;">
+          <span>Place Order</span>
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
         </button>
-        
-        <p class="text-center text-xs text-cream-500 mt-2">You'll receive an order number to track your order</p>
+        <p style="text-align:center; font-size:12px; color:var(--dom-gray); font-weight:500;">You'll receive an order number to track your order</p>
+
       </form>
     </div>
 
   </main>
 
+  <!-- Mobile Sticky Summary -->
+  <div id="mobile-sticky" class="mobile-sticky hidden">
+    <div style="max-width:800px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+      <div>
+        <p style="font-size:12px; color:var(--dom-gray); font-weight:500;">Total</p>
+        <p style="font-weight:800; font-size:22px; color:var(--dom-dark); letter-spacing:-.02em;" id="mobile-total">Nu. 0.00</p>
+      </div>
+      <button onclick="document.getElementById('place-order-btn').scrollIntoView({behavior:'smooth'})" class="btn-primary" style="width:auto; padding:12px 24px; border-radius:999px;">
+        Checkout
+      </button>
+    </div>
+  </div>
+
+  <!-- Customer Details Modal -->
+  <div id="customer-modal">
+    <div class="modal-sheet hide-scroll">
+      <div class="modal-grabber"></div>
+      <div class="modal-header">
+        <h2 class="modal-title">Customer Details</h2>
+        <button onclick="closeCustomerModal()" class="modal-close">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div style="padding:20px;">
+        <div class="space-y-4">
+          <div>
+            <label class="field-label">Full Name <span class="req">*</span></label>
+            <input type="text" id="customer-name" required class="field" placeholder="e.g. Tashi Dorji">
+          </div>
+
+          <div>
+            <label class="field-label">Phone Number <span class="req">*</span></label>
+            <input type="tel" id="customer-phone" required class="field" placeholder="77 12 34 56">
+          </div>
+
+          <div>
+            <label class="field-label">Email <span style="color:var(--dom-gray); font-weight:500;">(optional)</span></label>
+            <input type="email" id="customer-email" class="field" placeholder="tashi@example.com">
+          </div>
+
+          <!-- Birthday Section -->
+          <div id="birthday-section" class="hidden">
+            <div style="background:var(--dom-blue-light); border:2px solid rgba(0,120,172,.15); border-radius:var(--radius); padding:14px; margin-top:4px;">
+              <div style="display:flex; align-items:start; gap:10px; margin-bottom:10px;">
+                <span style="font-size:20px; line-height:1;">🎂</span>
+                <div>
+                  <p style="font-size:13px; font-weight:700; color:var(--dom-dark); margin-bottom:2px;">First time ordering?</p>
+                  <p style="font-size:12px; color:var(--dom-gray); font-weight:500; line-height:1.4;">Add your birthday and get a free treat on your special day!</p>
+                </div>
+              </div>
+              <label class="field-label" style="font-size:12px; margin-bottom:4px;">Birthday</label>
+              <input type="date" id="customer-birthday" class="field" style="font-size:14px;">
+            </div>
+          </div>
+        </div>
+
+        <button type="button" onclick="saveCustomerDetails()" class="btn-primary mt-6">
+          Save Details
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Payment Confirmation Modal -->
   <div id="payment-modal">
-    <div class="modal-content shadow-2xl">
-      <div class="p-6">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-espresso-900">Payment Confirmation</h2>
-          <button onclick="closePaymentModal()" class="text-cream-500 hover:text-espresso-900 text-2xl leading-none">&times;</button>
+    <div class="modal-sheet hide-scroll">
+      <div class="modal-grabber"></div>
+      
+      <div style="padding:20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+          <div>
+            <h2 style="font-weight:800; font-size:20px; color:var(--dom-dark); letter-spacing:-.02em;">Payment Confirmation</h2>
+            <p style="font-size:13px; color:var(--dom-gray); font-weight:500; margin-top:2px;">Complete your payment to finalize</p>
+          </div>
+          <button onclick="closePaymentModal()" class="modal-close">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
         </div>
 
         <!-- Breakdown -->
-        <div class="bg-cream-50 rounded-lg p-4 mb-5 space-y-2 text-sm">
-          <div class="flex justify-between">
-            <span class="text-espresso-600">Subtotal</span>
-            <span class="font-medium" id="modal-subtotal">Nu. 0.00</span>
+        <div style="background:var(--dom-gray-light); border-radius:var(--radius); padding:16px; margin-bottom:20px; space-y:2;">
+          <div class="summary-row" style="margin-bottom:8px;">
+            <span class="label">Subtotal</span>
+            <span class="value" id="modal-subtotal">Nu. 0.00</span>
           </div>
-          <div class="flex justify-between">
-            <span class="text-espresso-600">Service Charge (5%)</span>
-            <span class="font-medium" id="modal-service">Nu. 0.00</span>
+          <div class="summary-row" style="margin-bottom:8px;">
+            <span class="label">Service Charge (5%)</span>
+            <span class="value" id="modal-service">Nu. 0.00</span>
           </div>
-          <div class="flex justify-between">
-            <span class="text-espresso-600">GST (0%)</span>
-            <span class="font-medium" id="modal-gst">Nu. 0.00</span>
+          <div class="summary-row" style="margin-bottom:8px;">
+            <span class="label">GST (0%)</span>
+            <span class="value" id="modal-gst">Nu. 0.00</span>
           </div>
-          <div class="flex justify-between text-green-700" id="modal-discount-row">
-            <span>Discount</span>
-            <span class="font-medium" id="modal-discount">-Nu. 0.00</span>
+          <div class="summary-row hidden" id="modal-discount-row" style="margin-bottom:8px;">
+            <span class="label" style="color:var(--dom-red);">Discount</span>
+            <span class="value" style="color:var(--dom-red);" id="modal-discount">-Nu. 0.00</span>
           </div>
-          <div class="border-t border-cream-200 pt-2 flex justify-between font-bold text-base">
-            <span>Grand Total</span>
-            <span id="modal-total">Nu. 0.00</span>
+          <div style="border-top:2px solid var(--dom-line); padding-top:10px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:700; font-size:15px; color:var(--dom-dark);">Grand Total</span>
+            <span style="font-weight:800; font-size:22px; color:var(--dom-dark); letter-spacing:-.02em;" id="modal-total">Nu. 0.00</span>
           </div>
-          <div id="modal-half-row" class="hidden border-t border-dashed border-orange-300 pt-2 mt-2">
-            <div class="flex justify-between text-orange-700 font-bold">
+          <div id="modal-half-row" class="hidden" style="border-top:2px dashed var(--dom-line); padding-top:10px; margin-top:10px;">
+            <div style="display:flex; justify-content:space-between; font-weight:700; color:var(--dom-blue);">
               <span>Pay Now (50%)</span>
               <span id="modal-pay-now">Nu. 0.00</span>
             </div>
-            <div class="flex justify-between text-cream-500 text-xs mt-1">
+            <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--dom-gray); font-weight:500; margin-top:4px;">
               <span>Balance due on pickup/delivery</span>
               <span id="modal-balance">Nu. 0.00</span>
             </div>
           </div>
         </div>
 
-        <!-- QR Codes with Bank Details -->
-        <div class="mb-5">
-          <h3 class="font-bold text-espresso-900 text-sm mb-3">Scan to Pay</h3>
-          <div class="grid grid-cols-3 gap-3">
-            <!-- MPay -->
-            <div class="text-center">
-              <div class="qr-placeholder mb-2">
-                <span class="text-2xl mb-1">📱</span>
-                <span class="font-medium">MPay</span>
-                <span class="text-xs text-cream-500 mt-1">Replace with QR</span>
+        <!-- QR Codes -->
+        <div style="margin-bottom:20px;">
+          <h3 style="font-weight:700; font-size:13px; color:var(--dom-dark); margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+            </svg>
+            Scan to Pay
+          </h3>
+          <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
+            <div style="text-align:center;">
+              <div class="qr-card" style="margin-bottom:8px;">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color:var(--dom-gray); margin-bottom:4px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+                <span style="font-size:12px; font-weight:700; color:var(--dom-dark);">MPay</span>
               </div>
-              <div class="text-xs text-left space-y-0.5">
-                <p><span class="text-cream-500">Account:</span> Your Cafe</p>
-                <p><span class="text-cream-500">Bank:</span> MPay</p>
-              </div>
-            </div>
-            <!-- MyPay -->
-            <div class="text-center">
-              <div class="qr-placeholder mb-2">
-                <span class="text-2xl mb-1">📱</span>
-                <span class="font-medium">MyPay</span>
-                <span class="text-xs text-cream-500 mt-1">Replace with QR</span>
-              </div>
-              <div class="text-xs text-left space-y-0.5">
-                <p><span class="text-cream-500">Account:</span> Your Cafe</p>
-                <p><span class="text-cream-500">Bank:</span> MyPay</p>
+              <div style="font-size:11px; text-align:left; line-height:1.5;">
+                <p style="color:var(--dom-gray);">Account: <span style="color:var(--dom-dark); font-weight:600;">Your Cafe</span></p>
+                <p style="color:var(--dom-gray);">Bank: <span style="color:var(--dom-dark); font-weight:600;">MPay</span></p>
               </div>
             </div>
-            <!-- BoB -->
-            <div class="text-center">
-              <div class="qr-placeholder mb-2">
-                <span class="text-2xl mb-1">🏦</span>
-                <span class="font-medium">BoB</span>
-                <span class="text-xs text-cream-500 mt-1">Replace with QR</span>
+            <div style="text-align:center;">
+              <div class="qr-card" style="margin-bottom:8px;">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color:var(--dom-gray); margin-bottom:4px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+                <span style="font-size:12px; font-weight:700; color:var(--dom-dark);">MyPay</span>
               </div>
-              <div class="text-xs text-left space-y-0.5">
-                <p><span class="text-cream-500">Account:</span> 200012345678</p>
-                <p><span class="text-cream-500">Bank:</span> Bank of Bhutan</p>
+              <div style="font-size:11px; text-align:left; line-height:1.5;">
+                <p style="color:var(--dom-gray);">Account: <span style="color:var(--dom-dark); font-weight:600;">Your Cafe</span></p>
+                <p style="color:var(--dom-gray);">Bank: <span style="color:var(--dom-dark); font-weight:600;">MyPay</span></p>
+              </div>
+            </div>
+            <div style="text-align:center;">
+              <div class="qr-card" style="margin-bottom:8px;">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color:var(--dom-gray); margin-bottom:4px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+                <span style="font-size:12px; font-weight:700; color:var(--dom-dark);">BoB</span>
+              </div>
+              <div style="font-size:11px; text-align:left; line-height:1.5;">
+                <p style="color:var(--dom-gray);">Account: <span style="color:var(--dom-dark); font-weight:600;">200012345678</span></p>
+                <p style="color:var(--dom-gray);">Bank: <span style="color:var(--dom-dark); font-weight:600;">Bank of Bhutan</span></p>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Screenshot Upload -->
-        <div class="mb-5">
-          <label class="block text-sm font-medium text-espresso-700 mb-2">Payment Screenshot *</label>
+        <div style="margin-bottom:20px;">
+          <label class="field-label">Payment Screenshot <span class="req">*</span></label>
           
-          <!-- Preview with Remove Button -->
-          <div id="screenshot-preview-container" class="hidden mb-3 relative text-center">
-            <img id="screenshot-img" class="max-h-40 mx-auto rounded-lg border border-cream-200">
-            <button type="button" onclick="removeScreenshot()" class="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs shadow-md border-2 border-white transition">
-              ✕
+          <div id="screenshot-preview-container" class="hidden mb-3 relative">
+            <img id="screenshot-img" style="max-height:180px; margin:0 auto; border-radius:var(--radius); border:2px solid var(--dom-line); display:block;">
+            <button type="button" onclick="removeScreenshot()" style="position:absolute; top:8px; right:8px; width:32px; height:32px; background:var(--dom-red); color:#fff; border:none; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,.2);">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
             </button>
           </div>
 
-          <!-- Upload Area -->
-          <div id="screenshot-upload-area" class="border-2 border-dashed border-cream-300 rounded-lg p-4 text-center hover:bg-cream-50 transition cursor-pointer" onclick="document.getElementById('payment-screenshot').click()">
+          <div id="screenshot-upload-area" class="upload-area" onclick="document.getElementById('payment-screenshot').click()">
             <input type="file" id="payment-screenshot" accept="image/*" class="hidden" onchange="handleScreenshotPreview(this)">
-            <div id="screenshot-placeholder">
-              <span class="text-2xl">📷</span>
-              <p class="text-sm text-cream-500 mt-1">Tap to upload payment screenshot</p>
-              <p class="text-xs text-cream-400">JPG, PNG up to 5MB</p>
+            <div id="screenshot-placeholder" style="display:flex; flex-direction:column; align-items:center;">
+              <div style="width:48px; height:48px; background:var(--dom-white); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:8px; box-shadow:0 2px 8px rgba(0,0,0,.06);">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color:var(--dom-gray);">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </div>
+              <p style="font-size:14px; font-weight:600; color:var(--dom-dark);">Tap to upload screenshot</p>
+              <p style="font-size:12px; color:var(--dom-gray); font-weight:500; margin-top:2px;">JPG, PNG up to 5MB</p>
             </div>
           </div>
         </div>
 
-        <!-- Confirmation Checkbox -->
-        <label class="flex items-start gap-3 mb-5 cursor-pointer">
-          <input type="checkbox" id="payment-confirm-check" class="mt-1 w-4 h-4 text-orange-600 rounded border-cream-300 focus:ring-orange-500">
-          <span class="text-sm text-espresso-700">I confirm that I have completed the payment via bank transfer or scanned the QR code above.</span>
+        <!-- Confirmation -->
+        <label style="display:flex; align-items:start; gap:10px; margin-bottom:20px; cursor:pointer;">
+          <input type="checkbox" id="payment-confirm-check" style="width:18px; height:18px; accent-color:var(--dom-blue); margin-top:2px; cursor:pointer;">
+          <span style="font-size:13px; color:var(--dom-dark); font-weight:500; line-height:1.5;">I confirm that I have completed the payment via bank transfer or scanned the QR code above.</span>
         </label>
 
         <!-- Actions -->
-        <div class="flex gap-3">
-          <button onclick="closePaymentModal()" class="flex-1 py-3 rounded-xl border border-cream-300 font-medium text-espresso-700 hover:bg-cream-50 transition">
+        <div style="display:flex; gap:10px;">
+          <button onclick="closePaymentModal()" class="btn-secondary" style="flex:1;">
             Cancel
           </button>
-          <button onclick="confirmPaymentAndSubmit()" class="flex-1 py-3 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700 transition shadow-lg">
-            Confirm & Place Order
+          <button onclick="confirmPaymentAndSubmit()" class="btn-primary" style="flex:1;">
+            Confirm Order
           </button>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -337,42 +762,73 @@
     function getCart() { return JSON.parse(localStorage.getItem('cart') || '[]') }
     function saveCart(cart) { localStorage.setItem('cart', JSON.stringify(cart)) }
 
+    // Customer details state
+    let customerData = { name: '', phone: '', email: '', birthday: '' }
+    let customerChecked = false
+
     function renderCart() {
       const cart = getCart()
       const container = document.getElementById('cart-items')
       const emptyState = document.getElementById('empty-state')
       const checkoutSection = document.getElementById('checkout-section')
+      const mobileSticky = document.getElementById('mobile-sticky')
+
+      const totalItems = cart.reduce((sum, item) => sum + item.qty, 0)
+      document.getElementById('cart-count-header').textContent = `${totalItems} item${totalItems !== 1 ? 's' : ''}`
 
       if (cart.length === 0) {
         container.innerHTML = ''
         emptyState.classList.remove('hidden')
         checkoutSection.classList.add('hidden')
+        mobileSticky.classList.add('hidden')
         return
       }
 
       emptyState.classList.add('hidden')
       checkoutSection.classList.remove('hidden')
+      mobileSticky.classList.remove('hidden')
 
-      const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0)
+      const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0)
+      const serviceCharge = subtotal * 0.05
+      const total = subtotal + serviceCharge
+
       document.getElementById('cart-total').textContent = 'Nu. ' + total.toFixed(2)
+      document.getElementById('mobile-total').textContent = 'Nu. ' + total.toFixed(2)
+      document.getElementById('summary-subtotal').textContent = 'Nu. ' + subtotal.toFixed(2)
+      document.getElementById('summary-service').textContent = 'Nu. ' + serviceCharge.toFixed(2)
+      document.getElementById('summary-item-count').textContent = `${totalItems} item${totalItems !== 1 ? 's' : ''}`
 
       container.innerHTML = cart.map((item, index) => `
-        <div class="flex gap-3 bg-white p-4 rounded-xl border border-cream-100">
+        <div class="cart-item animate-in" style="animation-delay:${index * 0.05}s">
           ${item.image_url ? 
-            `<img src="${item.image_url}" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">` :
-            `<div class="w-20 h-20 rounded-lg bg-cream-100 flex items-center justify-center text-cream-400 text-2xl flex-shrink-0">🍽️</div>`
+            `<img src="${item.image_url}" class="item-img" loading="lazy" alt="${item.name}">` :
+            `<div class="item-img-fallback">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+            </div>`
           }
-          <div class="flex-1 min-w-0">
-            <div class="flex justify-between items-start mb-1">
-              <h3 class="font-bold text-espresso-900 truncate">${item.name}</h3>
-              <span class="font-bold text-orange-600">Nu. ${(item.price * item.qty).toFixed(2)}</span>
+          <div style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:start; gap:8px; margin-bottom:2px;">
+                <h3 style="font-weight:700; font-size:15px; color:var(--dom-dark); line-height:1.3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.name}</h3>
+                <span style="font-weight:700; font-size:15px; color:var(--dom-red); white-space:nowrap;">Nu. ${(item.price * item.qty).toFixed(2)}</span>
+              </div>
+              <p style="font-size:12px; color:var(--dom-gray); font-weight:500; margin-bottom:10px;">Nu. ${item.price.toFixed(2)} each</p>
             </div>
-            <p class="text-cream-500 text-xs mb-2">Nu. ${item.price} each</p>
-            <div class="flex items-center gap-2">
-              <button onclick="updateQty(${index}, -1)" class="w-8 h-8 border border-cream-200 rounded-lg hover:bg-cream-50 flex items-center justify-center font-bold text-cream-600">-</button>
-              <span class="w-8 text-center font-medium">${item.qty}</span>
-              <button onclick="updateQty(${index}, 1)" class="w-8 h-8 border border-cream-200 rounded-lg hover:bg-cream-50 flex items-center justify-center font-bold text-cream-600">+</button>
-              <button onclick="removeItem(${index})" class="ml-auto text-red-500 text-sm hover:text-red-700">Remove</button>
+            
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <div class="stepper">
+                <button onclick="updateQty(${index}, -1)">−</button>
+                <span class="qty">${item.qty}</span>
+                <button onclick="updateQty(${index}, 1)">+</button>
+              </div>
+              <button onclick="removeItem(${index})" class="btn-remove">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                <span class="hidden sm:inline">Remove</span>
+              </button>
             </div>
           </div>
         </div>
@@ -395,7 +851,7 @@
     }
 
     function clearCart() {
-      if (!confirm('Clear all items?')) return
+      if (!confirm('Clear all items from your cart?')) return
       localStorage.removeItem('cart')
       renderCart()
     }
@@ -405,52 +861,113 @@
       return data
     }
 
-        let tableSessionId = localStorage.getItem('table_session_id')
+    let tableSessionId = localStorage.getItem('table_session_id')
     let tableId = localStorage.getItem('table_id')
     let tableNumber = localStorage.getItem('table_number')
 
-    let customerChecked = false
-    document.getElementById('customer-phone').addEventListener('blur', async function() {
+    // Customer modal logic
+    const customerModal = document.getElementById('customer-modal')
+    const customerPhoneInput = document.getElementById('customer-phone')
+
+    function openCustomerModal() {
+      // Pre-fill if we have data
+      document.getElementById('customer-name').value = customerData.name
+      document.getElementById('customer-phone').value = customerData.phone
+      document.getElementById('customer-email').value = customerData.email
+      document.getElementById('customer-birthday').value = customerData.birthday
+      
+      customerModal.classList.add('active')
+      document.body.style.overflow = 'hidden'
+    }
+
+    function closeCustomerModal() {
+      customerModal.classList.remove('active')
+      document.body.style.overflow = ''
+    }
+
+    // Close on backdrop click
+    customerModal.addEventListener('click', function(e) {
+      if (e.target === customerModal) closeCustomerModal()
+    })
+
+    async function saveCustomerDetails() {
+      const name = document.getElementById('customer-name').value.trim()
+      const phone = document.getElementById('customer-phone').value.trim()
+      const email = document.getElementById('customer-email').value.trim()
+      const birthday = document.getElementById('customer-birthday').value
+
+      if (!name || !phone) {
+        showToast('Please fill in required fields')
+        return
+      }
+
+      customerData = { name, phone, email, birthday }
+      updateCustomerCard()
+      closeCustomerModal()
+      showToast('Customer details saved')
+    }
+
+    function updateCustomerCard() {
+      const wrapper = document.getElementById('customer-card-wrapper')
+      const avatar = document.getElementById('customer-avatar')
+      const text = document.getElementById('customer-text')
+      const btn = document.getElementById('customer-add-btn')
+
+      if (customerData.name && customerData.phone) {
+        avatar.textContent = customerData.name.charAt(0).toUpperCase()
+        avatar.style.background = 'var(--dom-blue-light)'
+        avatar.style.color = 'var(--dom-blue)'
+        text.innerHTML = `<span class="customer-name">${customerData.name}</span><span class="customer-phone">${customerData.phone}</span>`
+        btn.innerHTML = `<span>Edit</span><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>`
+      } else {
+        avatar.innerHTML = `<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`
+        text.innerHTML = `<span class="customer-name">Add Customer Details</span><span class="customer-phone">Required to place order</span>`
+        btn.innerHTML = `<span>Add</span><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>`
+      }
+    }
+
+    // Check existing customer on phone blur
+    customerPhoneInput.addEventListener('blur', async function() {
       const phone = this.value.trim()
       if (!phone || customerChecked) return
       const existing = await checkCustomer(phone)
-      document.getElementById('birthday-section').classList.toggle('show', !existing)
-      customerChecked = true
+      document.getElementById('birthday-section').classList.toggle('hidden', !!existing)
+      if (existing) customerChecked = true
     })
 
-    // Delivery type toggle
-    const deliveryRadios = document.querySelectorAll('input[name="delivery-type"]')
-    const addressSection = document.getElementById('address-section')
-    const addressInput = document.getElementById('delivery-address')
-
-    deliveryRadios.forEach(radio => {
-      radio.addEventListener('change', function() {
-        document.querySelectorAll('.check-dot').forEach(dot => dot.style.opacity = '0')
-        this.closest('.radio-card').querySelector('.check-dot').style.opacity = '1'
-        if (this.value === 'delivery') {
-          addressSection.classList.add('show')
-          addressInput.required = true
-        } else {
-          addressSection.classList.remove('show')
-          addressInput.required = false
-          addressInput.value = ''
-        }
+    // Radio selection
+    function selectRadio(card, value) {
+      document.querySelectorAll('.radio-card').forEach(c => {
+        c.classList.remove('active')
+        c.querySelector('input').checked = false
       })
-    })
-    document.querySelector('input[name="delivery-type"]:checked').closest('.radio-card').querySelector('.check-dot').style.opacity = '1'
+      card.classList.add('active')
+      card.querySelector('input').checked = true
+
+      const addressSection = document.getElementById('address-section')
+      const addressInput = document.getElementById('delivery-address')
+      if (value === 'delivery') {
+        addressSection.classList.remove('hidden')
+        addressInput.required = true
+      } else {
+        addressSection.classList.add('hidden')
+        addressInput.required = false
+        addressInput.value = ''
+      }
+    }
 
     // Payment method toggle
     const paymentMethodSelect = document.getElementById('payment-method')
     const placeOrderBtn = document.getElementById('place-order-btn')
 
-     paymentMethodSelect.addEventListener('change', function() {
+    paymentMethodSelect.addEventListener('change', function() {
       const method = this.value
       if (method === 'half-payment' || method === 'full-payment') {
-        placeOrderBtn.textContent = 'Payment Confirmation'
+        placeOrderBtn.innerHTML = `<span>Proceed to Payment</span><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>`
       } else if (method === 'pay-at-counter') {
-        placeOrderBtn.textContent = 'Place Order (Pay at Counter)'
+        placeOrderBtn.innerHTML = `<span>Place Order (Pay at Counter)</span><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>`
       } else {
-        placeOrderBtn.textContent = 'Place Order'
+        placeOrderBtn.innerHTML = `<span>Place Order</span><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>`
       }
     })
 
@@ -459,7 +976,7 @@
       const file = input.files[0]
       if (file) {
         if (file.size > 5 * 1024 * 1024) {
-          alert('File size must be less than 5MB')
+          showToast('File size must be less than 5MB')
           input.value = ''
           return
         }
@@ -473,7 +990,6 @@
       }
     }
 
-    // Remove screenshot
     function removeScreenshot() {
       const input = document.getElementById('payment-screenshot')
       input.value = ''
@@ -482,133 +998,138 @@
       paymentScreenshotUrl = null
     }
 
-    // Modal logic
+    // Payment Modal
     const paymentModal = document.getElementById('payment-modal')
     let paymentScreenshotUrl = null
 
- function openPaymentModal() {
-  const cart = getCart()
-  const subtotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0)
-  const serviceCharge = subtotal * 0.05
-  const gst = 0
-  const discount = 0
-  const grandTotal = subtotal + serviceCharge + gst - discount
-  const method = paymentMethodSelect.value
+    function openPaymentModal() {
+      const cart = getCart()
+      const subtotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0)
+      const serviceCharge = subtotal * 0.05
+      const gst = 0
+      const discount = 0
+      const grandTotal = subtotal + serviceCharge + gst - discount
+      const method = paymentMethodSelect.value
 
-  document.getElementById('modal-subtotal').textContent = 'Nu. ' + subtotal.toFixed(2)
-  document.getElementById('modal-service').textContent = 'Nu. ' + serviceCharge.toFixed(2)
-  document.getElementById('modal-gst').textContent = 'Nu. ' + gst.toFixed(2)
-  document.getElementById('modal-discount').textContent = '-Nu. ' + discount.toFixed(2)
-  document.getElementById('modal-total').textContent = 'Nu. ' + grandTotal.toFixed(2)
+      document.getElementById('modal-subtotal').textContent = 'Nu. ' + subtotal.toFixed(2)
+      document.getElementById('modal-service').textContent = 'Nu. ' + serviceCharge.toFixed(2)
+      document.getElementById('modal-gst').textContent = 'Nu. ' + gst.toFixed(2)
+      document.getElementById('modal-discount').textContent = '-Nu. ' + discount.toFixed(2)
+      document.getElementById('modal-total').textContent = 'Nu. ' + grandTotal.toFixed(2)
 
-  const halfRow = document.getElementById('modal-half-row')
-  if (method === 'half-payment') {
-    halfRow.classList.remove('hidden')
-    document.getElementById('modal-pay-now').textContent = 'Nu. ' + (grandTotal / 2).toFixed(2)
-    document.getElementById('modal-balance').textContent = 'Nu. ' + (grandTotal / 2).toFixed(2)
-  } else {
-    halfRow.classList.add('hidden')
-  }
+      const halfRow = document.getElementById('modal-half-row')
+      if (method === 'half-payment') {
+        halfRow.classList.remove('hidden')
+        document.getElementById('modal-pay-now').textContent = 'Nu. ' + (grandTotal / 2).toFixed(2)
+        document.getElementById('modal-balance').textContent = 'Nu. ' + (grandTotal / 2).toFixed(2)
+      } else {
+        halfRow.classList.add('hidden')
+      }
 
-  // Reset modal state
-  document.getElementById('payment-confirm-check').checked = false
-  document.getElementById('payment-screenshot').value = ''
-  document.getElementById('screenshot-preview-container').classList.add('hidden')
-  document.getElementById('screenshot-upload-area').classList.remove('hidden')
-  paymentScreenshotUrl = null
+      document.getElementById('payment-confirm-check').checked = false
+      document.getElementById('payment-screenshot').value = ''
+      document.getElementById('screenshot-preview-container').classList.add('hidden')
+      document.getElementById('screenshot-upload-area').classList.remove('hidden')
+      paymentScreenshotUrl = null
 
-  paymentModal.classList.add('active')
-}
+      paymentModal.classList.add('active')
+      document.body.style.overflow = 'hidden'
+    }
 
     function closePaymentModal() {
       paymentModal.classList.remove('active')
+      document.body.style.overflow = ''
     }
+
+    paymentModal.addEventListener('click', function(e) {
+      if (e.target === paymentModal) closePaymentModal()
+    })
 
     async function confirmPaymentAndSubmit() {
-  if (!document.getElementById('payment-confirm-check').checked) {
-    alert('Please confirm that you have completed the payment.')
-    return
-  }
-
-  const screenshotFile = document.getElementById('payment-screenshot').files[0]
-  if (!screenshotFile) {
-    alert('Please upload your payment screenshot.')
-    return
-  }
-
-  const fileExt = screenshotFile.name.split('.').pop()
-  const fileName = `payment-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`
-
-  try {
-    const { data: uploadData, error: uploadError } = await supabaseClient
-      .storage
-      .from('payment_screenshots')  // ← FIXED
-      .upload(fileName, screenshotFile, {
-        contentType: screenshotFile.type,
-        upsert: false
-      })
-
-    if (uploadError) {
-      console.error('Upload error details:', uploadError)
-      
-      if (uploadError.message && uploadError.message.includes('row-level security')) {
-        alert('Upload failed: Storage permissions not configured.\n\nPlease go to Supabase Dashboard → Storage → Buckets → payment_screenshots → Policies, and add an INSERT policy with definition: true\n\nOr disable RLS on the bucket for testing.')  // ← FIXED
+      if (!document.getElementById('payment-confirm-check').checked) {
+        showToast('Please confirm payment completion')
         return
       }
-      
-      throw uploadError
+
+      const screenshotFile = document.getElementById('payment-screenshot').files[0]
+      if (!screenshotFile) {
+        showToast('Please upload payment screenshot')
+        return
+      }
+
+      const fileExt = screenshotFile.name.split('.').pop()
+      const fileName = `payment-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`
+
+      try {
+        const { data: uploadData, error: uploadError } = await supabaseClient
+          .storage
+          .from('payment_screenshots')
+          .upload(fileName, screenshotFile, {
+            contentType: screenshotFile.type,
+            upsert: false
+          })
+
+        if (uploadError) {
+          console.error('Upload error details:', uploadError)
+          if (uploadError.message && uploadError.message.includes('row-level security')) {
+            alert('Upload failed: Storage permissions not configured.\n\nPlease go to Supabase Dashboard → Storage → Buckets → payment_screenshots → Policies, and add an INSERT policy with definition: true\n\nOr disable RLS on the bucket for testing.')
+            return
+          }
+          throw uploadError
+        }
+
+        const { data: urlData } = supabaseClient
+          .storage
+          .from('payment_screenshots')
+          .getPublicUrl(fileName)
+
+        paymentScreenshotUrl = urlData.publicUrl
+        closePaymentModal()
+        await submitOrder()
+
+      } catch (err) {
+        console.error('Screenshot upload failed:', err)
+        alert('Upload failed: ' + (err.message || 'Unknown error') + '\n\nPlease check Storage RLS policies in Supabase dashboard.')
+      }
     }
 
-    const { data: urlData } = supabaseClient
-      .storage
-      .from('payment_screenshots')  // ← FIXED
-      .getPublicUrl(fileName)
-
-    paymentScreenshotUrl = urlData.publicUrl
-    closePaymentModal()
-    await submitOrder()
-
-  } catch (err) {
-    console.error('Screenshot upload failed:', err)
-    alert('Upload failed: ' + (err.message || 'Unknown error') + '\n\nPlease check Storage RLS policies in Supabase dashboard.')
-  }
-}
-
-    // Form submission handler
+    // Form submission
     document.getElementById('checkout-form').addEventListener('submit', async function(e) {
       e.preventDefault()
       const cart = getCart()
-      if (cart.length === 0) return alert('Cart is empty!')
+      if (cart.length === 0) return showToast('Cart is empty!')
 
-      const method = paymentMethodSelect.value
-      if (!method) {
-        alert('Please select a payment method.')
+      if (!customerData.name || !customerData.phone) {
+        showToast('Please add customer details first')
+        openCustomerModal()
         return
       }
 
-       if (method === 'half-payment' || method === 'full-payment') {
+      const method = paymentMethodSelect.value
+      if (!method) {
+        showToast('Please select a payment method')
+        return
+      }
+
+      if (method === 'half-payment' || method === 'full-payment') {
         openPaymentModal()
-      } else if (method === 'pay-at-counter') {
-        paymentScreenshotUrl = null
-        await submitOrder()
       } else {
         paymentScreenshotUrl = null
         await submitOrder()
       }
     })
 
-    // Actual order submission
     async function submitOrder() {
       const btn = document.getElementById('place-order-btn')
-      const originalText = btn.textContent
+      const originalHTML = btn.innerHTML
       btn.disabled = true
-      btn.textContent = 'Placing Order...'
+      btn.innerHTML = `<svg class="animate-spin" style="width:20px; height:20px; margin-right:8px;" fill="none" viewBox="0 0 24 24"><circle style="opacity:.25;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path style="opacity:.75;" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...`
 
       const cart = getCart()
-      const name = document.getElementById('customer-name').value.trim()
-      const phone = document.getElementById('customer-phone').value.trim()
-      const email = document.getElementById('customer-email').value.trim()
-      const birthday = document.getElementById('customer-birthday').value
+      const name = customerData.name
+      const phone = customerData.phone
+      const email = customerData.email
+      const birthday = customerData.birthday
       const notes = document.getElementById('special-notes').value.trim()
       const deliveryType = document.querySelector('input[name="delivery-type"]:checked').value
       const address = document.getElementById('delivery-address').value.trim()
@@ -619,18 +1140,19 @@
       const total = subtotal + serviceCharge
 
       if (isNaN(total) || total <= 0) {
-        alert('Cart total could not be calculated. Please refresh and try again.')
+        showToast('Cart total could not be calculated')
         btn.disabled = false
-        btn.textContent = originalText
+        btn.innerHTML = originalHTML
         return
       }
 
-           if (!tableSessionId && deliveryType === 'delivery' && !address) {
-        alert('Please enter a delivery address.')
+      if (!tableSessionId && deliveryType === 'delivery' && !address) {
+        showToast('Please enter a delivery address')
         btn.disabled = false
-        btn.textContent = originalText
+        btn.innerHTML = originalHTML
         return
       }
+
       try {
         let customerId = null
         const existingCustomer = await checkCustomer(phone)
@@ -647,7 +1169,7 @@
           customerId = newCustomer.id
         }
 
-               const isTableOrder = !!tableSessionId
+        const isTableOrder = !!tableSessionId
         
         const { data: order, error: orderError } = await supabaseClient.from('orders').insert({
           outlet_id: outletId,
@@ -677,7 +1199,7 @@
         }))
         await supabaseClient.from('order_items').insert(orderItems)
 
-              const paymentAmount = paymentMethod === 'half-payment' ? total / 2 : 
+        const paymentAmount = paymentMethod === 'half-payment' ? total / 2 : 
                               paymentMethod === 'pay-at-counter' ? 0 : total
         
         await supabaseClient.from('payments').insert({
@@ -693,43 +1215,39 @@
 
       } catch (err) {
         console.error(err)
-        alert('Something went wrong. Please try again.')
+        showToast('Something went wrong. Please try again.')
         btn.disabled = false
-        btn.textContent = originalText
+        btn.innerHTML = originalHTML
       }
     }
 
     function configurePaymentOptions() {
-  const isTableOrder = !!(localStorage.getItem('table_session_id') || localStorage.getItem('table_number'))
-  const payAtCounterOption = document.querySelector('#payment-method option[value="pay-at-counter"]')
-  
-  if (payAtCounterOption && !isTableOrder) {
-    payAtCounterOption.remove()
-  }
-}
+      const isTableOrder = !!(localStorage.getItem('table_session_id') || localStorage.getItem('table_number'))
+      const payAtCounterOption = document.querySelector('#payment-method option[value="pay-at-counter"]')
+      if (payAtCounterOption && !isTableOrder) {
+        payAtCounterOption.remove()
+      }
+    }
 
-configurePaymentOptions()
+    configurePaymentOptions()
 
-      function initTableCart() {
+    function initTableCart() {
       if (tableNumber) {
         document.getElementById('table-banner').classList.remove('hidden')
         document.getElementById('banner-table-num').textContent = tableNumber
         
-        // Auto-select walk-in and hide delivery option
         const walkInRadio = document.querySelector('input[name="delivery-type"][value="walk-in"]')
         if (walkInRadio) {
           walkInRadio.checked = true
-          walkInRadio.closest('.radio-card').querySelector('.check-dot').style.opacity = '1'
+          walkInRadio.closest('.radio-card').classList.add('active')
           document.querySelector('input[name="delivery-type"][value="delivery"]').closest('.radio-card').style.display = 'none'
         }
-        document.getElementById('address-section').classList.remove('show')
+        document.getElementById('address-section').classList.add('hidden')
         document.getElementById('delivery-address').required = false
         
-        // NEW: Auto-select Pay at Counter for table orders
         const paymentSelect = document.getElementById('payment-method')
         if (paymentSelect) {
           paymentSelect.value = 'pay-at-counter'
-          // Trigger change to update button text
           paymentSelect.dispatchEvent(new Event('change'))
         }
       }
@@ -743,17 +1261,25 @@ configurePaymentOptions()
       window.location.href = 'menu.html'
     }
 
-    initTableCart()
+    // Toast
+    function showToast(message) {
+      const toast = document.getElementById('toast')
+      toast.textContent = message
+      toast.classList.add('show')
+      setTimeout(() => toast.classList.remove('show'), 3000)
+    }
 
-    renderCart()
-
-        // Auto-fill customer details if available from auth
+    // Auto-fill from auth
     const savedName = localStorage.getItem('customer_name')
     const savedPhone = localStorage.getItem('customer_phone')
     const savedEmail = localStorage.getItem('customer_email')
-    if (savedName) document.getElementById('customer-name').value = savedName
-    if (savedPhone) document.getElementById('customer-phone').value = savedPhone
-    if (savedEmail) document.getElementById('customer-email').value = savedEmail
+    if (savedName) customerData.name = savedName
+    if (savedPhone) customerData.phone = savedPhone
+    if (savedEmail) customerData.email = savedEmail
+    updateCustomerCard()
+
+    initTableCart()
+    renderCart()
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js')
